@@ -9,6 +9,7 @@ public class PlayerScript : Pigeon
     }
     private void Update()
     {
+        if (!IsOwner) return;
         if(!isKnockedOut)
         {
             if (!isSlaming)
@@ -34,6 +35,7 @@ public class PlayerScript : Pigeon
     }
     private void FixedUpdate()
     {
+        if (!IsOwner) return;
         if (!isKnockedOut && !isSlaming)
         {
             //Store user input as a movement vector

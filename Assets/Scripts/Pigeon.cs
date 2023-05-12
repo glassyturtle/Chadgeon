@@ -2,8 +2,9 @@ using System;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 
-public class Pigeon : MonoBehaviour
+public class Pigeon : NetworkBehaviour
 {
     public Dictionary<Upgrades, int> pigeonUpgrades = new Dictionary<Upgrades, int>();
     public bool isKnockedOut = false;

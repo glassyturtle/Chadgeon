@@ -127,7 +127,7 @@ public class GameManager : MonoBehaviour
     {
         currentSecound = secondsTillSuddenDeath;  
         
-        for (int i = 0; i < 15; i++)
+        for (int i = 0; i < 0; i++)
         {
             GameObject pigeon = Instantiate(pigeonPrefab, new Vector3(Random.Range(-13f, 13f), Random.Range(-11f, 19f), 0), transform.rotation);
             PigeonAI ai = pigeon.GetComponent<PigeonAI>();
@@ -138,6 +138,10 @@ public class GameManager : MonoBehaviour
     {
         StartCoroutine(DepreciateIceCream());
     }
+    public void SetFullScreen()
+    {
+        Screen.fullScreen = !Screen.fullScreen;
+    }
     private void Update()
     {
         if (!audioSource.isPlaying)
@@ -146,6 +150,7 @@ public class GameManager : MonoBehaviour
             audioSource.loop = true;
             audioSource.Play();
         }
+        /*
         chageonName.text = "Chadgeon " + " lvl: " + player.level;
         if (canSpawnFood && !isSuddenDeath)
         {
@@ -177,6 +182,7 @@ public class GameManager : MonoBehaviour
         }
         xpBar.localScale = new Vector3((float)player.xp / player.xpTillLevelUp, 1, 1);
         xpText.text = player.xp + "/" + player.xpTillLevelUp;
+        */
 
     }
 
