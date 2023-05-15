@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 public class PlayerScript : Pigeon
@@ -7,6 +8,34 @@ public class PlayerScript : Pigeon
         OnPigeonSpawn();
         transform.position = new Vector3(Random.Range(-13, 13), Random.Range(-11, 19), 0);
     }
+    private void HandleMovement()
+    {
+        Vector2 inputVector = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")).normalized;
+        HandleMovementServerRpc(inputVector);
+    }
+
+    [ServerRpc]
+    private void HandleMovementServerRpc(Vector2 inputVector)
+    {
+        if (!isKnockedOut && !isSlaming)
+        {
+            //Store user input as a movement vector
+            body.AddForce(speed * Time.fixedDeltaTime * inputVector);
+            Debug.Log(inputVector);
+            CheckPigeonDirection(inputVector);
+        }
+        else if (isSlaming)
+        {
+            Vector2 direction = (slamPos - transform.position).normalized;
+            CheckPigeonDirection(direction);
+            body.AddForce(4 * speed * Time.fixedDeltaTime * direction);
+            if ((transform.position - slamPos).sqrMagnitude <= 0.1f)
+            {
+                EndSlam();
+            }
+        }
+    }
+
     private void Update()
     {
         if (!IsOwner) return;
@@ -36,23 +65,7 @@ public class PlayerScript : Pigeon
     private void FixedUpdate()
     {
         if (!IsOwner) return;
-        if (!isKnockedOut && !isSlaming)
-        {
-            //Store user input as a movement vector
-            Vector3 m_Input = new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), 0).normalized;
-            body.AddForce(m_Input * speed * Time.deltaTime);
-            CheckPigeonDirection(new Vector2(m_Input.x, m_Input.y));
-        }
-        else if (isSlaming)
-        {
-            Vector2 direction = (slamPos -transform.position ).normalized;
-            CheckPigeonDirection(direction);
-            body.AddForce(direction * speed * 4 * Time.deltaTime);
-            if((transform.position - slamPos).sqrMagnitude <= 0.1f)
-            {
-                EndSlam();
-            }  
-        }
+        HandleMovement();
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
