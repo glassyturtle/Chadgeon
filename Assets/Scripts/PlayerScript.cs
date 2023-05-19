@@ -14,20 +14,19 @@ public class PlayerScript : Pigeon
         HandleMovementServerRpc(inputVector);
     }
 
-    [ServerRpc]
+    [ServerRpc(RequireOwnership =false)]
     private void HandleMovementServerRpc(Vector2 inputVector)
     {
         if (!isKnockedOut && !isSlaming)
         {
             //Store user input as a movement vector
             body.AddForce(speed * Time.fixedDeltaTime * inputVector);
-            Debug.Log(inputVector);
-            CheckPigeonDirection(inputVector);
+            CheckDirection(inputVector);
         }
         else if (isSlaming)
         {
             Vector2 direction = (slamPos - transform.position).normalized;
-            CheckPigeonDirection(direction);
+            CheckDirection(direction);
             body.AddForce(4 * speed * Time.fixedDeltaTime * direction);
             if ((transform.position - slamPos).sqrMagnitude <= 0.1f)
             {

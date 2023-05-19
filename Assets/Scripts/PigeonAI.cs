@@ -69,7 +69,7 @@ public class PigeonAI : Pigeon
             else if (isSlaming)
             {
                 Vector2 direction = (slamPos - transform.position).normalized;
-                CheckPigeonDirection(direction);
+                CheckDirection(direction);
                 body.AddForce(direction * speed * 4 * Time.deltaTime);
                 if ((transform.position - slamPos).sqrMagnitude <= 2.5f)
                 {
@@ -159,14 +159,14 @@ public class PigeonAI : Pigeon
             {
                 //runs away when another pigeon is near and on less than half hp
                 Vector2 direction = (transform.position - targetPigeon.transform.position).normalized;
-                CheckPigeonDirection(direction);
+                CheckDirection(direction);
                 body.AddForce(direction * speed * Time.deltaTime);
             }
             else if (targetFood)
             {
                 //goes to neaby food item 
                 Vector2 direction = (targetFood.transform.position - transform.position).normalized;
-                CheckPigeonDirection(direction);
+                CheckDirection(direction);
                 body.AddForce(direction * speed  * Time.deltaTime);
             }
         }
@@ -176,7 +176,7 @@ public class PigeonAI : Pigeon
             {
                 //goes to neaby food item 
                 Vector2 direction = (targetFood.transform.position - transform.position).normalized;
-                CheckPigeonDirection(direction);
+                CheckDirection(direction);
                 body.AddForce(direction * speed * Time.deltaTime);
             }
             else if (targetPigeon)
@@ -191,7 +191,7 @@ public class PigeonAI : Pigeon
                 {
                     StartSlam(targetPigeon.transform.position);
                     Vector2 direction = (targetPigeon.transform.position - transform.position).normalized;
-                    CheckPigeonDirection(direction);
+                    CheckDirection(direction);
                     body.AddForce(direction * speed * Time.deltaTime);
                 }
             }
@@ -211,7 +211,7 @@ public class PigeonAI : Pigeon
             {
                 //runs away when another pigeon is near and on less than half hp
                 Vector2 direction = (transform.position - targetPigeon.transform.position).normalized;
-                CheckPigeonDirection(direction);
+                CheckDirection(direction);
                 body.AddForce(direction * speed * Time.deltaTime);
             }
             else if (targetFood)
@@ -219,7 +219,7 @@ public class PigeonAI : Pigeon
                 StartSlam(targetFood.transform.position);
                 //goes to neaby food item 
                 Vector2 direction = (targetFood.transform.position - transform.position).normalized;
-                CheckPigeonDirection(direction);
+                CheckDirection(direction);
                 body.AddForce(direction * speed * Time.deltaTime);
             }
         }
@@ -229,14 +229,14 @@ public class PigeonAI : Pigeon
             {
                 //goes to neaby food item 
                 Vector2 direction = (targetFood.transform.position - transform.position).normalized;
-                CheckPigeonDirection(direction);
+                CheckDirection(direction);
                 body.AddForce(direction * speed * Time.deltaTime);
             }
             else if (targetPigeon)
             {
                 StartSlam(targetPigeon.transform.position);
                 Vector2 direction = (targetPigeon.transform.position - transform.position).normalized;
-                CheckPigeonDirection(direction);
+                CheckDirection(direction);
                 body.AddForce(direction * speed * Time.deltaTime);
             }
         }
@@ -254,7 +254,7 @@ public class PigeonAI : Pigeon
             StartSlam(targetPigeon.transform.position);
 
             Vector2 direction = (targetPigeon.transform.position - transform.position).normalized;
-            CheckPigeonDirection(direction);
+            CheckDirection(direction);
             body.AddForce(direction * speed * Time.deltaTime);
         }
         else
@@ -265,7 +265,7 @@ public class PigeonAI : Pigeon
                 {
                     //runs away when another pigeon is near and on less than half hp
                     Vector2 direction = (transform.position - targetPigeon.transform.position).normalized;
-                    CheckPigeonDirection(direction);
+                    CheckDirection(direction);
                     body.AddForce(direction * speed * Time.deltaTime);
                 }
                 else if (targetFood)
@@ -274,7 +274,7 @@ public class PigeonAI : Pigeon
                     StartSlam(targetFood.transform.position);
 
                     Vector2 direction = (targetFood.transform.position - transform.position).normalized;
-                    CheckPigeonDirection(direction);
+                    CheckDirection(direction);
                     body.AddForce(direction * speed * Time.deltaTime);
                 }
             }
@@ -284,28 +284,28 @@ public class PigeonAI : Pigeon
                 {
                     //goes to neaby food item 
                     Vector2 direction = (targetFood.transform.position - transform.position).normalized;
-                    CheckPigeonDirection(direction);
+                    CheckDirection(direction);
                     body.AddForce(direction * speed * Time.deltaTime);
                 }
                 else if (targetPigeon && targetPigeon.currentHP - power * 8 > 0)
                 {
                     StartSlam(targetPigeon.transform.position);
                     Vector2 direction = (targetPigeon.transform.position - transform.position).normalized;
-                    CheckPigeonDirection(direction);
+                    CheckDirection(direction);
                     body.AddForce(direction * speed * Time.deltaTime);
                 }
                 else if(targetFood)
                 {
                     //goes to neaby food item 
                     Vector2 direction = (targetFood.transform.position - transform.position).normalized;
-                    CheckPigeonDirection(direction);
+                    CheckDirection(direction);
                     body.AddForce(direction * speed * Time.deltaTime);
                 }
                 else if(targetPigeon)
                 {
                     StartSlam(targetPigeon.transform.position);
                     Vector2 direction = (targetPigeon.transform.position - transform.position).normalized;
-                    CheckPigeonDirection(direction);
+                    CheckDirection(direction);
                     body.AddForce(direction * speed * Time.deltaTime);
                 }
             }

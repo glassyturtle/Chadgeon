@@ -235,7 +235,7 @@ public class Pigeon : NetworkBehaviour
             StartCoroutine(DelayBeforeSpriteChange());
         }
     }
-    protected void CheckPigeonDirection(Vector2 direction)
+    protected void CheckDirection(Vector2 direction)
     {
         if (direction.x == 0) return;
         if(direction.x > 0)

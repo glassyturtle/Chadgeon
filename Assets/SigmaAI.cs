@@ -26,14 +26,14 @@ public class SigmaAI : PigeonAI
                 else
                 {
                     Vector2 direction = (targetPigeon.transform.position - transform.position).normalized;
-                    CheckPigeonDirection(direction);
+                    CheckDirection(direction);
                     body.AddForce(direction * speed * Time.deltaTime);
                 }
             }
             else if (targetFood != null)
             {
                 Vector2 direction = (targetFood.transform.position - transform.position).normalized;
-                CheckPigeonDirection(direction);
+                CheckDirection(direction);
                 body.AddForce(direction * speed * Time.deltaTime);
             }
         }
