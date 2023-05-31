@@ -16,7 +16,6 @@ public class Pigeon : NetworkBehaviour
     public int level = 1;
 
     [SerializeField] protected GameManager gm;
-
     [SerializeField] AudioSource audioSource;
     [SerializeField] AudioClip[] hitClips;
     [SerializeField] AudioClip[] cruchSound;
@@ -41,7 +40,8 @@ public class Pigeon : NetworkBehaviour
     [SerializeField] bool isPlayer = false;
 
     private int regen = 3;
-    
+    private NetworkVariable<bool> isPointingLeft = new NetworkVariable<bool>(true);
+
     public enum Upgrades
     {
         regen = 0,
@@ -240,11 +240,11 @@ public class Pigeon : NetworkBehaviour
         if (direction.x == 0) return;
         if(direction.x > 0)
         {
-            sr.flipX = true;
+            isPointingLeft.Value = true;
         }
         else
         {
-            sr.flipX = false;
+            isPointingLeft.Value = false;
         }
     }
     protected void StartSlam(Vector3 desiredSlamPos)
@@ -269,7 +269,10 @@ public class Pigeon : NetworkBehaviour
             StartCoroutine(gm.StartSlamCoolDown());
         }
     }
-
+    protected void UpdateSpriteDirection()
+    {
+        sr.flipX = isPointingLeft.Value;
+    }
 
     private void LevelUP()
     {

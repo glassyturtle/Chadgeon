@@ -1,12 +1,21 @@
 using Unity.Netcode;
 using UnityEngine;
+using Cinemachine;
 
 public class PlayerScript : Pigeon
 {
+    [SerializeField] private GameObject nameText;
     private void Awake()
     {
         OnPigeonSpawn();
         transform.position = new Vector3(Random.Range(-13, 13), Random.Range(-11, 19), 0);
+
+    }
+    private void Start()
+    {
+        if (!IsOwner) return;
+        CinemachineVirtualCamera camera = FindObjectOfType<CinemachineVirtualCamera>();
+        camera.Follow = transform;
     }
     private void HandleMovement()
     {
@@ -37,8 +46,9 @@ public class PlayerScript : Pigeon
 
     private void Update()
     {
+        UpdateSpriteDirection();
         if (!IsOwner) return;
-        if(!isKnockedOut)
+        if (!isKnockedOut)
         {
             if (!isSlaming)
             {
