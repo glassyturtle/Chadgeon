@@ -7,13 +7,15 @@ public class PlayerScript : Pigeon
     [SerializeField] private GameObject nameText;
     private void Awake()
     {
-        OnPigeonSpawn();
+
         transform.position = new Vector3(Random.Range(-13, 13), Random.Range(-11, 19), 0);
 
     }
     private void Start()
     {
+        OnPigeonSpawn();
         if (!IsOwner) return;
+        FindObjectOfType<GameManager>().player = this;
         CinemachineVirtualCamera camera = FindObjectOfType<CinemachineVirtualCamera>();
         camera.Follow = transform;
     }
@@ -23,10 +25,10 @@ public class PlayerScript : Pigeon
         HandleMovementServerRpc(inputVector);
     }
 
-    [ServerRpc(RequireOwnership =false)]
+    [ServerRpc]
     private void HandleMovementServerRpc(Vector2 inputVector)
     {
-        if (!isKnockedOut && !isSlaming)
+        if (!isKnockedOut.Value && !isSlaming)
         {
             //Store user input as a movement vector
             body.AddForce(speed * Time.fixedDeltaTime * inputVector);
@@ -46,9 +48,9 @@ public class PlayerScript : Pigeon
 
     private void Update()
     {
-        UpdateSpriteDirection();
+        SyncPigeonAttributes();
         if (!IsOwner) return;
-        if (!isKnockedOut)
+        if (!isKnockedOut.Value)
         {
             if (!isSlaming)
             {
@@ -56,7 +58,16 @@ public class PlayerScript : Pigeon
                 {
                     Vector2 pos = transform.position;
                     pos = Vector2.MoveTowards(pos, Camera.main.ScreenToWorldPoint(Input.mousePosition), 0.5f);
-                    PigeonAttack(pos);
+
+                    Vector3 targ = pos;
+                    targ.z = 0f;
+                    targ.x -= transform.position.x;
+                    targ.y -= transform.position.y;
+
+                    float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
+                    Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
+
+                    PigeonAttackServerRpc(pos, theAngle);
                 }
                 else if (Input.GetKeyDown(KeyCode.Space) && canSlam)
                 {

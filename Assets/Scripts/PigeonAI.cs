@@ -43,7 +43,7 @@ public class PigeonAI : Pigeon
     }
 
 
-    private void Awake()
+    private void Start()
     {
         OnPigeonSpawn();
     }
@@ -55,7 +55,7 @@ public class PigeonAI : Pigeon
 
     private void FixedUpdate()
     {
-        if (!isKnockedOut)
+        if (!isKnockedOut.Value)
         {
             if (!isSlaming)
             {
@@ -109,7 +109,7 @@ public class PigeonAI : Pigeon
         for (int i = 0; i < allPigeons.Length; i++)
         {
             float currentDist = Vector2.SqrMagnitude(allPigeons[i].transform.position - transform.position);
-            if (allPigeons[i] != this && currentDist < distToCloset && !allPigeons[i].isKnockedOut)
+            if (allPigeons[i] != this && currentDist < distToCloset && !allPigeons[i].isKnockedOut.Value)
             {
                 closestPigeon = allPigeons[i];
                 distToCloset = currentDist;
@@ -185,7 +185,16 @@ public class PigeonAI : Pigeon
                 {
                     canHit = false;
                     StartCoroutine(RechargeHitColldown());
-                    PigeonAttack(targetPigeon.transform.position);
+
+                    Vector3 targ = slamPos;
+                    targ.z = 0f;
+                    targ.x -= transform.position.x;
+                    targ.y -= transform.position.y;
+
+                    float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
+                    Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
+
+                    PigeonAttackServerRpc(targetPigeon.transform.position, theAngle);
                 }
                 else
                 {
@@ -203,7 +212,16 @@ public class PigeonAI : Pigeon
         {
             canHit = false;
             StartCoroutine(RechargeHitColldown());
-            PigeonAttack(targetPigeon.transform.position);
+
+            Vector3 targ = slamPos;
+            targ.z = 0f;
+            targ.x -= transform.position.x;
+            targ.y -= transform.position.y;
+
+            float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
+            Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
+
+            PigeonAttackServerRpc(targetPigeon.transform.position, theAngle);
         }
         if (targetPigeon && currentHP < maxHp / 2)
         {
@@ -247,7 +265,16 @@ public class PigeonAI : Pigeon
         {
             canHit = false;
             StartCoroutine(RechargeHitColldown());
-            PigeonAttack(targetPigeon.transform.position);
+
+            Vector3 targ = slamPos;
+            targ.z = 0f;
+            targ.x -= transform.position.x;
+            targ.y -= transform.position.y;
+
+            float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
+            Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
+
+            PigeonAttackServerRpc(targetPigeon.transform.position, theAngle);
         }
         if(targetPigeon && targetPigeon.currentHP - power * 3 <= 0 && !gm.isSuddenDeath)
         {

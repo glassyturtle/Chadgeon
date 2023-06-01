@@ -150,7 +150,7 @@ public class GameManager : MonoBehaviour
             audioSource.loop = true;
             audioSource.Play();
         }
-        /*
+        if (!player) return;
         chageonName.text = "Chadgeon " + " lvl: " + player.level;
         if (canSpawnFood && !isSuddenDeath)
         {
@@ -181,8 +181,7 @@ public class GameManager : MonoBehaviour
             }
         }
         xpBar.localScale = new Vector3((float)player.xp / player.xpTillLevelUp, 1, 1);
-        xpText.text = player.xp + "/" + player.xpTillLevelUp;
-        */
+        xpText.text = player.xp + "/" + player.xpTillLevelUp;        
 
     }
 

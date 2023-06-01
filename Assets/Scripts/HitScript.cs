@@ -1,13 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class HitScript : MonoBehaviour
+public class HitScript : NetworkBehaviour
 {
     public Pigeon pigeonThatDealtDamage;
 
     private void Start()
     {
+        if (!IsOwner) return;
         StartCoroutine(damage());
     }
 

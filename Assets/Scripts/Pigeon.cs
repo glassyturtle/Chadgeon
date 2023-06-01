@@ -3,11 +3,12 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
+using UnityEngine.UIElements;
 
 public class Pigeon : NetworkBehaviour
 {
     public Dictionary<Upgrades, int> pigeonUpgrades = new Dictionary<Upgrades, int>();
-    public bool isKnockedOut = false;
+    public NetworkVariable<bool> isKnockedOut = new NetworkVariable<bool>(false);
     public int power = 1;
     public int maxHp;
     public int currentHP;
@@ -41,6 +42,10 @@ public class Pigeon : NetworkBehaviour
 
     private int regen = 3;
     private NetworkVariable<bool> isPointingLeft = new NetworkVariable<bool>(true);
+    private NetworkVariable<bool> isSpriteNotHopping = new NetworkVariable<bool>(true);
+    private NetworkVariable<bool> canSwitchAttackSprites = new NetworkVariable<bool>(true);
+    private NetworkVariable<int> currentPigeonAttackSprite = new NetworkVariable<int>(0);
+
 
     public enum Upgrades
     {
@@ -57,8 +62,6 @@ public class Pigeon : NetworkBehaviour
 
 
     }
-
-    private bool canSwitchAttackSprites = true;
     
     public void PlayEatSound()
     {
@@ -117,12 +120,12 @@ public class Pigeon : NetworkBehaviour
             body.AddForce(direction * totalDamageTaking * 10);
         }
 
-        if (pigeonAI && !isKnockedOut) hpBar.localScale = new Vector3((float)currentHP / maxHp, 0.097f, 1);
-        Instantiate(bloodEffect, new Vector3(transform.position.x, transform.position.y, -1), transform.rotation);
+        if (pigeonAI && !isKnockedOut.Value) hpBar.localScale = new Vector3((float)currentHP / maxHp, 0.097f, 1);
+        GameObject blood = Instantiate(bloodEffect, new Vector3(transform.position.x, transform.position.y, -1), transform.rotation);
+        blood.GetComponent<NetworkObject>().Spawn();
 
-        if(currentHP <= 0 && !isKnockedOut)
+        if(currentHP <= 0 && !isKnockedOut.Value)
         {
-            StopCoroutine(JumpAnimation());
             isSlaming = false;
             StopCoroutine(StopSlam());
 
@@ -149,7 +152,7 @@ public class Pigeon : NetworkBehaviour
             {
 
                 if (pigeonAI) hpBar.localScale = new Vector3(0, 0.097f, 1);
-                isKnockedOut = true;
+                isKnockedOut.Value = true;
                 sr.flipY = true;
                 sr.sortingOrder = -1;
                 StartCoroutine(Respawn());
@@ -158,7 +161,7 @@ public class Pigeon : NetworkBehaviour
     }
     public void GainXP(int amnt)
     {
-        if (isKnockedOut) return;
+        if (isKnockedOut.Value) return;
         xp += amnt;
         if(xp >= xpTillLevelUp)
         {
@@ -167,7 +170,7 @@ public class Pigeon : NetworkBehaviour
     }
     public void Heal(int amt)
     {
-        if (isKnockedOut) return;
+        if (isKnockedOut.Value) return;
         currentHP += amt;
         if (currentHP > maxHp) currentHP = maxHp;
         if (pigeonAI)
@@ -200,41 +203,37 @@ public class Pigeon : NetworkBehaviour
 
     protected void OnPigeonSpawn()
     {
-        StartCoroutine(JumpAnimation());
+        if(IsOwner) StartCoroutine(JumpAnimation());
         StartCoroutine(Regen());
         body.freezeRotation = true;
         currentHP = maxHp;
         gm = FindObjectOfType<GameManager>();
         gm.allpigeons.Add(this);
     }
-    protected void PigeonAttack(Vector3 position)
+
+    [ServerRpc(RequireOwnership = false)]
+    protected void PigeonAttackServerRpc(Vector3 position, Quaternion theAngle)
     {
-        GameObject attack = Instantiate(slash, position, transform.rotation);
+
+        GameObject attack = Instantiate(slash, position, theAngle);
+        attack.GetComponent<NetworkObject>().Spawn(true);
         attack.GetComponent<HitScript>().pigeonThatDealtDamage = this;
 
-        Vector3 targ = position;
-        targ.z = 0f;
 
-        Vector3 objectPos = transform.position;
-        targ.x = targ.x - objectPos.x;
-        targ.y = targ.y - objectPos.y;
-
-        float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
-        attack.transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
 
         if (isSlaming)
         {
             attack.transform.localScale = new Vector3(6, 6, 1);
         }
 
-        if (canSwitchAttackSprites)
+        if (canSwitchAttackSprites.Value)
         {
-            canSwitchAttackSprites = false;
-            StopCoroutine(JumpAnimation());
-            sr.sprite = pigeonAttackSprites[UnityEngine.Random.Range(0, pigeonAttackSprites.Length)];
+            canSwitchAttackSprites.Value = false;
+            currentPigeonAttackSprite.Value = UnityEngine.Random.Range(0, pigeonAttackSprites.Length);
             StartCoroutine(DelayBeforeSpriteChange());
         }
     }
+
     protected void CheckDirection(Vector2 direction)
     {
         if (direction.x == 0) return;
@@ -253,14 +252,23 @@ public class Pigeon : NetworkBehaviour
         canSlam = false;
         isSlaming = true;
         slamPos = Vector2.MoveTowards(transform.position, desiredSlamPos, 5f);
-        StopCoroutine(JumpAnimation());
         StartCoroutine(StopSlam());
         sr.sprite = pigeonSlamSprite;
     }
     protected void EndSlam()
     {
         if (!isSlaming) return;
-        PigeonAttack(slamPos);
+
+        Vector3 targ = slamPos;
+        targ.z = 0f;
+        targ.x -= transform.position.x;
+        targ.y -= transform.position.y;
+
+        float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
+        Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
+
+        PigeonAttackServerRpc(slamPos, theAngle);
+
         StartCoroutine(SlamCoolDown());
         StopCoroutine(StopSlam());
         isSlaming = false;
@@ -269,11 +277,48 @@ public class Pigeon : NetworkBehaviour
             StartCoroutine(gm.StartSlamCoolDown());
         }
     }
-    protected void UpdateSpriteDirection()
+    protected void SyncPigeonAttributes()
     {
         sr.flipX = isPointingLeft.Value;
+        if (isKnockedOut.Value)
+        {
+            sr.flipY = true;
+        }
+        else
+        {
+            sr.flipY = false;
+            if (!canSwitchAttackSprites.Value)
+            {
+                sr.sprite = pigeonAttackSprites[currentPigeonAttackSprite.Value];
+            }
+            else
+            {
+                if (isSpriteNotHopping.Value)
+                {
+                    sr.sprite = defaultPigeonSprite;
+                }
+                else
+                {
+                    sr.sprite = pigeonJumpSprite;
+                }
+            }
+        }
+
     }
 
+
+    [ServerRpc]
+    private void UpdateNotHoppingServerRpc(bool isHoping)
+    {
+        if(body.velocity != Vector2.zero && isHoping)
+        {
+            isSpriteNotHopping.Value = false;
+        }
+        else
+        {
+            isSpriteNotHopping.Value = true;
+        }
+    }
     private void LevelUP()
     {
         level++;
@@ -325,30 +370,35 @@ public class Pigeon : NetworkBehaviour
         currentHP = maxHp;
         if (pigeonAI) hpBar.localScale = new Vector3(1, 0.097f, 1);
         if (pigeonUpgrades.ContainsKey(Upgrades.slam)) canSlam = true;
-        isKnockedOut = false;
+        isKnockedOut.Value = false;
         bodyCollider.enabled = true;
         sr.sortingOrder = 0;
         sr.flipY = false;
-        StartCoroutine(JumpAnimation());
     }
     private IEnumerator JumpAnimation()
     {
         while (true)
         {
-            if (!canSwitchAttackSprites || isKnockedOut || isSlaming) yield break;
-            if (body.velocity != Vector2.zero) sr.sprite = pigeonJumpSprite;
+            if (!canSwitchAttackSprites.Value)
+            {
+                yield return new WaitForSeconds(0.15f);
+                continue;
+            }
+            UpdateNotHoppingServerRpc(false);
             yield return new WaitForSeconds(0.2f);
-            if (!canSwitchAttackSprites || isKnockedOut || isSlaming) yield break;
-            sr.sprite = defaultPigeonSprite;
+            if (!canSwitchAttackSprites.Value)
+            {
+                yield return new WaitForSeconds(0.15f);
+                continue;
+            }
+            UpdateNotHoppingServerRpc(true);
             yield return new WaitForSeconds(0.2f);
         }
     }
     private IEnumerator DelayBeforeSpriteChange()
     {
         yield return new WaitForSeconds(0.15f);
-        sr.sprite = defaultPigeonSprite;
-        canSwitchAttackSprites = true;
-        StartCoroutine(JumpAnimation());
+        canSwitchAttackSprites.Value = true;
     }
     private IEnumerator Regen()
     {
