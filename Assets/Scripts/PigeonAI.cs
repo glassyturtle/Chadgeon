@@ -153,7 +153,7 @@ public class PigeonAI : Pigeon
 
     private void SimpBehavior(float distanceToPigeon, float distanceToFood)
     {
-        if (targetPigeon && currentHP < maxHp / 2)
+        if (targetPigeon && currentHP.Value < maxHp.Value / 2)
         {
             if (distanceToPigeon <= 10)
             {
@@ -223,7 +223,7 @@ public class PigeonAI : Pigeon
 
             PigeonAttackServerRpc(targetPigeon.transform.position, theAngle);
         }
-        if (targetPigeon && currentHP < maxHp / 2)
+        if (targetPigeon && currentHP.Value < maxHp.Value / 2)
         {
             if (distanceToPigeon <= 9)
             {
@@ -276,7 +276,7 @@ public class PigeonAI : Pigeon
 
             PigeonAttackServerRpc(targetPigeon.transform.position, theAngle);
         }
-        if(targetPigeon && targetPigeon.currentHP - power * 3 <= 0 && !gm.isSuddenDeath)
+        if(targetPigeon && targetPigeon.currentHP.Value - power.Value * 3 <= 0 && !gm.isSuddenDeath)
         {
             StartSlam(targetPigeon.transform.position);
 
@@ -286,7 +286,7 @@ public class PigeonAI : Pigeon
         }
         else
         {
-            if (targetPigeon && currentHP < maxHp / 2)
+            if (targetPigeon && currentHP.Value < maxHp.Value / 2)
             {
                 if (distanceToPigeon <= 9)
                 {
@@ -314,7 +314,7 @@ public class PigeonAI : Pigeon
                     CheckDirection(direction);
                     body.AddForce(direction * speed * Time.deltaTime);
                 }
-                else if (targetPigeon && targetPigeon.currentHP - power * 8 > 0)
+                else if (targetPigeon && targetPigeon.currentHP.Value - power.Value * 8 > 0)
                 {
                     StartSlam(targetPigeon.transform.position);
                     Vector2 direction = (targetPigeon.transform.position - transform.position).normalized;

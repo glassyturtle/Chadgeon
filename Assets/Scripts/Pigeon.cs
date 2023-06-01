@@ -7,14 +7,15 @@ using UnityEngine.UIElements;
 
 public class Pigeon : NetworkBehaviour
 {
-    public Dictionary<Upgrades, int> pigeonUpgrades = new Dictionary<Upgrades, int>();
+    public Dictionary<Upgrades, int> pigeonUpgrades = new();
+
     public NetworkVariable<bool> isKnockedOut = new NetworkVariable<bool>(false);
-    public int power = 1;
-    public int maxHp;
-    public int currentHP;
-    public int xp;
-    public int xpTillLevelUp;
-    public int level = 1;
+    public NetworkVariable<int> power = new NetworkVariable<int>(5);
+    public NetworkVariable<int> maxHp = new NetworkVariable<int>(50);
+    public NetworkVariable<int> currentHP = new NetworkVariable<int>(50);
+    public NetworkVariable<int> xp = new NetworkVariable<int>(0);
+    public NetworkVariable<int> xpTillLevelUp = new NetworkVariable<int>(20);
+    public NetworkVariable<int> level = new NetworkVariable<int>(1);
 
     [SerializeField] protected GameManager gm;
     [SerializeField] AudioSource audioSource;
@@ -93,7 +94,7 @@ public class Pigeon : NetworkBehaviour
         direction.Normalize();
 
 
-        int totalDamageTaking = AttackinPigeon.power;
+        int totalDamageTaking = AttackinPigeon.power.Value;
         if (isSlaming) totalDamageTaking /= 2;
         if(AttackinPigeon.pigeonUpgrades.ContainsKey(Upgrades.critcalDamage) && UnityEngine.Random.Range(0,100) <= 10)
         {
@@ -103,11 +104,11 @@ public class Pigeon : NetworkBehaviour
         {
             totalDamageTaking = Mathf.RoundToInt(totalDamageTaking * 0.8f);
         }
-        currentHP -= totalDamageTaking;
+        currentHP.Value -= totalDamageTaking;
 
         if (AttackinPigeon.pigeonUpgrades.ContainsKey(Upgrades.lifeSteal))
         {
-            AttackinPigeon.Heal(AttackinPigeon.power / 3);
+            AttackinPigeon.Heal(AttackinPigeon.power.Value / 3);
         }
 
         if (AttackinPigeon.pigeonUpgrades.ContainsKey(Upgrades.knockBack))
@@ -120,16 +121,16 @@ public class Pigeon : NetworkBehaviour
             body.AddForce(direction * totalDamageTaking * 10);
         }
 
-        if (pigeonAI && !isKnockedOut.Value) hpBar.localScale = new Vector3((float)currentHP / maxHp, 0.097f, 1);
+        if (pigeonAI && !isKnockedOut.Value) hpBar.localScale = new Vector3((float)currentHP.Value / maxHp.Value, 0.097f, 1);
         GameObject blood = Instantiate(bloodEffect, new Vector3(transform.position.x, transform.position.y, -1), transform.rotation);
         blood.GetComponent<NetworkObject>().Spawn();
 
-        if(currentHP <= 0 && !isKnockedOut.Value)
+        if(currentHP.Value <= 0 && !isKnockedOut.Value)
         {
             isSlaming = false;
             StopCoroutine(StopSlam());
 
-            AttackinPigeon.GainXP((level * 5));
+            AttackinPigeon.GainXP((level.Value * 5));
 
             if (gm.isSuddenDeath)
             {
@@ -162,8 +163,8 @@ public class Pigeon : NetworkBehaviour
     public void GainXP(int amnt)
     {
         if (isKnockedOut.Value) return;
-        xp += amnt;
-        if(xp >= xpTillLevelUp)
+        xp.Value += amnt;
+        if(xp.Value >= xpTillLevelUp.Value)
         {
             LevelUP();
         }
@@ -171,11 +172,11 @@ public class Pigeon : NetworkBehaviour
     public void Heal(int amt)
     {
         if (isKnockedOut.Value) return;
-        currentHP += amt;
-        if (currentHP > maxHp) currentHP = maxHp;
+        currentHP.Value += amt;
+        if (currentHP.Value > maxHp.Value) currentHP.Value =maxHp.Value;
         if (pigeonAI)
         {
-            hpBar.localScale = new Vector3((float)currentHP / maxHp, 0.097f, 1);
+            hpBar.localScale = new Vector3((float)currentHP.Value / maxHp.Value, 0.097f, 1);
         }
     }
     public void AddUpgrade(Upgrades upgrade)
@@ -188,7 +189,7 @@ public class Pigeon : NetworkBehaviour
                 regen = 10;
                 break;
             case Upgrades.bulk:
-                maxHp += 50;
+                maxHp.Value += 50;
                 break;
             case Upgrades.fly:
                 canfly = true;
@@ -206,7 +207,7 @@ public class Pigeon : NetworkBehaviour
         if(IsOwner) StartCoroutine(JumpAnimation());
         StartCoroutine(Regen());
         body.freezeRotation = true;
-        currentHP = maxHp;
+        currentHP.Value = maxHp.Value;
         gm = FindObjectOfType<GameManager>();
         gm.allpigeons.Add(this);
     }
@@ -321,12 +322,12 @@ public class Pigeon : NetworkBehaviour
     }
     private void LevelUP()
     {
-        level++;
-        xp -= xpTillLevelUp;
-        xpTillLevelUp =Mathf.RoundToInt(xpTillLevelUp*  1.15f);
-        power++;
-        maxHp += 5;
-        currentHP += 5;
+        level.Value++;
+        xp.Value -= xpTillLevelUp.Value;
+        xpTillLevelUp.Value = Mathf.RoundToInt(xpTillLevelUp.Value *  1.15f);
+        power.Value++;
+        maxHp.Value += 5;
+        currentHP.Value += 5;
         speed+= 20;
          
         if(pigeonAI != null)
@@ -334,7 +335,7 @@ public class Pigeon : NetworkBehaviour
             pigeonAI.AILevelUP();
         }
 
-        if(0 == level % 5)
+        if(0 == level.Value % 5)
         {
             if (pigeonAI)
             {

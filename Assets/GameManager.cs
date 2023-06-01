@@ -1,11 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.NetworkInformation;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class GameManager : MonoBehaviour
+public class GameManager : NetworkBehaviour
 {
 
     public List<Pigeon.Upgrades> allPigeonUpgrades;
@@ -41,6 +44,15 @@ public class GameManager : MonoBehaviour
     bool canSpawnFood = true;
     private Pigeon.Upgrades[] upgradesThatCanBeSelected = new Pigeon.Upgrades[3];
 
+    private string what = "911";
+    private void Test()
+    {
+        Debug.Log(what[0]);
+        what += 9;
+        Debug.Log(what);
+    }
+
+
     public void ChangeVolume()
     {
         AudioListener.volume = volumeSlider.value;
@@ -74,6 +86,7 @@ public class GameManager : MonoBehaviour
             for (int x = 0; x < 1000; x++)
             {
                 upgrade = allPigeonUpgrades[Random.Range(0, allPigeonUpgrades.Count)];
+                Debug.Log(player.pigeonUpgrades.Count);
                 if (!upgradesUsed.ContainsKey(upgrade) && !player.pigeonUpgrades.ContainsKey(upgrade)) break;
             }
             upgradesUsed.Add(upgrade, 1);
@@ -137,6 +150,7 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         StartCoroutine(DepreciateIceCream());
+        Test();
     }
     public void SetFullScreen()
     {
@@ -151,25 +165,22 @@ public class GameManager : MonoBehaviour
             audioSource.Play();
         }
         if (!player) return;
-        chageonName.text = "Chadgeon " + " lvl: " + player.level;
-        if (canSpawnFood && !isSuddenDeath)
-        {
-            StartCoroutine(SpawnFoodDelay());
-        }
-        if(player.currentHP <= 0)
+        chageonName.text = "Chadgeon " + " lvl: " + player.level.Value;
+
+        if(player.currentHP.Value <= 0)
         {
             chadgeonDetialPic.sprite = criticalChad;
             hpBar.localScale = new Vector3(0, 1, 1);
-            hpText.text = 0 + "/" + player.maxHp;
+            hpText.text = 0 + "/" + player.maxHp.Value;
             chadgeonDetialPic.color = Color.white;
 
         }
         else
         {
-            hpBar.localScale = new Vector3((float)player.currentHP / player.maxHp, 1, 1);
-            hpText.text = player.currentHP + "/" + player.maxHp;
+            hpBar.localScale = new Vector3((float)player.currentHP.Value / player.maxHp.Value, 1, 1);
+            hpText.text = player.currentHP.Value + "/" + player.maxHp.Value;
 
-            if(player.currentHP >= player.maxHp / 2)
+            if(player.currentHP.Value >= player.maxHp.Value / 2)
             {
                 chadgeonDetialPic.sprite = null;
                 chadgeonDetialPic.color = new Color(0, 0, 0, 0);
@@ -180,19 +191,31 @@ public class GameManager : MonoBehaviour
                 chadgeonDetialPic.color = Color.white;
             }
         }
-        xpBar.localScale = new Vector3((float)player.xp / player.xpTillLevelUp, 1, 1);
-        xpText.text = player.xp + "/" + player.xpTillLevelUp;        
-
+        xpBar.localScale = new Vector3((float)player.xp.Value / player.xpTillLevelUp.Value, 1, 1);
+        xpText.text = player.xp.Value + "/" + player.xpTillLevelUp.Value;
+        /*
+        if (IsServer && canSpawnFood && !isSuddenDeath)
+        {
+            SpawnFoodClientRpc();
+        }
+        */
     }
 
+    [ClientRpc]
+    private void SpawnFoodClientRpc()
+    {
+        StartCoroutine(SpawnFoodDelay());
+    }
 
     IEnumerator SpawnFoodDelay()
     {
-        Instantiate(FoodPrefab, new Vector3(Random.Range(-13f, 13f), Random.Range(-11f, 19f), 0), transform.rotation);
+        GameObject food = Instantiate(FoodPrefab, new Vector3(Random.Range(-13f, 13f), Random.Range(-11f, 19f), 0), transform.rotation);
+        food.GetComponent<NetworkObject>().Spawn();
         canSpawnFood = false;
         yield return new WaitForSeconds(0.35f);
         canSpawnFood = true;
     }
+
     IEnumerator DepreciateIceCream()
     {
         while (true)

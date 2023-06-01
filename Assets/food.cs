@@ -1,6 +1,7 @@
+using Unity.Netcode;
 using UnityEngine;
 
-public class food : MonoBehaviour
+public class food : NetworkBehaviour
 {
     // Start is called before the first frame update
     [SerializeField] Sprite[] foodSprites;
@@ -16,10 +17,11 @@ public class food : MonoBehaviour
         Pigeon hitPigeon = collision.GetComponent<Pigeon>();
         if (hitPigeon)
         {
-            Instantiate(particle, hitPigeon.transform.position, transform.rotation);
+            GameObject particl =  Instantiate(particle, hitPigeon.transform.position, transform.rotation);
+            particl.GetComponent<NetworkObject>().Spawn();
             hitPigeon.GainXP(10);
             hitPigeon.PlayEatSound();
-            hitPigeon.Heal(hitPigeon.maxHp / 5);
+            hitPigeon.Heal(hitPigeon.maxHp.Value / 5);
             Destroy(gameObject);
         }
     }
