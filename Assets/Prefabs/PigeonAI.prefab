@@ -291,7 +291,7 @@ Transform:
   m_GameObject: {fileID: 4200224493723380488}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0.5009999, y: 0.51, z: 0}
-  m_LocalScale: {x: 1, y: 0.09869999, z: 1}
+  m_LocalScale: {x: 1.0000001, y: 0.09869999, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6544071908188052353}
@@ -491,13 +491,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8932be6c9c94a9a4c86a32af7852e098, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isKnockedOut: 0
-  power: 3
-  maxHp: 50
-  currentHP: 0
-  xp: 0
-  xpTillLevelUp: 30
-  level: 1
+  isKnockedOut:
+    m_InternalValue: 0
+  power:
+    m_InternalValue: 5
+  maxHp:
+    m_InternalValue: 50
+  currentHP:
+    m_InternalValue: 50
+  xp:
+    m_InternalValue: 0
+  xpTillLevelUp:
+    m_InternalValue: 20
+  level:
+    m_InternalValue: 1
   gm: {fileID: 0}
   audioSource: {fileID: -4340977660188722233}
   hitClips:
@@ -513,6 +520,7 @@ MonoBehaviour:
   body: {fileID: 6932019995288195655}
   bodyCollider: {fileID: 747830280723892867}
   speed: 800
+  healthBarGameobject: {fileID: 2921021928519589491}
   hpBar: {fileID: 4851753349459924596}
   pigeonAI: {fileID: 3937453662887302832}
   slash: {fileID: 5434714209874421878, guid: 40da7ad2460eb814a9e7ffee7f2dc0b7, type: 3}

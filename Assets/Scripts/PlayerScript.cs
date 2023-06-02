@@ -65,7 +65,7 @@ public class PlayerScript : Pigeon
                     float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
                     Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
 
-                    PigeonAttackServerRpc(pos, theAngle);
+                    PigeonAttackServerRpc(pos, theAngle, no.NetworkObjectId);
                 }
                 else if (Input.GetKeyDown(KeyCode.Space) && canSlam)
                 {

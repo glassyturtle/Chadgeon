@@ -30,7 +30,7 @@ public class SigmaAI : PigeonAI
                     float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
                     Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
 
-                    PigeonAttackServerRpc(targetPigeon.transform.position, theAngle);
+                    PigeonAttackServerRpc(targetPigeon.transform.position, theAngle, no.NetworkObjectId);
                 }
                 else
                 {

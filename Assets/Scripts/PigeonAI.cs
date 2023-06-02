@@ -9,8 +9,6 @@ public class PigeonAI : Pigeon
     [SerializeField] protected Pigeon targetPigeon;
     [SerializeField] protected food targetFood;
 
-    [SerializeField] protected string pigeonName;
-    [SerializeField] protected TextMesh displayText;
 
     private float hitColldown = 0.3f;
     protected bool canHit = true;
@@ -194,7 +192,7 @@ public class PigeonAI : Pigeon
                     float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
                     Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
 
-                    PigeonAttackServerRpc(targetPigeon.transform.position, theAngle);
+                    PigeonAttackServerRpc(targetPigeon.transform.position, theAngle, no.NetworkObjectId);
                 }
                 else
                 {
@@ -221,7 +219,7 @@ public class PigeonAI : Pigeon
             float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
             Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
 
-            PigeonAttackServerRpc(targetPigeon.transform.position, theAngle);
+            PigeonAttackServerRpc(targetPigeon.transform.position, theAngle, no.NetworkObjectId);
         }
         if (targetPigeon && currentHP.Value < maxHp.Value / 2)
         {
@@ -274,7 +272,7 @@ public class PigeonAI : Pigeon
             float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
             Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
 
-            PigeonAttackServerRpc(targetPigeon.transform.position, theAngle);
+            PigeonAttackServerRpc(targetPigeon.transform.position, theAngle, no.NetworkObjectId);
         }
         if(targetPigeon && targetPigeon.currentHP.Value - power.Value * 3 <= 0 && !gm.isSuddenDeath)
         {

@@ -100,7 +100,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce84719fff96d1a449642fa11eee43e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pigeonThatDealtDamage: {fileID: 0}
+  indexOfDamagingPigeon:
+    m_InternalValue: 1
+  area: {fileID: 1207958793920926791}
 --- !u!58 &1207958793920926791
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -108,7 +110,7 @@ CircleCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5434714209874421878}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Density: 1
   m_Material: {fileID: 0}
   m_IsTrigger: 1

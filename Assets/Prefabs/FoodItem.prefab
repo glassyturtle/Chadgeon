@@ -55,6 +55,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 2b28e573fc726da48b9abdef307d52e8, type: 3}
   sr: {fileID: 4153639046212656234}
   particle: {fileID: 2805690518022475648, guid: f55dce245561bd943a35d5a1ed884c1b, type: 3}
+  area: {fileID: -3027860112558951321}
 --- !u!58 &-3027860112558951321
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -62,7 +63,7 @@ CircleCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 503669502887296591}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Density: 1
   m_Material: {fileID: 0}
   m_IsTrigger: 1
@@ -91,6 +92,7 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &1149191717229180822
 MonoBehaviour:
   m_ObjectHideFlags: 0

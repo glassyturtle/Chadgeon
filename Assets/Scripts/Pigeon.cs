@@ -4,11 +4,11 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine.UIElements;
+using System.Net.NetworkInformation;
 
 public class Pigeon : NetworkBehaviour
 {
     public Dictionary<Upgrades, int> pigeonUpgrades = new();
-
     public NetworkVariable<bool> isKnockedOut = new NetworkVariable<bool>(false);
     public NetworkVariable<int> power = new NetworkVariable<int>(5);
     public NetworkVariable<int> maxHp = new NetworkVariable<int>(50);
@@ -18,29 +18,30 @@ public class Pigeon : NetworkBehaviour
     public NetworkVariable<int> level = new NetworkVariable<int>(1);
 
     [SerializeField] protected GameManager gm;
-    [SerializeField] AudioSource audioSource;
-    [SerializeField] AudioClip[] hitClips;
-    [SerializeField] AudioClip[] cruchSound;
-
-    [SerializeField] GameObject bloodEffect;
+    [SerializeField] protected string pigeonName;
+    [SerializeField] protected TextMesh displayText;
     [SerializeField] protected Rigidbody2D body;
     [SerializeField] protected CircleCollider2D bodyCollider;
     [SerializeField] protected float speed;
-    [SerializeField] protected Transform hpBar;
+    [SerializeField] protected NetworkObject no;
 
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip[] hitClips;
+    [SerializeField] private AudioClip[] cruchSound;
+    [SerializeField] private GameObject bloodEffect;
+    [SerializeField] private GameObject healthBarGameobject;
+    [SerializeField] private Transform hpBar;
+    [SerializeField] private GameObject slash;
+    [SerializeField] private SpriteRenderer sr;
+    [SerializeField] private Sprite defaultPigeonSprite, pigeonJumpSprite, pigeonSlamSprite;
+    [SerializeField] private Sprite[] pigeonAttackSprites;
+    [SerializeField] private bool isPlayer = false;
+    [SerializeField] private PigeonAI pigeonAI;
 
     protected int secTillSlam = 5, secTillFly = 15;
     protected bool canSlam = false, canfly = false, isSlaming, canDeCollide = false;
     protected Vector3 slamPos;
     
-
-    [SerializeField] PigeonAI pigeonAI;
-    [SerializeField] private GameObject slash;
-    [SerializeField] private SpriteRenderer sr;
-    [SerializeField] Sprite[] pigeonAttackSprites;
-    [SerializeField] private Sprite defaultPigeonSprite, pigeonJumpSprite, pigeonSlamSprite;
-    [SerializeField] bool isPlayer = false;
-
     private int regen = 3;
     private NetworkVariable<bool> isPointingLeft = new NetworkVariable<bool>(true);
     private NetworkVariable<bool> isSpriteNotHopping = new NetworkVariable<bool>(true);
@@ -57,11 +58,8 @@ public class Pigeon : NetworkBehaviour
         lifeSteal = 4,
         dodge = 5,
         critcalDamage = 6,
-
         slam = 7,
         fly = 8,
-
-
     }
     
     public void PlayEatSound()
@@ -72,9 +70,18 @@ public class Pigeon : NetworkBehaviour
             audioSource.Play();
         }
     }
-    public void OnPigeonHit(Pigeon AttackinPigeon)
+    [ServerRpc(RequireOwnership = true)]
+    public void OnPigeonHitServerRpc(ulong index)
     {
-        if (AttackinPigeon == null || AttackinPigeon == this) return;
+        NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(index, out NetworkObject ob);
+        if (!ob)  
+        {
+            Debug.Log("WTF:");
+            return;
+        }
+        Pigeon AttackinPigeon = ob.GetComponent<Pigeon>();
+
+        if (AttackinPigeon == null || index == GetComponent<NetworkObject>().NetworkObjectId) return;
 
         if (pigeonUpgrades.ContainsKey(Upgrades.dodge))
         {
@@ -108,7 +115,7 @@ public class Pigeon : NetworkBehaviour
 
         if (AttackinPigeon.pigeonUpgrades.ContainsKey(Upgrades.lifeSteal))
         {
-            AttackinPigeon.Heal(AttackinPigeon.power.Value / 3);
+            AttackinPigeon.HealServerRpc(AttackinPigeon.power.Value / 3);
         }
 
         if (AttackinPigeon.pigeonUpgrades.ContainsKey(Upgrades.knockBack))
@@ -121,7 +128,6 @@ public class Pigeon : NetworkBehaviour
             body.AddForce(direction * totalDamageTaking * 10);
         }
 
-        if (pigeonAI && !isKnockedOut.Value) hpBar.localScale = new Vector3((float)currentHP.Value / maxHp.Value, 0.097f, 1);
         GameObject blood = Instantiate(bloodEffect, new Vector3(transform.position.x, transform.position.y, -1), transform.rotation);
         blood.GetComponent<NetworkObject>().Spawn();
 
@@ -130,7 +136,7 @@ public class Pigeon : NetworkBehaviour
             isSlaming = false;
             StopCoroutine(StopSlam());
 
-            AttackinPigeon.GainXP((level.Value * 5));
+            AttackinPigeon.GainXPServerRpc((level.Value * 5));
 
             if (gm.isSuddenDeath)
             {
@@ -152,7 +158,6 @@ public class Pigeon : NetworkBehaviour
             else
             {
 
-                if (pigeonAI) hpBar.localScale = new Vector3(0, 0.097f, 1);
                 isKnockedOut.Value = true;
                 sr.flipY = true;
                 sr.sortingOrder = -1;
@@ -160,8 +165,11 @@ public class Pigeon : NetworkBehaviour
             }
         }
     }
-    public void GainXP(int amnt)
+    [ServerRpc]
+    public void GainXPServerRpc(int amnt)
     {
+        Debug.Log(IsOwner);
+        if (!IsOwner) return;
         if (isKnockedOut.Value) return;
         xp.Value += amnt;
         if(xp.Value >= xpTillLevelUp.Value)
@@ -169,15 +177,13 @@ public class Pigeon : NetworkBehaviour
             LevelUP();
         }
     }
-    public void Heal(int amt)
+    [ServerRpc]
+    public void HealServerRpc(int amt)
     {
         if (isKnockedOut.Value) return;
         currentHP.Value += amt;
         if (currentHP.Value > maxHp.Value) currentHP.Value =maxHp.Value;
-        if (pigeonAI)
-        {
-            hpBar.localScale = new Vector3((float)currentHP.Value / maxHp.Value, 0.097f, 1);
-        }
+
     }
     public void AddUpgrade(Upgrades upgrade)
     {
@@ -204,8 +210,15 @@ public class Pigeon : NetworkBehaviour
 
     protected void OnPigeonSpawn()
     {
-        if(IsOwner) StartCoroutine(JumpAnimation());
-        StartCoroutine(Regen());
+        if (IsOwner)
+        {
+            StartCoroutine(JumpAnimation());
+            healthBarGameobject.SetActive(false);
+            displayText.gameObject.SetActive(false);
+            hpBar.gameObject.SetActive(false);
+            StartCoroutine(Regen());
+        }
+
         body.freezeRotation = true;
         currentHP.Value = maxHp.Value;
         gm = FindObjectOfType<GameManager>();
@@ -213,14 +226,11 @@ public class Pigeon : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    protected void PigeonAttackServerRpc(Vector3 position, Quaternion theAngle)
+    protected void PigeonAttackServerRpc(Vector3 position, Quaternion theAngle, ulong id)
     {
-
         GameObject attack = Instantiate(slash, position, theAngle);
+        attack.GetComponent<HitScript>().indexOfDamagingPigeon.Value = id;
         attack.GetComponent<NetworkObject>().Spawn(true);
-        attack.GetComponent<HitScript>().pigeonThatDealtDamage = this;
-
-
 
         if (isSlaming)
         {
@@ -268,7 +278,7 @@ public class Pigeon : NetworkBehaviour
         float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
         Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
 
-        PigeonAttackServerRpc(slamPos, theAngle);
+        PigeonAttackServerRpc(slamPos, theAngle,no.NetworkObjectId);
 
         StartCoroutine(SlamCoolDown());
         StopCoroutine(StopSlam());
@@ -281,12 +291,26 @@ public class Pigeon : NetworkBehaviour
     protected void SyncPigeonAttributes()
     {
         sr.flipX = isPointingLeft.Value;
+        if (!IsOwner)
+        {
+            displayText.text = pigeonName + " Lvl:" + level.Value.ToString();
+        }
         if (isKnockedOut.Value)
         {
+            if (!IsOwner)
+            {
+                hpBar.gameObject.SetActive(false);
+            }                
             sr.flipY = true;
         }
         else
         {
+            if (!IsOwner)
+            {
+                hpBar.gameObject.SetActive(true);
+                hpBar.localScale = new Vector3((float)currentHP.Value / maxHp.Value, 0.097f, 1);
+            }
+
             sr.flipY = false;
             if (!canSwitchAttackSprites.Value)
             {
@@ -304,7 +328,6 @@ public class Pigeon : NetworkBehaviour
                 }
             }
         }
-
     }
 
 
@@ -368,8 +391,7 @@ public class Pigeon : NetworkBehaviour
         StartCoroutine(CheckDecollide());
         yield return new WaitForSeconds(5);
         canDeCollide = false;
-        currentHP = maxHp;
-        if (pigeonAI) hpBar.localScale = new Vector3(1, 0.097f, 1);
+        currentHP.Value = maxHp.Value;
         if (pigeonUpgrades.ContainsKey(Upgrades.slam)) canSlam = true;
         isKnockedOut.Value = false;
         bodyCollider.enabled = true;
@@ -406,7 +428,7 @@ public class Pigeon : NetworkBehaviour
         while (true)
         {
             yield return new WaitForSeconds(1);
-            Heal(regen);
+            HealServerRpc(regen);
         }
     }
     private IEnumerator CheckDecollide()

@@ -44,14 +44,6 @@ public class GameManager : NetworkBehaviour
     bool canSpawnFood = true;
     private Pigeon.Upgrades[] upgradesThatCanBeSelected = new Pigeon.Upgrades[3];
 
-    private string what = "911";
-    private void Test()
-    {
-        Debug.Log(what[0]);
-        what += 9;
-        Debug.Log(what);
-    }
-
 
     public void ChangeVolume()
     {
@@ -150,7 +142,6 @@ public class GameManager : NetworkBehaviour
     private void Start()
     {
         StartCoroutine(DepreciateIceCream());
-        Test();
     }
     public void SetFullScreen()
     {
@@ -193,25 +184,25 @@ public class GameManager : NetworkBehaviour
         }
         xpBar.localScale = new Vector3((float)player.xp.Value / player.xpTillLevelUp.Value, 1, 1);
         xpText.text = player.xp.Value + "/" + player.xpTillLevelUp.Value;
-        /*
+        
         if (IsServer && canSpawnFood && !isSuddenDeath)
         {
-            SpawnFoodClientRpc();
+            SpawnFoodServerRpc();
         }
-        */
+        
     }
 
-    [ClientRpc]
-    private void SpawnFoodClientRpc()
+    [ServerRpc]
+    private void SpawnFoodServerRpc()
     {
         StartCoroutine(SpawnFoodDelay());
     }
 
     IEnumerator SpawnFoodDelay()
     {
+        canSpawnFood = false;
         GameObject food = Instantiate(FoodPrefab, new Vector3(Random.Range(-13f, 13f), Random.Range(-11f, 19f), 0), transform.rotation);
         food.GetComponent<NetworkObject>().Spawn();
-        canSpawnFood = false;
         yield return new WaitForSeconds(0.35f);
         canSpawnFood = true;
     }

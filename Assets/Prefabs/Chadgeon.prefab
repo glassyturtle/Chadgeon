@@ -388,6 +388,12 @@ MonoBehaviour:
   level:
     m_InternalValue: 1
   gm: {fileID: 0}
+  pigeonName: Chadgeon
+  displayText: {fileID: 952702311422200724}
+  body: {fileID: 4961322488758605414}
+  bodyCollider: {fileID: 4961322488758605415}
+  speed: 800
+  no: {fileID: 4961322488758605401}
   audioSource: {fileID: 4961322488758605400}
   hitClips:
   - {fileID: 8300000, guid: 8456891df5bcacb498e81dd93bb6c068, type: 3}
@@ -399,20 +405,18 @@ MonoBehaviour:
   - {fileID: 8300000, guid: ad7d51fcc8d0ac344951b12d883dad03, type: 3}
   - {fileID: 8300000, guid: 7b1a87af6f7e6d44fa3fffff8bba38c3, type: 3}
   bloodEffect: {fileID: 2805690518022475648, guid: bca28693c6471834da518754b8cb8da0, type: 3}
-  body: {fileID: 4961322488758605414}
-  bodyCollider: {fileID: 4961322488758605415}
-  speed: 800
+  healthBarGameobject: {fileID: 954891483114827397}
   hpBar: {fileID: 2263179221779128706}
-  pigeonAI: {fileID: 0}
   slash: {fileID: 5434714209874421878, guid: 40da7ad2460eb814a9e7ffee7f2dc0b7, type: 3}
   sr: {fileID: 4961322488758605411}
-  pigeonAttackSprites:
-  - {fileID: 21300000, guid: e2aca8b9a7356c94ca1cf8d297c07be2, type: 3}
-  - {fileID: 21300000, guid: 7d3d2a1ec326d7148ab2e4df9443ec06, type: 3}
   defaultPigeonSprite: {fileID: 21300000, guid: 3adb59ff74753354981f692132e08b32, type: 3}
   pigeonJumpSprite: {fileID: 21300000, guid: 872347edaf40eb64aa702236eb4738c3, type: 3}
   pigeonSlamSprite: {fileID: 21300000, guid: c045434706829ad4db587b1ecceab1c3, type: 3}
+  pigeonAttackSprites:
+  - {fileID: 21300000, guid: e2aca8b9a7356c94ca1cf8d297c07be2, type: 3}
+  - {fileID: 21300000, guid: 7d3d2a1ec326d7148ab2e4df9443ec06, type: 3}
   isPlayer: 1
+  pigeonAI: {fileID: 0}
   nameText: {fileID: 4109731896568974251}
 --- !u!50 &4961322488758605414
 Rigidbody2D:
@@ -615,7 +619,7 @@ Transform:
   m_GameObject: {fileID: 5386974835321764459}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0.5009999, y: 0.51, z: 0}
-  m_LocalScale: {x: 1, y: 0.098699994, z: 1}
+  m_LocalScale: {x: 1, y: 0.09869999, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4961322488758605412}
