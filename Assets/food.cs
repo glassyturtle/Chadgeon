@@ -13,7 +13,6 @@ public class food : NetworkBehaviour
     {
         area.enabled = true;
         sr.sprite = foodSprites[Random.Range(0, foodSprites.Length)];
-        Debug.Log(IsOwner);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
