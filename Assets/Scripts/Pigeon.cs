@@ -136,7 +136,7 @@ public class Pigeon : NetworkBehaviour
             isSlaming = false;
             StopCoroutine(StopSlam());
 
-            AttackinPigeon.GainXPServerRpc((level.Value * 5));
+            //AttackinPigeon.GainXPServerRpc((level.Value * 5));
 
             if (gm.isSuddenDeath)
             {
@@ -293,7 +293,7 @@ public class Pigeon : NetworkBehaviour
         sr.flipX = isPointingLeft.Value;
         if (!IsOwner)
         {
-            displayText.text = pigeonName + " Lvl:" + level.Value.ToString();
+            displayText.text = pigeonName;
         }
         if (isKnockedOut.Value)
         {

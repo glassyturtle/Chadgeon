@@ -1,21 +1,58 @@
+using TMPro;
+using Unity.Jobs;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
-public class MainMenuManager : MonoBehaviour
+public class MainMenuManager : NetworkBehaviour
 {
-    [SerializeField] GameObject playMenu, mainMenu;
-    [SerializeField] AudioSource source;
+    [SerializeField] Button hostGameButton, createGameButton, startGameButton;
+    [SerializeField] TMP_Text playersConnectedText;
 
-    public void OpenPlayMenu()
+
+
+    private void Awake()
     {
-        source.Play();
-        playMenu.SetActive(true);
-        mainMenu.SetActive(false);
+        if (hostGameButton)
+        {
+            hostGameButton.onClick.AddListener(() =>
+            {
+                NetworkManager.Singleton.StartHost();
+                NetworkManager.Singleton.SceneManager.LoadScene("LobbyMenu", LoadSceneMode.Single);
+            });
+        }
+        if (createGameButton)
+        {
+            createGameButton.onClick.AddListener(() =>
+            {
+                NetworkManager.Singleton.StartClient();
+            });
+        }
+        if (startGameButton)
+        {
+            startGameButton.onClick.AddListener(() =>
+            {
+                NetworkManager.Singleton.SceneManager.LoadScene("SimpMode", LoadSceneMode.Single);
+            });
+        }
+
+
+
     }
-
-    public void StartGame(int difficulty)
+    private void Update()
     {
-        SuperGM.difficulty = difficulty;
-        SceneManager.LoadScene("SimpMode");
+        if (playersConnectedText)
+        {
+            if (IsOwner)
+                SetPlayerCountServerRpc();
+            else playersConnectedText.text = "Connected To Host!";
+        }
+    }
+    [ServerRpc]
+    private void SetPlayerCountServerRpc()
+    {
+        playersConnectedText.text = "Players Connected:" + NetworkManager.Singleton.ConnectedClients.Count.ToString();
+
     }
 }

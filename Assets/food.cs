@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class food : NetworkBehaviour
 {
-    // Start is called before the first frame update
     [SerializeField] Sprite[] foodSprites;
     [SerializeField] SpriteRenderer sr;
     [SerializeField] GameObject particle;
@@ -14,27 +13,27 @@ public class food : NetworkBehaviour
         area.enabled = true;
         sr.sprite = foodSprites[Random.Range(0, foodSprites.Length)];
     }
+    public void DestroySelf()
+    {
+        GameObject particl = Instantiate(particle, transform.position, transform.rotation);
+        particl.GetComponent<NetworkObject>().Spawn();
+        Destroy(gameObject);
+    }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         Pigeon hitPigeon = collision.GetComponent<Pigeon>();
         if (hitPigeon && hitPigeon.IsOwner)
         {
-            hitPigeon.GainXPServerRpc(10);
+            //hitPigeon.GainXPServerRpc(10);
             hitPigeon.PlayEatSound();
             hitPigeon.HealServerRpc(hitPigeon.maxHp.Value / 5);
-
-            if (IsOwner)
-            {
-                SpawnEatParticleServerRpc(hitPigeon.transform.position);
-                Destroy(gameObject);
-            }
+            DestroyFoodObject(this);
         }
     }
-    [ServerRpc]
-    private void SpawnEatParticleServerRpc(Vector3 pos)
+
+    public static void DestroyFoodObject(food foodObj)
     {
-        GameObject particl = Instantiate(particle, pos, transform.rotation);
-        particl.GetComponent<NetworkObject>().Spawn();
+        FindObjectOfType<GameManager>().DestroyFoodObject(foodObj);
     }
 }

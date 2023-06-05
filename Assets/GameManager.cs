@@ -34,7 +34,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] Image chadgeonDetialPic;
     [SerializeField] TextMeshProUGUI chageonName;
     [SerializeField] Slider volumeSlider;
-
+    [SerializeField] GameObject playerPrefab;
     [SerializeField] Image[] upgradeButtonImages;
     [SerializeField] TextMeshProUGUI[] upgradeButtonText;
     [SerializeField] Sprite[] upgradeButtonSprites;
@@ -44,7 +44,11 @@ public class GameManager : NetworkBehaviour
     bool canSpawnFood = true;
     private Pigeon.Upgrades[] upgradesThatCanBeSelected = new Pigeon.Upgrades[3];
 
-
+    public override void OnNetworkSpawn()
+    {
+        if (IsServer)
+            NetworkManager.Singleton.SceneManager.OnLoadEventCompleted += SceneManager_OnLoadEventCompleted;
+    }
     public void ChangeVolume()
     {
         AudioListener.volume = volumeSlider.value;
@@ -126,8 +130,17 @@ public class GameManager : NetworkBehaviour
         cooldownIcon.SetActive(true);
     }
 
-
-
+    public void DestroyFoodObject(food foodie)
+    {
+        DestroyFoodObjectServerRpc(foodie.NetworkObject);
+    }
+    [ServerRpc (RequireOwnership =false)]
+    public void DestroyFoodObjectServerRpc(NetworkObjectReference foodie)
+    {
+        foodie.TryGet(out NetworkObject foodieNetObj);
+        food foodieObj = foodieNetObj.GetComponent<food>();
+        foodieObj.DestroySelf();
+    }
     private void Awake()
     {
         currentSecound = secondsTillSuddenDeath;  
@@ -138,7 +151,18 @@ public class GameManager : NetworkBehaviour
             PigeonAI ai = pigeon.GetComponent<PigeonAI>();
             ai.SetAI(SuperGM.difficulty);       
         }
+
     }
+
+    private void SceneManager_OnLoadEventCompleted(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
+    {
+        foreach(ulong client in NetworkManager.Singleton.ConnectedClientsIds)
+        {
+            GameObject player = Instantiate(playerPrefab, transform.position, transform.rotation);
+            player.GetComponent<NetworkObject>().SpawnAsPlayerObject(client, true);
+        }
+    }
+
     private void Start()
     {
         StartCoroutine(DepreciateIceCream());
