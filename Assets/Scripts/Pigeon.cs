@@ -1,10 +1,7 @@
-using System;
-using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
-using UnityEngine.UIElements;
-using System.Net.NetworkInformation;
+using UnityEngine;
 
 public class Pigeon : NetworkBehaviour
 {
@@ -41,7 +38,7 @@ public class Pigeon : NetworkBehaviour
     protected int secTillSlam = 5, secTillFly = 15;
     protected bool canSlam = false, canfly = false, isSlaming, canDeCollide = false;
     protected Vector3 slamPos;
-    
+
     private int regen = 3;
     private NetworkVariable<bool> isPointingLeft = new NetworkVariable<bool>(true);
     private NetworkVariable<bool> isSpriteNotHopping = new NetworkVariable<bool>(true);
@@ -61,7 +58,7 @@ public class Pigeon : NetworkBehaviour
         slam = 7,
         fly = 8,
     }
-    
+
     public void PlayEatSound()
     {
         if (!audioSource.isPlaying)
@@ -74,7 +71,7 @@ public class Pigeon : NetworkBehaviour
     public void OnPigeonHitServerRpc(ulong index)
     {
         NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(index, out NetworkObject ob);
-        if (!ob)  
+        if (!ob)
         {
             Debug.Log("WTF:");
             return;
@@ -97,13 +94,13 @@ public class Pigeon : NetworkBehaviour
             audioSource.Play();
         }
 
-        Vector2 direction = transform.position -AttackinPigeon.transform.position ;
+        Vector2 direction = transform.position - AttackinPigeon.transform.position;
         direction.Normalize();
 
 
         int totalDamageTaking = AttackinPigeon.power.Value;
         if (isSlaming) totalDamageTaking /= 2;
-        if(AttackinPigeon.pigeonUpgrades.ContainsKey(Upgrades.critcalDamage) && UnityEngine.Random.Range(0,100) <= 10)
+        if (AttackinPigeon.pigeonUpgrades.ContainsKey(Upgrades.critcalDamage) && UnityEngine.Random.Range(0, 100) <= 10)
         {
             totalDamageTaking *= 4;
         }
@@ -131,7 +128,7 @@ public class Pigeon : NetworkBehaviour
         GameObject blood = Instantiate(bloodEffect, new Vector3(transform.position.x, transform.position.y, -1), transform.rotation);
         blood.GetComponent<NetworkObject>().Spawn();
 
-        if(currentHP.Value <= 0 && !isKnockedOut.Value)
+        if (currentHP.Value <= 0 && !isKnockedOut.Value)
         {
             isSlaming = false;
             StopCoroutine(StopSlam());
@@ -172,7 +169,7 @@ public class Pigeon : NetworkBehaviour
         if (!IsOwner) return;
         if (isKnockedOut.Value) return;
         xp.Value += amnt;
-        if(xp.Value >= xpTillLevelUp.Value)
+        if (xp.Value >= xpTillLevelUp.Value)
         {
             LevelUP();
         }
@@ -182,7 +179,7 @@ public class Pigeon : NetworkBehaviour
     {
         if (isKnockedOut.Value) return;
         currentHP.Value += amt;
-        if (currentHP.Value > maxHp.Value) currentHP.Value =maxHp.Value;
+        if (currentHP.Value > maxHp.Value) currentHP.Value = maxHp.Value;
 
     }
     public void AddUpgrade(Upgrades upgrade)
@@ -229,8 +226,10 @@ public class Pigeon : NetworkBehaviour
     protected void PigeonAttackServerRpc(Vector3 position, Quaternion theAngle, ulong id)
     {
         GameObject attack = Instantiate(slash, position, theAngle);
+
         attack.GetComponent<HitScript>().indexOfDamagingPigeon.Value = id;
         attack.GetComponent<NetworkObject>().Spawn(true);
+
 
         if (isSlaming)
         {
@@ -248,7 +247,7 @@ public class Pigeon : NetworkBehaviour
     protected void CheckDirection(Vector2 direction)
     {
         if (direction.x == 0) return;
-        if(direction.x > 0)
+        if (direction.x > 0)
         {
             isPointingLeft.Value = true;
         }
@@ -278,7 +277,7 @@ public class Pigeon : NetworkBehaviour
         float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
         Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
 
-        PigeonAttackServerRpc(slamPos, theAngle,no.NetworkObjectId);
+        PigeonAttackServerRpc(slamPos, theAngle, no.NetworkObjectId);
 
         StartCoroutine(SlamCoolDown());
         StopCoroutine(StopSlam());
@@ -300,7 +299,7 @@ public class Pigeon : NetworkBehaviour
             if (!IsOwner)
             {
                 hpBar.gameObject.SetActive(false);
-            }                
+            }
             sr.flipY = true;
         }
         else
@@ -334,7 +333,7 @@ public class Pigeon : NetworkBehaviour
     [ServerRpc]
     private void UpdateNotHoppingServerRpc(bool isHoping)
     {
-        if(body.velocity != Vector2.zero && isHoping)
+        if (body.velocity != Vector2.zero && isHoping)
         {
             isSpriteNotHopping.Value = false;
         }
@@ -347,18 +346,18 @@ public class Pigeon : NetworkBehaviour
     {
         level.Value++;
         xp.Value -= xpTillLevelUp.Value;
-        xpTillLevelUp.Value = Mathf.RoundToInt(xpTillLevelUp.Value *  1.15f);
+        xpTillLevelUp.Value = Mathf.RoundToInt(xpTillLevelUp.Value * 1.15f);
         power.Value++;
         maxHp.Value += 5;
         currentHP.Value += 5;
-        speed+= 20;
-         
-        if(pigeonAI != null)
+        speed += 20;
+
+        if (pigeonAI != null)
         {
             pigeonAI.AILevelUP();
         }
 
-        if(0 == level.Value % 5)
+        if (0 == level.Value % 5)
         {
             if (pigeonAI)
             {

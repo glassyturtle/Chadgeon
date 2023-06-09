@@ -10,7 +10,7 @@ public class MainMenuManager : NetworkBehaviour
     [SerializeField] TMP_InputField inputCode;
     [SerializeField] TMP_Text playersConnectedText, codeText, joinCodeText;
     [SerializeField] testRelay realy;
-    [SerializeField] GameObject mainMenu, joinMenu;
+    [SerializeField] GameObject mainMenu, joinMenu, connectingMenu;
 
 
     private void Awake()
@@ -26,6 +26,7 @@ public class MainMenuManager : NetworkBehaviour
         {
             createGameButton.onClick.AddListener(() =>
             {
+                GoToConnectingMenu();
                 realy.JoinRelay(inputCode.text);
             });
         }
@@ -48,8 +49,14 @@ public class MainMenuManager : NetworkBehaviour
         HideAllMenus();
         mainMenu.SetActive(true);
     }
+    public void GoToConnectingMenu()
+    {
+        HideAllMenus();
+        connectingMenu.SetActive(true);
+    }
     private void HideAllMenus()
     {
+        connectingMenu.SetActive(false);
         mainMenu.SetActive(false);
         joinMenu.SetActive(false);
     }

@@ -16,7 +16,7 @@ public class testRelay : MonoBehaviour
 
         AuthenticationService.Instance.SignedIn += () =>
         {
-            Debug.Log(" AYE YO" + AuthenticationService.Instance.PlayerId);
+            //Debug.Log(" AYE YO" + AuthenticationService.Instance.PlayerId);
         };
 
         await AuthenticationService.Instance.SignInAnonymouslyAsync();
@@ -26,10 +26,10 @@ public class testRelay : MonoBehaviour
     {
         try
         {
-            Allocation allocation = await RelayService.Instance.CreateAllocationAsync(3);
+            Allocation allocation = await RelayService.Instance.CreateAllocationAsync(5);
 
             string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
-            Debug.Log(joinCode);
+            //Debug.Log(joinCode);
             GameDataHolder.joinCode = joinCode;
 
             RelayServerData relayServerData = new RelayServerData(allocation, "dtls");
@@ -38,9 +38,9 @@ public class testRelay : MonoBehaviour
             NetworkManager.Singleton.SceneManager.LoadScene("LobbyMenu", LoadSceneMode.Single);
 
         }
-        catch (RelayServiceException e)
+        catch (RelayServiceException)
         {
-            Debug.LogException(e);
+            //Debug.LogException(e);
         }
     }
 
@@ -54,13 +54,13 @@ public class testRelay : MonoBehaviour
             RelayServerData relayServerData = new RelayServerData(joinAllocation, "dtls");
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
             NetworkManager.Singleton.StartClient();
-            Debug.Log("joining Relay with" + joinCode);
+            //Debug.Log("joining Relay with" + joinCode);
 
 
         }
-        catch (RelayServiceException e)
+        catch (RelayServiceException)
         {
-            Debug.Log(e);
+            //Debug.Log(e);
         }
     }
 }
