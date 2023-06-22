@@ -60,6 +60,10 @@ public class MainMenuManager : NetworkBehaviour
         mainMenu.SetActive(false);
         joinMenu.SetActive(false);
     }
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
     private void Update()
     {
         if (playersConnectedText)

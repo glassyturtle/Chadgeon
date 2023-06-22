@@ -17,17 +17,27 @@ public class OptionsMenu : MonoBehaviour
         resDropdown.ClearOptions();
         List<string> options = new List<string>();
 
-
+        int currentRes = 0;
         for (int i = 0; i < resolutions.Length; i++)
         {
-            string option = resolutions[i].width + " X " + resolutions[i].height;
+            string option = resolutions[i].width + " x " + resolutions[i].height + " @ " + resolutions[i].refreshRate + "hz";
             options.Add(option);
+            if (resolutions[i].width == Screen.width && resolutions[i].height == Screen.height)
+            {
+                currentRes = i;
+            }
         }
 
         resDropdown.AddOptions(options);
+        resDropdown.value = currentRes;
+        resDropdown.RefreshShownValue();
     }
 
-
+    public void SetResolution(int index)
+    {
+        Resolution resolution = resolutions[index];
+        Screen.SetResolution(resolution.width, resolution.height, Screen.fullScreen);
+    }
     public void OpenOptionsMenu()
     {
         gameObject.SetActive(true);

@@ -6,7 +6,7 @@ using UnityEngine;
 public class HitScript : NetworkBehaviour
 {
     public NetworkVariable<ulong> indexOfDamagingPigeon = new NetworkVariable<ulong>(1);
-    [SerializeField] private CircleCollider2D area; 
+    [SerializeField] private CircleCollider2D area;
 
     private void Start()
     {
@@ -27,7 +27,7 @@ public class HitScript : NetworkBehaviour
 
         if (hitPigeon)
         {
-            if(hitPigeon.IsOwner) hitPigeon.OnPigeonHitServerRpc(indexOfDamagingPigeon.Value);
+            if (hitPigeon.IsOwner) hitPigeon.OnPigeonHitServerRpc(indexOfDamagingPigeon.Value);
         }
     }
-} 
+}

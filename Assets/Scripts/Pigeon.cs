@@ -7,7 +7,6 @@ public class Pigeon : NetworkBehaviour
 {
     public Dictionary<Upgrades, int> pigeonUpgrades = new();
     public NetworkVariable<bool> isKnockedOut = new NetworkVariable<bool>(false);
-    public NetworkVariable<int> power = new NetworkVariable<int>(5);
     public NetworkVariable<int> maxHp = new NetworkVariable<int>(50);
     public NetworkVariable<int> currentHP = new NetworkVariable<int>(50);
     public NetworkVariable<int> xp = new NetworkVariable<int>(0);
@@ -21,6 +20,7 @@ public class Pigeon : NetworkBehaviour
     [SerializeField] protected CircleCollider2D bodyCollider;
     [SerializeField] protected float speed;
     [SerializeField] protected NetworkObject no;
+    [SerializeField] protected int power;
 
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip[] hitClips;
@@ -68,7 +68,7 @@ public class Pigeon : NetworkBehaviour
         }
     }
     [ServerRpc(RequireOwnership = true)]
-    public void OnPigeonHitServerRpc(ulong index)
+    public void OnPigeonHitServerRpc(ulong index, int damage)
     {
         NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(index, out NetworkObject ob);
         if (!ob)
@@ -98,7 +98,7 @@ public class Pigeon : NetworkBehaviour
         direction.Normalize();
 
 
-        int totalDamageTaking = AttackinPigeon.power.Value;
+        int totalDamageTaking = damage;
         if (isSlaming) totalDamageTaking /= 2;
         if (AttackinPigeon.pigeonUpgrades.ContainsKey(Upgrades.critcalDamage) && UnityEngine.Random.Range(0, 100) <= 10)
         {
@@ -112,7 +112,7 @@ public class Pigeon : NetworkBehaviour
 
         if (AttackinPigeon.pigeonUpgrades.ContainsKey(Upgrades.lifeSteal))
         {
-            AttackinPigeon.HealServerRpc(AttackinPigeon.power.Value / 3);
+            AttackinPigeon.HealServerRpc(damage / 3);
         }
 
         if (AttackinPigeon.pigeonUpgrades.ContainsKey(Upgrades.knockBack))
@@ -347,7 +347,7 @@ public class Pigeon : NetworkBehaviour
         level.Value++;
         xp.Value -= xpTillLevelUp.Value;
         xpTillLevelUp.Value = Mathf.RoundToInt(xpTillLevelUp.Value * 1.15f);
-        power.Value++;
+        power++;
         maxHp.Value += 5;
         currentHP.Value += 5;
         speed += 20;
