@@ -274,7 +274,7 @@ public class PigeonAI : Pigeon
 
             PigeonAttackServerRpc(targetPigeon.transform.position, theAngle, no.NetworkObjectId);
         }
-        if(targetPigeon && targetPigeon.currentHP.Value - power.Value * 3 <= 0 && !gm.isSuddenDeath)
+        if(targetPigeon && targetPigeon.currentHP.Value - damage.Value * 3 <= 0 && !gm.isSuddenDeath)
         {
             StartSlam(targetPigeon.transform.position);
 
@@ -312,7 +312,7 @@ public class PigeonAI : Pigeon
                     CheckDirection(direction);
                     body.AddForce(direction * speed * Time.deltaTime);
                 }
-                else if (targetPigeon && targetPigeon.currentHP.Value - power.Value * 8 > 0)
+                else if (targetPigeon && targetPigeon.currentHP.Value - damage.Value * 8 > 0)
                 {
                     StartSlam(targetPigeon.transform.position);
                     Vector2 direction = (targetPigeon.transform.position - transform.position).normalized;

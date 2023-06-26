@@ -20,7 +20,7 @@ public class Pigeon : NetworkBehaviour
     [SerializeField] protected CircleCollider2D bodyCollider;
     [SerializeField] protected float speed;
     [SerializeField] protected NetworkObject no;
-    [SerializeField] protected int power;
+    [SerializeField] protected int damage;
 
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip[] hitClips;
@@ -58,115 +58,112 @@ public class Pigeon : NetworkBehaviour
         slam = 7,
         fly = 8,
     }
-
-    public void PlayEatSound()
+    public struct AttackProperties
     {
-        if (!audioSource.isPlaying)
+        public AttackProperties(ulong index, int dam, bool hasCrit, bool hasKnock, float x, float y)
         {
-            audioSource.clip = cruchSound[UnityEngine.Random.Range(0, cruchSound.Length)];
-            audioSource.Play();
+            damage = dam;
+            hasCriticalDamage = hasCrit;
+            hasKnockBack = hasKnock;
+            posY = y;
+            posX = x;
+            indexOfDamagingPigeon = index;
         }
+
+        public ulong indexOfDamagingPigeon;
+        public int damage;
+        public bool hasCriticalDamage;
+        public bool hasKnockBack;
+        public float posX;
+        public float posY;
     }
-    [ServerRpc(RequireOwnership = true)]
-    public void OnPigeonHitServerRpc(ulong index, int damage)
+    public struct DealtDamageProperties
     {
-        NetworkManager.SpawnManager.SpawnedObjects.TryGetValue(index, out NetworkObject ob);
-        if (!ob)
+        public DealtDamageProperties(bool hit, bool died)
         {
-            Debug.Log("WTF:");
-            return;
-        }
-        Pigeon AttackinPigeon = ob.GetComponent<Pigeon>();
-
-        if (AttackinPigeon == null || index == GetComponent<NetworkObject>().NetworkObjectId) return;
-
-        if (pigeonUpgrades.ContainsKey(Upgrades.dodge))
-        {
-            if (UnityEngine.Random.Range(0, 100) <= 20)
-            {
-                return;
-            }
+            hasDied = died;
+            hasHit = hit;
         }
 
-        if (!audioSource.isPlaying)
-        {
-            audioSource.clip = hitClips[UnityEngine.Random.Range(0, hitClips.Length)];
-            audioSource.Play();
-        }
+        public bool hasDied;
+        public bool hasHit;
+    }
 
-        Vector2 direction = transform.position - AttackinPigeon.transform.position;
+
+    [ServerRpc(RequireOwnership = true)]
+    public void OnPigeonHitServerRpc(AttackProperties atkProp)
+    {
+        //Stops calculating if successufly dodged
+        if (pigeonUpgrades.ContainsKey(Upgrades.dodge) && Random.Range(0, 100) <= 30) return;
+
+        //Gets the knockback direction of the hit
+        Vector2 direction = transform.position - new Vector3(atkProp.posX, atkProp.posY);
         direction.Normalize();
 
-
-        int totalDamageTaking = damage;
+        //Calculates total damage taken with modifiers
+        int totalDamageTaking = atkProp.damage;
         if (isSlaming) totalDamageTaking /= 2;
-        if (AttackinPigeon.pigeonUpgrades.ContainsKey(Upgrades.critcalDamage) && UnityEngine.Random.Range(0, 100) <= 10)
-        {
-            totalDamageTaking *= 4;
-        }
-        if (pigeonUpgrades.ContainsKey(Upgrades.tough))
-        {
-            totalDamageTaking = Mathf.RoundToInt(totalDamageTaking * 0.8f);
-        }
+        if (atkProp.hasCriticalDamage && Random.Range(0, 100) <= 10) totalDamageTaking *= 4;
+        if (pigeonUpgrades.ContainsKey(Upgrades.tough)) totalDamageTaking = Mathf.RoundToInt(totalDamageTaking * 0.7f);
         currentHP.Value -= totalDamageTaking;
 
-        if (AttackinPigeon.pigeonUpgrades.ContainsKey(Upgrades.lifeSteal))
-        {
-            AttackinPigeon.HealServerRpc(damage / 3);
-        }
+        //Calculates Life Steal
 
-        if (AttackinPigeon.pigeonUpgrades.ContainsKey(Upgrades.knockBack))
-        {
-            body.AddForce(direction * totalDamageTaking * 50);
+        //Calculates Knockback
+        if (atkProp.hasKnockBack) body.AddForce(50 * totalDamageTaking * direction);
+        else body.AddForce(10 * totalDamageTaking * direction);
 
-        }
-        else
-        {
-            body.AddForce(direction * totalDamageTaking * 10);
-        }
-
+        //Sound Effects and Blood
         GameObject blood = Instantiate(bloodEffect, new Vector3(transform.position.x, transform.position.y, -1), transform.rotation);
         blood.GetComponent<NetworkObject>().Spawn();
-
-        if (currentHP.Value <= 0 && !isKnockedOut.Value)
+        if (!audioSource.isPlaying)
         {
-            isSlaming = false;
-            StopCoroutine(StopSlam());
+            audioSource.clip = hitClips[Random.Range(0, hitClips.Length)];
+            audioSource.Play();
+        }
 
-            //AttackinPigeon.GainXPServerRpc((level.Value * 5));
+        //Logic when pigeon has no health and is not already knocked out
+        if (currentHP.Value > 0 || isKnockedOut.Value) return;
+        isSlaming = false;
+        StopCoroutine(StopSlam());
 
-            if (gm.isSuddenDeath)
+        isKnockedOut.Value = true;
+        sr.sortingOrder = -1;
+        StartCoroutine(Respawn());
+
+
+
+
+
+
+
+        /*
+        if (gm.isSuddenDeath)
+        {
+            if (this == gm.player)
             {
-                if (this == gm.player)
-                {
-                    gm.Lose();
-                    Destroy(gameObject);
-                }
-                else
-                {
-                    gm.allpigeons.Remove(this);
-                    if (gm.allpigeons.Count == 1)
-                    {
-                        gm.Win();
-                    }
-                    Destroy(gameObject);
-                }
+                gm.Lose();
+                Destroy(gameObject);
             }
             else
             {
-
-                isKnockedOut.Value = true;
-                sr.flipY = true;
-                sr.sortingOrder = -1;
-                StartCoroutine(Respawn());
+                gm.allpigeons.Remove(this);
+                if (gm.allpigeons.Count == 1)
+                    gm.Win();
+                Destroy(gameObject);
             }
         }
+        else
+        {
+
+
+        }
+        */
     }
     [ServerRpc]
     public void GainXPServerRpc(int amnt)
     {
         Debug.Log(IsOwner);
-        if (!IsOwner) return;
         if (isKnockedOut.Value) return;
         xp.Value += amnt;
         if (xp.Value >= xpTillLevelUp.Value)
@@ -181,6 +178,27 @@ public class Pigeon : NetworkBehaviour
         currentHP.Value += amt;
         if (currentHP.Value > maxHp.Value) currentHP.Value = maxHp.Value;
 
+    }
+
+    public void OnDealtDamage(DealtDamageProperties ddProp)
+    {
+
+        if (pigeonUpgrades.ContainsKey(Upgrades.lifeSteal)) HealServerRpc(damage / 3);
+
+
+        if (!audioSource.isPlaying)
+        {
+            audioSource.clip = hitClips[Random.Range(0, hitClips.Length)];
+            audioSource.Play();
+        }
+    }
+    public void PlayEatSound()
+    {
+        if (!audioSource.isPlaying)
+        {
+            audioSource.clip = cruchSound[UnityEngine.Random.Range(0, cruchSound.Length)];
+            audioSource.Play();
+        }
     }
     public void AddUpgrade(Upgrades upgrade)
     {
@@ -347,7 +365,7 @@ public class Pigeon : NetworkBehaviour
         level.Value++;
         xp.Value -= xpTillLevelUp.Value;
         xpTillLevelUp.Value = Mathf.RoundToInt(xpTillLevelUp.Value * 1.15f);
-        power++;
+        damage++;
         maxHp.Value += 5;
         currentHP.Value += 5;
         speed += 20;
