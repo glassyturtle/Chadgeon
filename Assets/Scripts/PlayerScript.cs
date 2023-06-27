@@ -1,6 +1,5 @@
-using Unity.Netcode;
-using UnityEngine;
 using Cinemachine;
+using UnityEngine;
 
 public class PlayerScript : Pigeon
 {
@@ -20,22 +19,21 @@ public class PlayerScript : Pigeon
     private void HandleMovement()
     {
         Vector2 inputVector = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")).normalized;
-        HandleMovementServerRpc(inputVector);
+        HandleMovement(inputVector);
     }
 
-    [ServerRpc]
-    private void HandleMovementServerRpc(Vector2 inputVector)
+    private void HandleMovement(Vector2 inputVector)
     {
         if (!isKnockedOut.Value && !isSlaming)
         {
             //Store user input as a movement vector
             body.AddForce(speed * Time.fixedDeltaTime * inputVector);
-            CheckDirection(inputVector);
+            if (canSwitchAttackSprites.Value) CheckDirection(inputVector);
         }
         else if (isSlaming)
         {
             Vector2 direction = (slamPos - transform.position).normalized;
-            CheckDirection(direction);
+            if (!canSwitchAttackSprites.Value) CheckDirection(direction);
             body.AddForce(4 * speed * Time.fixedDeltaTime * direction);
             if ((transform.position - slamPos).sqrMagnitude <= 0.1f)
             {
@@ -65,7 +63,19 @@ public class PlayerScript : Pigeon
                     float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
                     Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
 
-                    PigeonAttackServerRpc(pos, theAngle, no.NetworkObjectId);
+
+                    AttackProperties atkProp = new()
+                    {
+                        indexOfDamagingPigeon = no.NetworkObjectId,
+                        damage = damage,
+                        hasCriticalDamage = false,
+                        hasKnockBack = false,
+                        posX = pos.x,
+                        posY = pos.y,
+                    };
+                    if (pigeonUpgrades.TryGetValue(Upgrades.critcalDamage, out bool _)) atkProp.hasCriticalDamage = true;
+                    if (pigeonUpgrades.TryGetValue(Upgrades.knockBack, out _)) atkProp.hasKnockBack = true;
+                    PigeonAttack(atkProp, theAngle);
                 }
                 else if (Input.GetKeyDown(KeyCode.Space) && canSlam)
                 {

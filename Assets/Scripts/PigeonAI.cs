@@ -1,7 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using System;
+using System.Collections;
+using UnityEngine;
 
 public class PigeonAI : Pigeon
 {
@@ -73,7 +72,7 @@ public class PigeonAI : Pigeon
                 {
                     EndSlam();
                 }
-            }    
+            }
         }
         else if (body.velocity.magnitude < 0.1f && canDeCollide)
         {
@@ -158,14 +157,14 @@ public class PigeonAI : Pigeon
                 //runs away when another pigeon is near and on less than half hp
                 Vector2 direction = (transform.position - targetPigeon.transform.position).normalized;
                 CheckDirection(direction);
-                body.AddForce(direction * speed * Time.deltaTime);
+                body.AddForce(speed * Time.deltaTime * direction);
             }
             else if (targetFood)
             {
                 //goes to neaby food item 
                 Vector2 direction = (targetFood.transform.position - transform.position).normalized;
                 CheckDirection(direction);
-                body.AddForce(direction * speed  * Time.deltaTime);
+                body.AddForce(speed * Time.deltaTime * direction);
             }
         }
         else
@@ -175,7 +174,7 @@ public class PigeonAI : Pigeon
                 //goes to neaby food item 
                 Vector2 direction = (targetFood.transform.position - transform.position).normalized;
                 CheckDirection(direction);
-                body.AddForce(direction * speed * Time.deltaTime);
+                body.AddForce(speed * Time.deltaTime * direction);
             }
             else if (targetPigeon)
             {
@@ -192,14 +191,24 @@ public class PigeonAI : Pigeon
                     float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
                     Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
 
-                    PigeonAttackServerRpc(targetPigeon.transform.position, theAngle, no.NetworkObjectId);
+                    AttackProperties atkProp = new()
+                    {
+                        indexOfDamagingPigeon = no.NetworkObjectId,
+                        damage = damage,
+                        hasCriticalDamage = false,
+                        hasKnockBack = false,
+                        posX = slamPos.x,
+                        posY = slamPos.y,
+                    }; if (pigeonUpgrades.TryGetValue(Upgrades.critcalDamage, out bool a)) atkProp.hasCriticalDamage = true;
+                    if (pigeonUpgrades.TryGetValue(Upgrades.knockBack, out bool d)) atkProp.hasKnockBack = true;
+                    PigeonAttack(atkProp, theAngle);
                 }
                 else
                 {
                     StartSlam(targetPigeon.transform.position);
                     Vector2 direction = (targetPigeon.transform.position - transform.position).normalized;
                     CheckDirection(direction);
-                    body.AddForce(direction * speed * Time.deltaTime);
+                    body.AddForce(speed * Time.deltaTime * direction);
                 }
             }
         }
@@ -219,7 +228,19 @@ public class PigeonAI : Pigeon
             float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
             Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
 
-            PigeonAttackServerRpc(targetPigeon.transform.position, theAngle, no.NetworkObjectId);
+            Vector3 pos = transform.position;
+            AttackProperties atkProp = new()
+            {
+                indexOfDamagingPigeon = no.NetworkObjectId,
+                damage = damage,
+                hasCriticalDamage = false,
+                hasKnockBack = false,
+                posX = pos.x,
+                posY = pos.y,
+            };
+            if (pigeonUpgrades.TryGetValue(Upgrades.critcalDamage, out bool _)) atkProp.hasCriticalDamage = true;
+            if (pigeonUpgrades.TryGetValue(Upgrades.knockBack, out bool _)) atkProp.hasKnockBack = true;
+            PigeonAttack(atkProp, theAngle);
         }
         if (targetPigeon && currentHP.Value < maxHp.Value / 2)
         {
@@ -228,7 +249,7 @@ public class PigeonAI : Pigeon
                 //runs away when another pigeon is near and on less than half hp
                 Vector2 direction = (transform.position - targetPigeon.transform.position).normalized;
                 CheckDirection(direction);
-                body.AddForce(direction * speed * Time.deltaTime);
+                body.AddForce(speed * Time.deltaTime * direction);
             }
             else if (targetFood)
             {
@@ -236,7 +257,7 @@ public class PigeonAI : Pigeon
                 //goes to neaby food item 
                 Vector2 direction = (targetFood.transform.position - transform.position).normalized;
                 CheckDirection(direction);
-                body.AddForce(direction * speed * Time.deltaTime);
+                body.AddForce(speed * Time.deltaTime * direction);
             }
         }
         else
@@ -246,14 +267,14 @@ public class PigeonAI : Pigeon
                 //goes to neaby food item 
                 Vector2 direction = (targetFood.transform.position - transform.position).normalized;
                 CheckDirection(direction);
-                body.AddForce(direction * speed * Time.deltaTime);
+                body.AddForce(speed * Time.deltaTime * direction);
             }
             else if (targetPigeon)
             {
                 StartSlam(targetPigeon.transform.position);
                 Vector2 direction = (targetPigeon.transform.position - transform.position).normalized;
                 CheckDirection(direction);
-                body.AddForce(direction * speed * Time.deltaTime);
+                body.AddForce(speed * Time.deltaTime * direction);
             }
         }
     }
@@ -272,15 +293,27 @@ public class PigeonAI : Pigeon
             float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
             Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
 
-            PigeonAttackServerRpc(targetPigeon.transform.position, theAngle, no.NetworkObjectId);
+            Vector3 pos = transform.position;
+            AttackProperties atkProp = new()
+            {
+                indexOfDamagingPigeon = no.NetworkObjectId,
+                damage = damage,
+                hasCriticalDamage = false,
+                hasKnockBack = false,
+                posX = pos.x,
+                posY = pos.y,
+            };
+            if (pigeonUpgrades.TryGetValue(Upgrades.critcalDamage, out bool _)) atkProp.hasCriticalDamage = true;
+            if (pigeonUpgrades.TryGetValue(Upgrades.knockBack, out bool _)) atkProp.hasKnockBack = true;
+            PigeonAttack(atkProp, theAngle);
         }
-        if(targetPigeon && targetPigeon.currentHP.Value - damage.Value * 3 <= 0 && !gm.isSuddenDeath)
+        if (targetPigeon && targetPigeon.currentHP.Value - damage * 3 <= 0 && !gm.isSuddenDeath)
         {
             StartSlam(targetPigeon.transform.position);
 
             Vector2 direction = (targetPigeon.transform.position - transform.position).normalized;
             CheckDirection(direction);
-            body.AddForce(direction * speed * Time.deltaTime);
+            body.AddForce(speed * Time.deltaTime * direction);
         }
         else
         {
@@ -291,7 +324,7 @@ public class PigeonAI : Pigeon
                     //runs away when another pigeon is near and on less than half hp
                     Vector2 direction = (transform.position - targetPigeon.transform.position).normalized;
                     CheckDirection(direction);
-                    body.AddForce(direction * speed * Time.deltaTime);
+                    body.AddForce(speed * Time.deltaTime * direction);
                 }
                 else if (targetFood)
                 {
@@ -300,7 +333,7 @@ public class PigeonAI : Pigeon
 
                     Vector2 direction = (targetFood.transform.position - transform.position).normalized;
                     CheckDirection(direction);
-                    body.AddForce(direction * speed * Time.deltaTime);
+                    body.AddForce(speed * Time.deltaTime * direction);
                 }
             }
             else
@@ -310,30 +343,30 @@ public class PigeonAI : Pigeon
                     //goes to neaby food item 
                     Vector2 direction = (targetFood.transform.position - transform.position).normalized;
                     CheckDirection(direction);
-                    body.AddForce(direction * speed * Time.deltaTime);
+                    body.AddForce(speed * Time.deltaTime * direction);
                 }
-                else if (targetPigeon && targetPigeon.currentHP.Value - damage.Value * 8 > 0)
+                else if (targetPigeon && targetPigeon.currentHP.Value - damage * 8 > 0)
                 {
                     StartSlam(targetPigeon.transform.position);
                     Vector2 direction = (targetPigeon.transform.position - transform.position).normalized;
                     CheckDirection(direction);
-                    body.AddForce(direction * speed * Time.deltaTime);
+                    body.AddForce(speed * Time.deltaTime * direction);
                 }
-                else if(targetFood)
+                else if (targetFood)
                 {
                     //goes to neaby food item 
                     Vector2 direction = (targetFood.transform.position - transform.position).normalized;
                     CheckDirection(direction);
-                    body.AddForce(direction * speed * Time.deltaTime);
+                    body.AddForce(speed * Time.deltaTime * direction);
                 }
-                else if(targetPigeon)
+                else if (targetPigeon)
                 {
                     StartSlam(targetPigeon.transform.position);
                     Vector2 direction = (targetPigeon.transform.position - transform.position).normalized;
                     CheckDirection(direction);
-                    body.AddForce(direction * speed * Time.deltaTime);
+                    body.AddForce(speed * Time.deltaTime * direction);
                 }
             }
-        }     
+        }
     }
 }

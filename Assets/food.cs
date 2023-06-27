@@ -23,12 +23,15 @@ public class food : NetworkBehaviour
     private void OnTriggerEnter2D(Collider2D collision)
     {
         Pigeon hitPigeon = collision.GetComponent<Pigeon>();
-        if (hitPigeon && hitPigeon.IsOwner)
+        if (hitPigeon)
         {
-            //hitPigeon.GainXPServerRpc(10);
             hitPigeon.PlayEatSound();
-            hitPigeon.HealServerRpc(hitPigeon.maxHp.Value / 5);
-            DestroyFoodObject(this);
+            if (hitPigeon.IsOwner)
+            {
+                hitPigeon.GainXP(10);
+                hitPigeon.HealServer(hitPigeon.maxHp.Value / 5);
+                DestroyFoodObject(this);
+            }
         }
     }
 

@@ -1,7 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.NetworkInformation;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -82,7 +80,6 @@ public class GameManager : NetworkBehaviour
             for (int x = 0; x < 1000; x++)
             {
                 upgrade = allPigeonUpgrades[Random.Range(0, allPigeonUpgrades.Count)];
-                Debug.Log(player.pigeonUpgrades.Count);
                 if (!upgradesUsed.ContainsKey(upgrade) && !player.pigeonUpgrades.ContainsKey(upgrade)) break;
             }
             upgradesUsed.Add(upgrade, 1);
@@ -134,7 +131,7 @@ public class GameManager : NetworkBehaviour
     {
         DestroyFoodObjectServerRpc(foodie.NetworkObject);
     }
-    [ServerRpc (RequireOwnership =false)]
+    [ServerRpc(RequireOwnership = false)]
     public void DestroyFoodObjectServerRpc(NetworkObjectReference foodie)
     {
         foodie.TryGet(out NetworkObject foodieNetObj);
@@ -143,20 +140,20 @@ public class GameManager : NetworkBehaviour
     }
     private void Awake()
     {
-        currentSecound = secondsTillSuddenDeath;  
-        
+        currentSecound = secondsTillSuddenDeath;
+
         for (int i = 0; i < 0; i++)
         {
             GameObject pigeon = Instantiate(pigeonPrefab, new Vector3(Random.Range(-13f, 13f), Random.Range(-11f, 19f), 0), transform.rotation);
             PigeonAI ai = pigeon.GetComponent<PigeonAI>();
-            ai.SetAI(SuperGM.difficulty);       
+            ai.SetAI(SuperGM.difficulty);
         }
 
     }
 
     private void SceneManager_OnLoadEventCompleted(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
     {
-        foreach(ulong client in NetworkManager.Singleton.ConnectedClientsIds)
+        foreach (ulong client in NetworkManager.Singleton.ConnectedClientsIds)
         {
             GameObject player = Instantiate(playerPrefab, transform.position, transform.rotation);
             player.GetComponent<NetworkObject>().SpawnAsPlayerObject(client, true);
@@ -182,7 +179,7 @@ public class GameManager : NetworkBehaviour
         if (!player) return;
         chageonName.text = "Chadgeon " + " lvl: " + player.level.Value;
 
-        if(player.currentHP.Value <= 0)
+        if (player.currentHP.Value <= 0)
         {
             chadgeonDetialPic.sprite = criticalChad;
             hpBar.localScale = new Vector3(0, 1, 1);
@@ -195,7 +192,7 @@ public class GameManager : NetworkBehaviour
             hpBar.localScale = new Vector3((float)player.currentHP.Value / player.maxHp.Value, 1, 1);
             hpText.text = player.currentHP.Value + "/" + player.maxHp.Value;
 
-            if(player.currentHP.Value >= player.maxHp.Value / 2)
+            if (player.currentHP.Value >= player.maxHp.Value / 2)
             {
                 chadgeonDetialPic.sprite = null;
                 chadgeonDetialPic.color = new Color(0, 0, 0, 0);
@@ -208,12 +205,12 @@ public class GameManager : NetworkBehaviour
         }
         xpBar.localScale = new Vector3((float)player.xp.Value / player.xpTillLevelUp.Value, 1, 1);
         xpText.text = player.xp.Value + "/" + player.xpTillLevelUp.Value;
-        
+
         if (IsServer && canSpawnFood && !isSuddenDeath)
         {
             SpawnFoodServerRpc();
         }
-        
+
     }
 
     [ServerRpc]
@@ -241,7 +238,7 @@ public class GameManager : NetworkBehaviour
 
             int minutes = Mathf.RoundToInt(currentSecound / 60);
             int seconds = currentSecound % 60;
-            if(seconds < 10)
+            if (seconds < 10)
             {
                 timeleftText.text = minutes + ":0" + seconds;
 

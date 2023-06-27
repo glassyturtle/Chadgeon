@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class SigmaAI : PigeonAI
@@ -30,20 +28,32 @@ public class SigmaAI : PigeonAI
                     float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
                     Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
 
-                    PigeonAttackServerRpc(targetPigeon.transform.position, theAngle, no.NetworkObjectId);
+                    Vector3 pos = transform.position;
+                    AttackProperties atkProp = new()
+                    {
+                        indexOfDamagingPigeon = no.NetworkObjectId,
+                        damage = damage,
+                        hasCriticalDamage = false,
+                        hasKnockBack = false,
+                        posX = pos.x,
+                        posY = pos.y,
+                    };
+                    if (pigeonUpgrades.TryGetValue(Upgrades.critcalDamage, out bool a)) atkProp.hasCriticalDamage = true;
+                    if (pigeonUpgrades.TryGetValue(Upgrades.knockBack, out bool d)) atkProp.hasKnockBack = true;
+                    PigeonAttack(atkProp, theAngle);
                 }
                 else
                 {
                     Vector2 direction = (targetPigeon.transform.position - transform.position).normalized;
                     CheckDirection(direction);
-                    body.AddForce(direction * speed * Time.deltaTime);
+                    body.AddForce(speed * Time.deltaTime * direction);
                 }
             }
             else if (targetFood != null)
             {
                 Vector2 direction = (targetFood.transform.position - transform.position).normalized;
                 CheckDirection(direction);
-                body.AddForce(direction * speed * Time.deltaTime);
+                body.AddForce(speed * Time.deltaTime * direction);
             }
         }
     }
