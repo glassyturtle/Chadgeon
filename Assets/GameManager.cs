@@ -135,8 +135,11 @@ public class GameManager : NetworkBehaviour
     public void DestroyFoodObjectServerRpc(NetworkObjectReference foodie)
     {
         foodie.TryGet(out NetworkObject foodieNetObj);
-        food foodieObj = foodieNetObj.GetComponent<food>();
-        foodieObj.DestroySelf();
+        if (foodieNetObj)
+        {
+            food foodieObj = foodieNetObj.GetComponent<food>();
+            foodieObj.DestroySelf();
+        }
     }
     private void Awake()
     {

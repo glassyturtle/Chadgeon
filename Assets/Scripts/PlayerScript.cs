@@ -24,13 +24,13 @@ public class PlayerScript : Pigeon
 
     private void HandleMovement(Vector2 inputVector)
     {
-        if (!isKnockedOut.Value && !isSlaming)
+        if (!isKnockedOut.Value && !isSlaming.Value)
         {
             //Store user input as a movement vector
             body.AddForce(speed * Time.fixedDeltaTime * inputVector);
             if (canSwitchAttackSprites.Value) CheckDirection(inputVector);
         }
-        else if (isSlaming)
+        else if (isSlaming.Value)
         {
             Vector2 direction = (slamPos - transform.position).normalized;
             if (!canSwitchAttackSprites.Value) CheckDirection(direction);
@@ -46,48 +46,39 @@ public class PlayerScript : Pigeon
     {
         SyncPigeonAttributes();
         if (!IsOwner) return;
-        if (!isKnockedOut.Value)
+        if (!isKnockedOut.Value && !isSlaming.Value)
         {
-            if (!isSlaming)
+            if (Input.GetMouseButtonDown(0))
             {
-                if (Input.GetMouseButtonDown(0))
+                Vector2 pos = transform.position;
+                pos = Vector2.MoveTowards(pos, Camera.main.ScreenToWorldPoint(Input.mousePosition), 0.5f);
+
+                Vector3 targ = pos;
+                targ.z = 0f;
+                targ.x -= transform.position.x;
+                targ.y -= transform.position.y;
+
+                float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
+                Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
+
+
+                AttackProperties atkProp = new()
                 {
-                    Vector2 pos = transform.position;
-                    pos = Vector2.MoveTowards(pos, Camera.main.ScreenToWorldPoint(Input.mousePosition), 0.5f);
-
-                    Vector3 targ = pos;
-                    targ.z = 0f;
-                    targ.x -= transform.position.x;
-                    targ.y -= transform.position.y;
-
-                    float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
-                    Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
-
-
-                    AttackProperties atkProp = new()
-                    {
-                        indexOfDamagingPigeon = no.NetworkObjectId,
-                        damage = damage,
-                        hasCriticalDamage = false,
-                        hasKnockBack = false,
-                        posX = pos.x,
-                        posY = pos.y,
-                    };
-                    if (pigeonUpgrades.TryGetValue(Upgrades.critcalDamage, out bool _)) atkProp.hasCriticalDamage = true;
-                    if (pigeonUpgrades.TryGetValue(Upgrades.knockBack, out _)) atkProp.hasKnockBack = true;
-                    PigeonAttack(atkProp, theAngle);
-                }
-                else if (Input.GetKeyDown(KeyCode.Space) && canSlam)
-                {
-                    StartSlam(Camera.main.ScreenToWorldPoint(Input.mousePosition));
-                }
-
+                    pigeonID = NetworkObjectId,
+                    damage = damage,
+                    hasCriticalDamage = false,
+                    hasKnockBack = false,
+                    posX = pos.x,
+                    posY = pos.y,
+                };
+                if (pigeonUpgrades.TryGetValue(Upgrades.critcalDamage, out bool _)) atkProp.hasCriticalDamage = true;
+                if (pigeonUpgrades.TryGetValue(Upgrades.knockBack, out _)) atkProp.hasKnockBack = true;
+                PigeonAttack(atkProp, theAngle);
             }
-        }
-        else if (body.velocity.magnitude < 0.1f && canDeCollide)
-        {
-            canDeCollide = false;
-            bodyCollider.enabled = false;
+            else if (Input.GetKeyDown(KeyCode.Space) && canSlam)
+            {
+                StartSlam(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+            }
         }
     }
     private void FixedUpdate()

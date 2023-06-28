@@ -6,6 +6,7 @@ using UnityEngine;
 public class Pigeon : NetworkBehaviour
 {
     public NetworkVariable<bool> isKnockedOut = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<bool> isSlaming = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> maxHp = new(50, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> currentHP = new(50, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> xp = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
@@ -19,7 +20,6 @@ public class Pigeon : NetworkBehaviour
     [SerializeField] protected Rigidbody2D body;
     [SerializeField] protected CircleCollider2D bodyCollider;
     [SerializeField] protected float speed;
-    [SerializeField] protected NetworkObject no;
     [SerializeField] protected int damage;
 
 
@@ -37,7 +37,7 @@ public class Pigeon : NetworkBehaviour
     [SerializeField] private HitScript slash;
 
     protected int secTillSlam = 5, secTillFly = 15;
-    protected bool canSlam = false, canfly = false, isSlaming, canDeCollide = false;
+    protected bool canSlam = false, canfly = false, canDeCollide = false;
     protected Vector3 slamPos;
 
     private int regen = 3;
@@ -61,7 +61,7 @@ public class Pigeon : NetworkBehaviour
     }
     public struct AttackProperties : INetworkSerializable
     {
-        public ulong indexOfDamagingPigeon;
+        public ulong pigeonID;
         public int damage;
         public bool hasCriticalDamage;
         public bool hasKnockBack;
@@ -72,7 +72,7 @@ public class Pigeon : NetworkBehaviour
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
-            serializer.SerializeValue(ref indexOfDamagingPigeon);
+            serializer.SerializeValue(ref pigeonID);
             serializer.SerializeValue(ref damage);
             serializer.SerializeValue(ref hasCriticalDamage);
             serializer.SerializeValue(ref hasKnockBack);
@@ -85,18 +85,20 @@ public class Pigeon : NetworkBehaviour
     public struct DealtDamageProperties : INetworkSerializable
     {
         public bool hasDied;
-        public bool hasHit;
+        public int xpOnKill;
+        public int damageDealt;
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
             serializer.SerializeValue(ref hasDied);
-            serializer.SerializeValue(ref hasHit);
+            serializer.SerializeValue(ref xpOnKill);
+            serializer.SerializeValue(ref damageDealt);
         }
     }
 
-
     public void OnPigeonHit(AttackProperties atkProp)
     {
+
         //Stops calculating if successufly dodged
         if (pigeonUpgrades.ContainsKey(Upgrades.dodge) && Random.Range(0, 100) <= 30) return;
 
@@ -106,7 +108,7 @@ public class Pigeon : NetworkBehaviour
 
         //Calculates total damage taken with modifiers
         int totalDamageTaking = atkProp.damage;
-        if (isSlaming) totalDamageTaking /= 2;
+        if (isSlaming.Value) totalDamageTaking /= 2;
         if (atkProp.hasCriticalDamage && Random.Range(0, 100) <= 10) totalDamageTaking *= 4;
         if (pigeonUpgrades.ContainsKey(Upgrades.tough)) totalDamageTaking = Mathf.RoundToInt(totalDamageTaking * 0.7f);
         currentHP.Value -= totalDamageTaking;
@@ -126,13 +128,29 @@ public class Pigeon : NetworkBehaviour
         }
 
         //Logic when pigeon has no health and is not already knocked out
-        if (currentHP.Value > 0 || isKnockedOut.Value) return;
-        isSlaming = false;
-        StopCoroutine(StopSlam());
+        bool hasBeenKO = false;
+        if (currentHP.Value <= 0 && !isKnockedOut.Value)
+        {
+            hasBeenKO = true;
+            totalDamageTaking -= currentHP.Value;
+            currentHP.Value = 0;
+            isSlaming.Value = false;
+            StopCoroutine(StopSlam());
 
-        isKnockedOut.Value = true;
-        sr.sortingOrder = -1;
-        StartCoroutine(Respawn());
+            isKnockedOut.Value = true;
+            StartCoroutine(Respawn());
+        }
+
+
+        DealtDamageProperties ddProp = new DealtDamageProperties
+        {
+            hasDied = hasBeenKO,
+            damageDealt = totalDamageTaking,
+            xpOnKill = level.Value * 15,
+        };
+
+        OnDealtDamageServerRpc(ddProp, atkProp.pigeonID);
+
 
         /*
         if (gm.isSuddenDeath)
@@ -166,7 +184,6 @@ public class Pigeon : NetworkBehaviour
             LevelUP();
         }
     }
-
     public void HealServer(int amt)
     {
         if (isKnockedOut.Value) return;
@@ -175,12 +192,26 @@ public class Pigeon : NetworkBehaviour
 
     }
 
-
-    public void OnDealtDamage(DealtDamageProperties ddProp)
+    [ServerRpc]
+    private void OnDealtDamageServerRpc(DealtDamageProperties ddProp, ulong pigeonID)
     {
+        NetworkObject ob = NetworkManager.Singleton.SpawnManager.SpawnedObjects[pigeonID];
+        if (!ob) return;
+        ob.GetComponent<Pigeon>().ReciveDamageClientRpc(ddProp, pigeonID);
+    }
 
-        if (pigeonUpgrades.ContainsKey(Upgrades.lifeSteal)) HealServer(damage / 3);
+    [ClientRpc]
+    public void ReciveDamageClientRpc(DealtDamageProperties ddProp, ulong pigeonID)
+    {
+        if (!IsOwner || pigeonID != NetworkObjectId) return;
+        if (pigeonUpgrades.ContainsKey(Upgrades.lifeSteal)) HealServer(ddProp.damageDealt / 3);
 
+        GainXP(ddProp.damageDealt / 4);
+
+        if (ddProp.hasDied)
+        {
+            GainXP(ddProp.xpOnKill);
+        }
 
         if (!audioSource.isPlaying)
         {
@@ -207,6 +238,7 @@ public class Pigeon : NetworkBehaviour
                 break;
             case Upgrades.bulk:
                 maxHp.Value += 50;
+                currentHP.Value += 50;
                 break;
             case Upgrades.fly:
                 canfly = true;
@@ -221,7 +253,9 @@ public class Pigeon : NetworkBehaviour
 
     protected void PigeonAttack(AttackProperties atkProp, Quaternion theAngle)
     {
-        slash.Activate(new Vector3(atkProp.posX, atkProp.posY), theAngle);
+
+        slash.attackProperties.Value = atkProp;
+        slash.Activate(new Vector3(atkProp.posX, atkProp.posY), theAngle, isSlaming.Value);
 
         if (currentPigeonAttackSprite.Value == 0) currentPigeonAttackSprite.Value = 1;
         else currentPigeonAttackSprite.Value = 0;
@@ -241,13 +275,6 @@ public class Pigeon : NetworkBehaviour
             }
             atkProp.isFacingLeft = isPointingLeft.Value;
             StartCoroutine(DelayBeforeSpriteChange());
-        }
-
-        slash.attackProperties.Value = atkProp;
-
-        if (isSlaming)
-        {
-            slash.transform.localScale = new Vector3(6, 6, 1);
         }
 
     }
@@ -285,14 +312,23 @@ public class Pigeon : NetworkBehaviour
     {
         if (!canSlam) return;
         canSlam = false;
-        isSlaming = true;
+        isSlaming.Value = true;
+        canSwitchAttackSprites.Value = false;
+        if (desiredSlamPos.x > transform.position.x)
+        {
+            isPointingLeft.Value = true;
+        }
+        else
+        {
+            isPointingLeft.Value = false;
+        }
         slamPos = Vector2.MoveTowards(transform.position, desiredSlamPos, 5f);
         StartCoroutine(StopSlam());
-        sr.sprite = pigeonSlamSprite;
     }
     protected void EndSlam()
     {
-        if (!isSlaming) return;
+        if (!isSlaming.Value) return;
+        canSwitchAttackSprites.Value = true;
 
         Vector3 targ = slamPos;
         targ.z = 0f;
@@ -304,7 +340,7 @@ public class Pigeon : NetworkBehaviour
 
         AttackProperties atkProp = new()
         {
-            indexOfDamagingPigeon = no.NetworkObjectId,
+            pigeonID = NetworkObjectId,
             damage = damage,
             hasCriticalDamage = false,
             hasKnockBack = false,
@@ -318,7 +354,7 @@ public class Pigeon : NetworkBehaviour
 
         StartCoroutine(SlamCoolDown());
         StopCoroutine(StopSlam());
-        isSlaming = false;
+        isSlaming.Value = false;
         if (isPlayer)
         {
             StartCoroutine(gm.StartSlamCoolDown());
@@ -331,16 +367,29 @@ public class Pigeon : NetworkBehaviour
         {
             displayText.text = pigeonName + " LVL:" + level.Value;
         }
+
         if (isKnockedOut.Value)
         {
+            bodyCollider.enabled = false;
+            sr.sortingOrder = -1;
+
             if (!IsOwner)
             {
                 hpBar.gameObject.SetActive(false);
             }
             sr.flipY = true;
         }
+        else if (isSlaming.Value)
+        {
+            bodyCollider.enabled = false;
+            sr.sprite = pigeonSlamSprite;
+            sr.sortingOrder = 1;
+        }
         else
         {
+            bodyCollider.enabled = true;
+            sr.sortingOrder = 0;
+
             if (!IsOwner)
             {
                 hpBar.gameObject.SetActive(true);
@@ -387,7 +436,7 @@ public class Pigeon : NetworkBehaviour
     {
         level.Value++;
         xp.Value -= xpTillLevelUp.Value;
-        xpTillLevelUp.Value = Mathf.RoundToInt(xpTillLevelUp.Value * 1.15f);
+        xpTillLevelUp.Value = Mathf.RoundToInt(xpTillLevelUp.Value * 1.25f);
         damage++;
         maxHp.Value += 5;
         currentHP.Value += 5;
@@ -434,9 +483,6 @@ public class Pigeon : NetworkBehaviour
         currentHP.Value = maxHp.Value;
         if (pigeonUpgrades.ContainsKey(Upgrades.slam)) canSlam = true;
         isKnockedOut.Value = false;
-        bodyCollider.enabled = true;
-        sr.sortingOrder = 0;
-        sr.flipY = false;
     }
     private IEnumerator JumpAnimation()
     {

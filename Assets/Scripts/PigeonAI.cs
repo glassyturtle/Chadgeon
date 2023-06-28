@@ -54,7 +54,7 @@ public class PigeonAI : Pigeon
     {
         if (!isKnockedOut.Value)
         {
-            if (!isSlaming)
+            if (!isSlaming.Value)
             {
                 float distanceToPigeon = Mathf.Infinity;
                 float distanceToFood = Mathf.Infinity;
@@ -63,7 +63,7 @@ public class PigeonAI : Pigeon
 
                 behaviorAI?.Invoke(distanceToPigeon, distanceToFood);
             }
-            else if (isSlaming)
+            else if (isSlaming.Value)
             {
                 Vector2 direction = (slamPos - transform.position).normalized;
                 CheckDirection(direction);
@@ -193,7 +193,7 @@ public class PigeonAI : Pigeon
 
                     AttackProperties atkProp = new()
                     {
-                        indexOfDamagingPigeon = no.NetworkObjectId,
+                        pigeonID = NetworkObjectId,
                         damage = damage,
                         hasCriticalDamage = false,
                         hasKnockBack = false,
@@ -231,7 +231,7 @@ public class PigeonAI : Pigeon
             Vector3 pos = transform.position;
             AttackProperties atkProp = new()
             {
-                indexOfDamagingPigeon = no.NetworkObjectId,
+                pigeonID = NetworkObjectId,
                 damage = damage,
                 hasCriticalDamage = false,
                 hasKnockBack = false,
@@ -296,7 +296,7 @@ public class PigeonAI : Pigeon
             Vector3 pos = transform.position;
             AttackProperties atkProp = new()
             {
-                indexOfDamagingPigeon = no.NetworkObjectId,
+                pigeonID = NetworkObjectId,
                 damage = damage,
                 hasCriticalDamage = false,
                 hasKnockBack = false,

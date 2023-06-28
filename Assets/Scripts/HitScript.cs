@@ -14,11 +14,31 @@ public class HitScript : NetworkBehaviour
 
     private void Update()
     {
-        if (isVisible.Value) sr.enabled = true;
-        else sr.enabled = false;
+        if (isVisible.Value)
+        {
+            sr.enabled = true;
+            area.enabled = true;
+        }
+        else
+        {
+            sr.enabled = false;
+            area.enabled = false;
+        }
     }
-    public void Activate(Vector3 pos, Quaternion angle)
+    public void Activate(Vector3 pos, Quaternion angle, bool isSlaming)
     {
+
+        if (isSlaming)
+        {
+            transform.localScale = new Vector3(6, 6, 1);
+            mask.transform.localScale = new Vector3(20, 20, 1);
+
+        }
+        else
+        {
+            transform.localScale = new Vector3(2, 2, 1);
+            mask.transform.localScale = new Vector3(2, 2, 1);
+        }
 
         StopAllCoroutines();
         LeanTween.cancel(gameObject);
@@ -40,8 +60,6 @@ public class HitScript : NetworkBehaviour
         StartCoroutine(Damage());
 
         if (!IsOwner) return;
-        area.enabled = true;
-        area.enabled = false;
         transform.SetPositionAndRotation(pos, angle);
     }
 
@@ -50,14 +68,13 @@ public class HitScript : NetworkBehaviour
     {
         yield return new WaitForSeconds(0.1f);
         isVisible.Value = false;
-        if (IsOwner) area.enabled = false;
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
         Pigeon hitPigeon = collision.GetComponent<Pigeon>();
 
-        if (!IsOwner || !hitPigeon || !hitPigeon.IsOwner || attackProperties.Value.indexOfDamagingPigeon == hitPigeon.NetworkObjectId) return;
+        if (!hitPigeon || !hitPigeon.IsOwner || attackProperties.Value.pigeonID == hitPigeon.NetworkObjectId) return;
 
         hitPigeon.OnPigeonHit(attackProperties.Value);
     }

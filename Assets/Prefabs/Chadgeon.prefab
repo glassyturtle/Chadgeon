@@ -171,14 +171,14 @@ MonoBehaviour:
   SyncRotAngleX: 0
   SyncRotAngleY: 0
   SyncRotAngleZ: 1
-  SyncScaleX: 0
-  SyncScaleY: 0
+  SyncScaleX: 1
+  SyncScaleY: 1
   SyncScaleZ: 0
   PositionThreshold: 0.001
   RotAngleThreshold: 0.01
   ScaleThreshold: 0.01
-  InLocalSpace: 0
-  Interpolate: 1
+  InLocalSpace: 1
+  Interpolate: 0
 --- !u!1 &4109731896568974251
 GameObject:
   m_ObjectHideFlags: 0
@@ -378,6 +378,7 @@ GameObject:
   - component: {fileID: 4961322488758605400}
   - component: {fileID: 4961322488758605401}
   - component: {fileID: 8360621642241915643}
+  - component: {fileID: 6443526103554164401}
   m_Layer: 0
   m_Name: Chadgeon
   m_TagString: Untagged
@@ -471,6 +472,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isKnockedOut:
     m_InternalValue: 0
+  isSlaming:
+    m_InternalValue: 0
   maxHp:
     m_InternalValue: 50
   currentHP:
@@ -487,7 +490,6 @@ MonoBehaviour:
   body: {fileID: 4961322488758605414}
   bodyCollider: {fileID: 4961322488758605415}
   speed: 800
-  no: {fileID: 4961322488758605401}
   damage: 5
   audioSource: {fileID: 4961322488758605400}
   hitClips:
@@ -688,6 +690,18 @@ MonoBehaviour:
   ScaleThreshold: 0.01
   InLocalSpace: 0
   Interpolate: 1
+--- !u!114 &6443526103554164401
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4961322488758605410}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80d7c879794dfda4687da0e400131852, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &5386974835321764459
 GameObject:
   m_ObjectHideFlags: 0
@@ -866,6 +880,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4024008224428301390}
   - component: {fileID: 2633863833625406683}
+  - component: {fileID: 5570298894760231886}
   m_Layer: 0
   m_Name: MAsk
   m_TagString: damage
@@ -939,3 +954,29 @@ SpriteMask:
   m_BackSortingOrder: 0
   m_IsCustomRangeActive: 0
   m_SpriteSortPoint: 1
+--- !u!114 &5570298894760231886
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8571630991815128293}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f39188bd761047042a2d3321516b8b18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SyncPositionX: 0
+  SyncPositionY: 1
+  SyncPositionZ: 0
+  SyncRotAngleX: 0
+  SyncRotAngleY: 1
+  SyncRotAngleZ: 0
+  SyncScaleX: 1
+  SyncScaleY: 1
+  SyncScaleZ: 0
+  PositionThreshold: 0.4
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  InLocalSpace: 1
+  Interpolate: 0

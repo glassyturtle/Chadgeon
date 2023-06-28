@@ -31,7 +31,7 @@ public class SigmaAI : PigeonAI
                     Vector3 pos = transform.position;
                     AttackProperties atkProp = new()
                     {
-                        indexOfDamagingPigeon = no.NetworkObjectId,
+                        pigeonID = NetworkObjectId,
                         damage = damage,
                         hasCriticalDamage = false,
                         hasKnockBack = false,
