@@ -22,17 +22,17 @@ public class PigeonAI : Pigeon
         {
             case 0:
                 behaviorAI = SimpBehavior;
-                pigeonName = "Simp";
+                pigeonName.Value = "Simp";
                 hitColldown = 0.3f;
                 break;
             case 1:
                 behaviorAI = ChadBehavior;
-                pigeonName = "Chad";
+                pigeonName.Value = "Chad";
                 hitColldown = 0.2f;
                 break;
             case 2:
                 behaviorAI = SigmaBehavior;
-                pigeonName = "Sigma";
+                pigeonName.Value = "Sigma";
                 hitColldown = 0.15f;
                 break;
         }
@@ -307,7 +307,7 @@ public class PigeonAI : Pigeon
             if (pigeonUpgrades.TryGetValue(Upgrades.knockBack, out bool _)) atkProp.hasKnockBack = true;
             PigeonAttack(atkProp, theAngle);
         }
-        if (targetPigeon && targetPigeon.currentHP.Value - damage * 3 <= 0 && !gm.isSuddenDeath)
+        if (targetPigeon && targetPigeon.currentHP.Value - damage * 3 <= 0 && !gm.isSuddenDeath.Value)
         {
             StartSlam(targetPigeon.transform.position);
 

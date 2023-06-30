@@ -1,3 +1,4 @@
+using Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -11,17 +12,23 @@ public class GameManager : NetworkBehaviour
 
     public List<Pigeon.Upgrades> allPigeonUpgrades;
 
-    public bool isSuddenDeath = false;
-    public int currentSecound;
-    public List<Pigeon> allpigeons = new List<Pigeon>();
+    public NetworkVariable<bool> isSuddenDeath = new NetworkVariable<bool>(false);
+    public NetworkVariable<int> currentSecound = new NetworkVariable<int>(0);
     public Pigeon player;
+    public List<Pigeon> allpigeons = new List<Pigeon>();
     public GameObject pigeonPrefab;
+    public CinemachineVirtualCamera mainCamera;
+
 
     [SerializeField] AudioSource audioSource, clickSound;
     [SerializeField] AudioClip gigaChadSong;
     [SerializeField] int secondsTillSuddenDeath;
     [SerializeField] Image icecreamBar;
-    [SerializeField] GameObject suddenDeathText, winScreen, loseScreen, defaultGUI, upgradeScreen, pauseMenu, cooldownIcon;
+    [SerializeField] Button mainMenuButton, endScreenMainMenuButton;
+
+    [SerializeField] GameObject suddenDeathText, endScreen, playerUI, gameUI, upgradeScreen, pauseMenu, cooldownIcon, spectateScreen;
+    [SerializeField] TMP_Text endGameDescriptionText, spectatingText;
+
     [SerializeField] RectTransform hpBar;
     [SerializeField] RectTransform xpBar;
     [SerializeField] GameObject FoodPrefab;
@@ -51,17 +58,71 @@ public class GameManager : NetworkBehaviour
     {
         AudioListener.volume = volumeSlider.value;
     }
-    public void Win()
+    public int GetSurvivingPigeonsCount()
     {
-        Time.timeScale = 0;
-        winScreen.SetActive(true);
-        defaultGUI.SetActive(false);
+        int survivors = 0;
+        foreach (Pigeon pigeon in allpigeons)
+        {
+            if (!pigeon.isKnockedOut.Value) survivors++;
+        }
+        return survivors;
     }
-    public void Lose()
+    public void CheckWinGame()
     {
-        Time.timeScale = 0;
-        loseScreen.SetActive(true);
-        defaultGUI.SetActive(false);
+        int currentAlivePigeons = GetSurvivingPigeonsCount();
+        Debug.Log(currentAlivePigeons);
+        if (currentAlivePigeons <= 1)
+        {
+            //Someone Won the Game display credits
+            ShowWinScreenClientRpc();
+        }
+    }
+    private void Awake()
+    {
+        mainMenuButton.onClick.AddListener(() =>
+        {
+            NetworkManager.Singleton.Shutdown();
+            SceneManager.LoadScene("MainMenu");
+        });
+        endScreenMainMenuButton.onClick.AddListener(() =>
+        {
+            NetworkManager.Singleton.Shutdown();
+            SceneManager.LoadScene("MainMenu");
+        });
+    }
+
+    [ClientRpc]
+    public void ShowWinScreenClientRpc()
+    {
+        gameUI.SetActive(false);
+
+        foreach (Pigeon pigeon in allpigeons)
+        {
+            if (!pigeon.isKnockedOut.Value)
+            {
+                endGameDescriptionText.text = pigeon.pigeonName.Value + " has defeated all of his rivals and ascended to sigma pigeon status";
+
+                break;
+            }
+        }
+
+        endScreen.SetActive(true);
+    }
+
+    public void StartSpectating()
+    {
+        foreach (Pigeon pigeon in allpigeons)
+        {
+            if (!pigeon.isKnockedOut.Value)
+            {
+                playerUI.SetActive(false);
+                spectateScreen.SetActive(true);
+                spectatingText.text = "Spectating " + pigeon.pigeonName.Value;
+                mainCamera.Follow = pigeon.transform;
+                break;
+            }
+        }
+
     }
     public void ReturnToMainMenu()
     {
@@ -103,13 +164,13 @@ public class GameManager : NetworkBehaviour
         {
             Time.timeScale = 1;
             pauseMenu.SetActive(false);
-            defaultGUI.SetActive(true);
+            gameUI.SetActive(true);
         }
         else
         {
             Time.timeScale = 0;
             pauseMenu.SetActive(true);
-            defaultGUI.SetActive(false);
+            gameUI.SetActive(false);
         }
     }
     public IEnumerator StartSlamCoolDown()
@@ -126,6 +187,10 @@ public class GameManager : NetworkBehaviour
     {
         cooldownIcon.SetActive(true);
     }
+    public void SpectateNext()
+    {
+
+    }
 
     public void DestroyFoodObject(food foodie)
     {
@@ -141,18 +206,7 @@ public class GameManager : NetworkBehaviour
             foodieObj.DestroySelf();
         }
     }
-    private void Awake()
-    {
-        currentSecound = secondsTillSuddenDeath;
 
-        for (int i = 0; i < 0; i++)
-        {
-            GameObject pigeon = Instantiate(pigeonPrefab, new Vector3(Random.Range(-13f, 13f), Random.Range(-11f, 19f), 0), transform.rotation);
-            PigeonAI ai = pigeon.GetComponent<PigeonAI>();
-            ai.SetAI(SuperGM.difficulty);
-        }
-
-    }
 
     private void SceneManager_OnLoadEventCompleted(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
     {
@@ -165,7 +219,18 @@ public class GameManager : NetworkBehaviour
 
     private void Start()
     {
-        StartCoroutine(DepreciateIceCream());
+        if (IsOwnedByServer)
+        {
+            currentSecound.Value = secondsTillSuddenDeath;
+
+            for (int i = 0; i < 0; i++)
+            {
+                GameObject pigeon = Instantiate(pigeonPrefab, new Vector3(Random.Range(-13f, 13f), Random.Range(-11f, 19f), 0), transform.rotation);
+                PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+                ai.SetAI(SuperGM.difficulty);
+            }
+            StartCoroutine(DepreciateIceCream());
+        }
     }
     public void SetFullScreen()
     {
@@ -173,6 +238,19 @@ public class GameManager : NetworkBehaviour
     }
     private void Update()
     {
+        int minutes = Mathf.RoundToInt(currentSecound.Value / 60);
+        int seconds = currentSecound.Value % 60;
+        if (seconds < 10)
+        {
+            timeleftText.text = minutes + ":0" + seconds;
+        }
+        else
+        {
+            timeleftText.text = minutes + ":" + seconds;
+        }
+        icecreamBar.fillAmount = (float)currentSecound.Value / secondsTillSuddenDeath;
+
+
         if (!audioSource.isPlaying)
         {
             audioSource.clip = gigaChadSong;
@@ -180,7 +258,7 @@ public class GameManager : NetworkBehaviour
             audioSource.Play();
         }
         if (!player) return;
-        chageonName.text = "Chadgeon " + " lvl: " + player.level.Value;
+        chageonName.text = GameDataHolder.multiplayerName + " " + " lvl: " + player.level.Value;
 
         if (player.currentHP.Value <= 0)
         {
@@ -209,7 +287,7 @@ public class GameManager : NetworkBehaviour
         xpBar.localScale = new Vector3((float)player.xp.Value / player.xpTillLevelUp.Value, 1, 1);
         xpText.text = player.xp.Value + "/" + player.xpTillLevelUp.Value;
 
-        if (IsServer && canSpawnFood && !isSuddenDeath)
+        if (IsServer && canSpawnFood && !isSuddenDeath.Value)
         {
             SpawnFoodServerRpc();
         }
@@ -221,7 +299,6 @@ public class GameManager : NetworkBehaviour
     {
         StartCoroutine(SpawnFoodDelay());
     }
-
     IEnumerator SpawnFoodDelay()
     {
         canSpawnFood = false;
@@ -230,37 +307,26 @@ public class GameManager : NetworkBehaviour
         yield return new WaitForSeconds(0.35f);
         canSpawnFood = true;
     }
-
     IEnumerator DepreciateIceCream()
     {
         while (true)
         {
-            yield return new WaitForSecondsRealtime(1);
-            currentSecound--;
-
-
-            int minutes = Mathf.RoundToInt(currentSecound / 60);
-            int seconds = currentSecound % 60;
-            if (seconds < 10)
+            yield return new WaitForSeconds(1);
+            currentSecound.Value--;
+            if (currentSecound.Value <= 0)
             {
-                timeleftText.text = minutes + ":0" + seconds;
-
-            }
-            else
-            {
-                timeleftText.text = minutes + ":" + seconds;
-
-            }
-
-            icecreamBar.fillAmount = (float)currentSecound / secondsTillSuddenDeath;
-            if (currentSecound <= 0)
-            {
-                suddenDeathText.SetActive(true);
-                isSuddenDeath = true;
+                ActivateSuddenDeathUIClientRpc();
+                isSuddenDeath.Value = true;
                 yield break;
 
             }
             yield return null;
         }
+    }
+
+    [ClientRpc]
+    private void ActivateSuddenDeathUIClientRpc()
+    {
+        suddenDeathText.SetActive(true);
     }
 }

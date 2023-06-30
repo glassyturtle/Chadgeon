@@ -1,9 +1,7 @@
-using Cinemachine;
 using UnityEngine;
 
 public class PlayerScript : Pigeon
 {
-    [SerializeField] private GameObject nameText;
     private void Awake()
     {
         transform.position = new Vector3(Random.Range(-13, 13), Random.Range(-11, 19), 0);
@@ -12,9 +10,8 @@ public class PlayerScript : Pigeon
     {
         OnPigeonSpawn();
         if (!IsOwner) return;
-        FindObjectOfType<GameManager>().player = this;
-        CinemachineVirtualCamera camera = FindObjectOfType<CinemachineVirtualCamera>();
-        camera.Follow = transform;
+        gm.player = this;
+        gm.mainCamera.Follow = transform;
     }
     private void HandleMovement()
     {

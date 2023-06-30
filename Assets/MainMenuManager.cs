@@ -10,11 +10,13 @@ public class MainMenuManager : NetworkBehaviour
     [SerializeField] TMP_InputField inputCode;
     [SerializeField] TMP_Text playersConnectedText, codeText, joinCodeText;
     [SerializeField] testRelay realy;
+    [SerializeField] TMP_InputField nameInputField;
     [SerializeField] GameObject mainMenu, joinMenu, connectingMenu;
 
 
     private void Awake()
     {
+        if (nameInputField && GameDataHolder.multiplayerName != "") nameInputField.text = GameDataHolder.multiplayerName;
         if (hostGameButton)
         {
             hostGameButton.onClick.AddListener(() =>
@@ -68,6 +70,10 @@ public class MainMenuManager : NetworkBehaviour
         mainMenu.SetActive(false);
         joinMenu.SetActive(false);
     }
+    public void SetMultiplayerName(string name)
+    {
+        GameDataHolder.multiplayerName = name;
+    }
     public void QuitGame()
     {
         Application.Quit();
@@ -77,15 +83,19 @@ public class MainMenuManager : NetworkBehaviour
         if (playersConnectedText)
         {
             joinCodeText.text = "Join Code:" + GameDataHolder.joinCode;
-            if (IsOwner)
-                SetPlayerCountServerRpc();
-            else playersConnectedText.text = "Connected To Host!";
+            if (IsOwner) SetPlayerCountServerRpc();
         }
     }
     [ServerRpc]
     private void SetPlayerCountServerRpc()
     {
-        playersConnectedText.text = "Players Connected:" + NetworkManager.Singleton.ConnectedClients.Count.ToString();
+        SetPlayerCountClientRpc(NetworkManager.Singleton.ConnectedClients.Count);
+    }
+    [ClientRpc]
+    private void SetPlayerCountClientRpc(int value)
+    {
+        playersConnectedText.text = "Players Connected:" + value.ToString();
 
     }
+
 }

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -12,10 +13,11 @@ public class Pigeon : NetworkBehaviour
     public NetworkVariable<int> xp = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> xpTillLevelUp = new(20, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> level = new(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<int> survivalPlace = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<FixedString128Bytes> pigeonName = new("", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public Dictionary<Upgrades, bool> pigeonUpgrades = new();
 
     [SerializeField] protected GameManager gm;
-    [SerializeField] protected string pigeonName;
     [SerializeField] protected TextMesh displayText;
     [SerializeField] protected Rigidbody2D body;
     [SerializeField] protected CircleCollider2D bodyCollider;
@@ -129,16 +131,32 @@ public class Pigeon : NetworkBehaviour
 
         //Logic when pigeon has no health and is not already knocked out
         bool hasBeenKO = false;
+
         if (currentHP.Value <= 0 && !isKnockedOut.Value)
         {
-            hasBeenKO = true;
-            totalDamageTaking -= currentHP.Value;
-            currentHP.Value = 0;
-            isSlaming.Value = false;
-            StopCoroutine(StopSlam());
+            if (gm.isSuddenDeath.Value)
+            {
 
-            isKnockedOut.Value = true;
-            StartCoroutine(Respawn());
+                hasBeenKO = true;
+                totalDamageTaking -= currentHP.Value;
+                currentHP.Value = 0;
+                isSlaming.Value = false;
+                StopCoroutine(StopSlam());
+                isKnockedOut.Value = true;
+                survivalPlace.Value = gm.GetSurvivingPigeonsCount() + 1;
+                gm.StartSpectating();
+                gm.CheckWinGame();
+            }
+            else
+            {
+                hasBeenKO = true;
+                totalDamageTaking -= currentHP.Value;
+                currentHP.Value = 0;
+                isSlaming.Value = false;
+                StopCoroutine(StopSlam());
+                isKnockedOut.Value = true;
+                StartCoroutine(Respawn());
+            }
         }
 
 
@@ -151,29 +169,6 @@ public class Pigeon : NetworkBehaviour
 
         OnDealtDamageServerRpc(ddProp, atkProp.pigeonID);
 
-
-        /*
-        if (gm.isSuddenDeath)
-        {
-            if (this == gm.player)
-            {
-                gm.Lose();
-                Destroy(gameObject);
-            }
-            else
-            {
-                gm.allpigeons.Remove(this);
-                if (gm.allpigeons.Count == 1)
-                    gm.Win();
-                Destroy(gameObject);
-            }
-        }
-        else
-        {
-
-
-        }
-        */
     }
     public void GainXP(int amnt)
     {
@@ -284,6 +279,8 @@ public class Pigeon : NetworkBehaviour
     {
         if (IsOwner)
         {
+            if (GameDataHolder.multiplayerName == "") pigeonName.Value = "Chadgeon";
+            else pigeonName.Value = GameDataHolder.multiplayerName;
             StartCoroutine(JumpAnimation());
             healthBarGameobject.SetActive(false);
             displayText.gameObject.SetActive(false);
@@ -365,7 +362,7 @@ public class Pigeon : NetworkBehaviour
         sr.flipX = isPointingLeft.Value;
         if (!IsOwner)
         {
-            displayText.text = pigeonName + " LVL:" + level.Value;
+            displayText.text = pigeonName.Value + " LVL:" + level.Value;
         }
 
         if (isKnockedOut.Value)
