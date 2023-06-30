@@ -3200,7 +3200,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: V0.0.3
+  m_text: V0.1.0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c98f979f8366ac8418df1bb8eae68b7d, type: 2}
   m_sharedMaterial: {fileID: 2108584977860465703, guid: c98f979f8366ac8418df1bb8eae68b7d, type: 2}
@@ -3401,6 +3401,7 @@ MonoBehaviour:
   hostGameButton: {fileID: 230222900}
   createGameButton: {fileID: 917539156}
   startGameButton: {fileID: 0}
+  mainMenuButton: {fileID: 0}
   inputCode: {fileID: 244862796}
   playersConnectedText: {fileID: 0}
   codeText: {fileID: 0}
@@ -4214,7 +4215,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Mulitiplayer Alpha
+  m_text: Mulitiplayer Beta
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c98f979f8366ac8418df1bb8eae68b7d, type: 2}
   m_sharedMaterial: {fileID: 2108584977860465703, guid: c98f979f8366ac8418df1bb8eae68b7d, type: 2}

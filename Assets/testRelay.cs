@@ -13,6 +13,7 @@ public class testRelay : MonoBehaviour
     private async void Start()
     {
         await UnityServices.InitializeAsync();
+        if (AuthenticationService.Instance.IsSignedIn) return;
 
         AuthenticationService.Instance.SignedIn += () =>
         {
@@ -26,10 +27,9 @@ public class testRelay : MonoBehaviour
     {
         try
         {
-            Allocation allocation = await RelayService.Instance.CreateAllocationAsync(5);
+            Allocation allocation = await RelayService.Instance.CreateAllocationAsync(11);
 
             string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
-            //Debug.Log(joinCode);
             GameDataHolder.joinCode = joinCode;
 
             RelayServerData relayServerData = new RelayServerData(allocation, "dtls");
@@ -38,9 +38,9 @@ public class testRelay : MonoBehaviour
             NetworkManager.Singleton.SceneManager.LoadScene("LobbyMenu", LoadSceneMode.Single);
 
         }
-        catch (RelayServiceException)
+        catch (RelayServiceException e)
         {
-            //Debug.LogException(e);
+            Debug.LogException(e);
         }
     }
 
@@ -54,13 +54,10 @@ public class testRelay : MonoBehaviour
             RelayServerData relayServerData = new RelayServerData(joinAllocation, "dtls");
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
             NetworkManager.Singleton.StartClient();
-            //Debug.Log("joining Relay with" + joinCode);
-
-
         }
-        catch (RelayServiceException)
+        catch (RelayServiceException e)
         {
-            //Debug.Log(e);
+            Debug.Log(e);
         }
     }
 }

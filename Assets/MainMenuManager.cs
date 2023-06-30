@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class MainMenuManager : NetworkBehaviour
 {
-    [SerializeField] Button hostGameButton, createGameButton, startGameButton;
+    [SerializeField] Button hostGameButton, createGameButton, startGameButton, mainMenuButton;
     [SerializeField] TMP_InputField inputCode;
     [SerializeField] TMP_Text playersConnectedText, codeText, joinCodeText;
     [SerializeField] testRelay realy;
@@ -35,6 +35,14 @@ public class MainMenuManager : NetworkBehaviour
             startGameButton.onClick.AddListener(() =>
             {
                 NetworkManager.Singleton.SceneManager.LoadScene("SimpMode", LoadSceneMode.Single);
+            });
+        }
+        if (mainMenuButton)
+        {
+            mainMenuButton.onClick.AddListener(() =>
+            {
+                NetworkManager.Singleton.Shutdown();
+                SceneManager.LoadScene("MainMenu");
             });
         }
     }
