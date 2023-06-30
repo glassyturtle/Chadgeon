@@ -176,7 +176,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_Color: {r: 0.18039216, g: 0.16862746, b: 0.16470589, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -912,7 +912,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0.18039216, g: 0.16862746, b: 0.16470589, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -969,7 +969,7 @@ AudioSource:
   m_GameObject: {fileID: 1449001594}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 8039669732385089750, guid: 32d2e39bcc813294b8c754f30e945082, type: 2}
   m_audioClip: {fileID: 8300000, guid: 5d7d790be58563a4bb16886fbc7f9002, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 0.2
@@ -1647,9 +1647,11 @@ MonoBehaviour:
   codeText: {fileID: 0}
   joinCodeText: {fileID: 159919555}
   realy: {fileID: 0}
+  nameInputField: {fileID: 0}
   mainMenu: {fileID: 0}
   joinMenu: {fileID: 0}
   connectingMenu: {fileID: 0}
+  creatingGameMenu: {fileID: 0}
 --- !u!82 &1540534395
 AudioSource:
   m_ObjectHideFlags: 0

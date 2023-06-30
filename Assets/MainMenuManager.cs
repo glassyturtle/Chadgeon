@@ -11,7 +11,7 @@ public class MainMenuManager : NetworkBehaviour
     [SerializeField] TMP_Text playersConnectedText, codeText, joinCodeText;
     [SerializeField] testRelay realy;
     [SerializeField] TMP_InputField nameInputField;
-    [SerializeField] GameObject mainMenu, joinMenu, connectingMenu;
+    [SerializeField] GameObject mainMenu, joinMenu, connectingMenu, creatingGameMenu;
 
 
     private void Awake()
@@ -21,6 +21,7 @@ public class MainMenuManager : NetworkBehaviour
         {
             hostGameButton.onClick.AddListener(() =>
             {
+                GoToHostingGameMenu();
                 realy.CreateRelay();
             });
         }
@@ -34,6 +35,7 @@ public class MainMenuManager : NetworkBehaviour
         }
         if (startGameButton)
         {
+            if (!NetworkManager.Singleton.IsHost) startGameButton.gameObject.SetActive(false);
             startGameButton.onClick.AddListener(() =>
             {
                 NetworkManager.Singleton.SceneManager.LoadScene("SimpMode", LoadSceneMode.Single);
@@ -63,6 +65,11 @@ public class MainMenuManager : NetworkBehaviour
     {
         HideAllMenus();
         connectingMenu.SetActive(true);
+    }
+    public void GoToHostingGameMenu()
+    {
+        HideAllMenus();
+        creatingGameMenu.SetActive(true);
     }
     private void HideAllMenus()
     {

@@ -13,7 +13,6 @@ public class Pigeon : NetworkBehaviour
     public NetworkVariable<int> xp = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> xpTillLevelUp = new(20, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> level = new(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-    public NetworkVariable<int> survivalPlace = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<FixedString128Bytes> pigeonName = new("", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public Dictionary<Upgrades, bool> pigeonUpgrades = new();
 
@@ -143,9 +142,7 @@ public class Pigeon : NetworkBehaviour
                 isSlaming.Value = false;
                 StopCoroutine(StopSlam());
                 isKnockedOut.Value = true;
-                survivalPlace.Value = gm.GetSurvivingPigeonsCount() + 1;
                 gm.StartSpectating();
-                gm.CheckWinGame();
             }
             else
             {
@@ -431,9 +428,9 @@ public class Pigeon : NetworkBehaviour
     }
     private void LevelUP()
     {
-        level.Value++;
         xp.Value -= xpTillLevelUp.Value;
-        xpTillLevelUp.Value = Mathf.RoundToInt(xpTillLevelUp.Value * 1.25f);
+        xpTillLevelUp.Value += 5 * level.Value;
+        level.Value++;
         damage++;
         maxHp.Value += 5;
         currentHP.Value += 5;
@@ -476,10 +473,22 @@ public class Pigeon : NetworkBehaviour
     {
         StartCoroutine(CheckDecollide());
         yield return new WaitForSeconds(5);
-        canDeCollide = false;
-        currentHP.Value = maxHp.Value;
-        if (pigeonUpgrades.ContainsKey(Upgrades.slam)) canSlam = true;
-        isKnockedOut.Value = false;
+        if (gm.isSuddenDeath.Value)
+        {
+            StopCoroutine(StopSlam());
+            isKnockedOut.Value = true;
+            gm.StartSpectating();
+            yield return null;
+        }
+        else
+        {
+            canDeCollide = false;
+            currentHP.Value = maxHp.Value;
+            if (pigeonUpgrades.ContainsKey(Upgrades.slam)) canSlam = true;
+            isKnockedOut.Value = false;
+        }
+
+
     }
     private IEnumerator JumpAnimation()
     {

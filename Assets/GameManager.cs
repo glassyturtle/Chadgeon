@@ -12,8 +12,8 @@ public class GameManager : NetworkBehaviour
 
     public List<Pigeon.Upgrades> allPigeonUpgrades;
 
-    public NetworkVariable<bool> isSuddenDeath = new NetworkVariable<bool>(false);
-    public NetworkVariable<int> currentSecound = new NetworkVariable<int>(0);
+    public NetworkVariable<bool> isSuddenDeath = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<int> currentSecound = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public Pigeon player;
     public List<Pigeon> allpigeons = new List<Pigeon>();
     public GameObject pigeonPrefab;
@@ -28,6 +28,8 @@ public class GameManager : NetworkBehaviour
 
     [SerializeField] GameObject suddenDeathText, endScreen, playerUI, gameUI, upgradeScreen, pauseMenu, cooldownIcon, spectateScreen;
     [SerializeField] TMP_Text endGameDescriptionText, spectatingText;
+    [SerializeField] GameObject endingLeaderboardTextPrefab;
+    [SerializeField] RectTransform leaderBoardTransform;
 
     [SerializeField] RectTransform hpBar;
     [SerializeField] RectTransform xpBar;
@@ -45,9 +47,10 @@ public class GameManager : NetworkBehaviour
     [SerializeField] Sprite[] upgradeButtonSprites;
     [SerializeField] int[] spriteLocationsForEachUpgrade;
     [SerializeField] string[] upgradeNames;
-
+    bool gameover = false;
     bool canSpawnFood = true;
     private Pigeon.Upgrades[] upgradesThatCanBeSelected = new Pigeon.Upgrades[3];
+    private int currentSpectate = 0;
 
     public override void OnNetworkSpawn()
     {
@@ -69,10 +72,11 @@ public class GameManager : NetworkBehaviour
     }
     public void CheckWinGame()
     {
+        if (gameover) return;
         int currentAlivePigeons = GetSurvivingPigeonsCount();
-        Debug.Log(currentAlivePigeons);
         if (currentAlivePigeons <= 1)
         {
+            gameover = true;
             //Someone Won the Game display credits
             ShowWinScreenClientRpc();
         }
@@ -94,15 +98,17 @@ public class GameManager : NetworkBehaviour
     [ClientRpc]
     public void ShowWinScreenClientRpc()
     {
+
         gameUI.SetActive(false);
 
         foreach (Pigeon pigeon in allpigeons)
         {
+            GameObject ob = Instantiate(endingLeaderboardTextPrefab, leaderBoardTransform);
+            ob.GetComponent<TMP_Text>().text = pigeon.pigeonName.Value + " - LVL:" + pigeon.level.Value.ToString();
+
             if (!pigeon.isKnockedOut.Value)
             {
                 endGameDescriptionText.text = pigeon.pigeonName.Value + " has defeated all of his rivals and ascended to sigma pigeon status";
-
-                break;
             }
         }
 
@@ -111,10 +117,12 @@ public class GameManager : NetworkBehaviour
 
     public void StartSpectating()
     {
-        foreach (Pigeon pigeon in allpigeons)
+        for (int i = 0; i < allpigeons.Count; i++)
         {
+            Pigeon pigeon = allpigeons[i];
             if (!pigeon.isKnockedOut.Value)
             {
+                currentSpectate = i;
                 playerUI.SetActive(false);
                 spectateScreen.SetActive(true);
                 spectatingText.text = "Spectating " + pigeon.pigeonName.Value;
@@ -122,7 +130,6 @@ public class GameManager : NetworkBehaviour
                 break;
             }
         }
-
     }
     public void ReturnToMainMenu()
     {
@@ -162,13 +169,11 @@ public class GameManager : NetworkBehaviour
         clickSound.Play();
         if (isOpen)
         {
-            Time.timeScale = 1;
             pauseMenu.SetActive(false);
             gameUI.SetActive(true);
         }
         else
         {
-            Time.timeScale = 0;
             pauseMenu.SetActive(true);
             gameUI.SetActive(false);
         }
@@ -189,7 +194,25 @@ public class GameManager : NetworkBehaviour
     }
     public void SpectateNext()
     {
-
+        currentSpectate++;
+        if (currentSpectate > allpigeons.Count - 1)
+        {
+            currentSpectate = 0;
+        }
+        Pigeon pigeon = allpigeons[currentSpectate];
+        mainCamera.Follow = pigeon.transform;
+        spectatingText.text = "Spectating " + pigeon.pigeonName.Value;
+    }
+    public void SpectatePreviouse()
+    {
+        currentSpectate--;
+        if (currentSpectate < 0)
+        {
+            currentSpectate = allpigeons.Count - 1;
+        }
+        Pigeon pigeon = allpigeons[currentSpectate];
+        mainCamera.Follow = pigeon.transform;
+        spectatingText.text = "Spectating " + pigeon.pigeonName.Value;
     }
 
     public void DestroyFoodObject(food foodie)
@@ -219,7 +242,7 @@ public class GameManager : NetworkBehaviour
 
     private void Start()
     {
-        if (IsOwnedByServer)
+        if (IsOwnedByServer && IsOwner)
         {
             currentSecound.Value = secondsTillSuddenDeath;
 
@@ -258,7 +281,10 @@ public class GameManager : NetworkBehaviour
             audioSource.Play();
         }
         if (!player) return;
-        chageonName.text = GameDataHolder.multiplayerName + " " + " lvl: " + player.level.Value;
+
+        if (GameDataHolder.multiplayerName != "") chageonName.text = GameDataHolder.multiplayerName + " " + " lvl: " + player.level.Value;
+        else chageonName.text = "Chadgeon " + " lvl: " + player.level.Value;
+
 
         if (player.currentHP.Value <= 0)
         {
@@ -292,6 +318,10 @@ public class GameManager : NetworkBehaviour
             SpawnFoodServerRpc();
         }
 
+        if (IsOwnedByServer && isSuddenDeath.Value)
+        {
+            CheckWinGame();
+        }
     }
 
     [ServerRpc]
@@ -304,7 +334,7 @@ public class GameManager : NetworkBehaviour
         canSpawnFood = false;
         GameObject food = Instantiate(FoodPrefab, new Vector3(Random.Range(-13f, 13f), Random.Range(-11f, 19f), 0), transform.rotation);
         food.GetComponent<NetworkObject>().Spawn();
-        yield return new WaitForSeconds(0.35f);
+        yield return new WaitForSeconds(1f);
         canSpawnFood = true;
     }
     IEnumerator DepreciateIceCream()
