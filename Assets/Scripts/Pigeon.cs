@@ -7,6 +7,7 @@ using UnityEngine;
 public class Pigeon : NetworkBehaviour
 {
     public NetworkVariable<bool> isKnockedOut = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<bool> isFlying = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<bool> isSlaming = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> maxHp = new(50, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> currentHP = new(50, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
@@ -31,14 +32,14 @@ public class Pigeon : NetworkBehaviour
     [SerializeField] private GameObject healthBarGameobject;
     [SerializeField] private Transform hpBar;
     [SerializeField] private SpriteRenderer sr;
-    [SerializeField] private Sprite defaultPigeonSprite, pigeonJumpSprite, pigeonSlamSprite;
+    [SerializeField] private Sprite defaultPigeonSprite, pigeonJumpSprite, pigeonSlamSprite, pigeonFlap1Sprite, pigeonFlap2Sprite;
     [SerializeField] private Sprite[] pigeonAttackSprites;
     [SerializeField] private bool isPlayer = false;
     [SerializeField] private PigeonAI pigeonAI;
     [SerializeField] private HitScript slash;
 
     protected int secTillSlam = 5, secTillFly = 15;
-    protected bool canSlam = false, canfly = false, canDeCollide = false;
+    protected bool canSlam = false, canfly = false;
     protected Vector3 slamPos;
 
     private int regen = 3;
@@ -46,6 +47,7 @@ public class Pigeon : NetworkBehaviour
     private NetworkVariable<bool> isSpriteNotHopping = new(true, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     protected NetworkVariable<bool> canSwitchAttackSprites = new(true, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     private NetworkVariable<int> currentPigeonAttackSprite = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    private NetworkVariable<int> currentFlySprite = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
 
     public enum Upgrades
@@ -364,14 +366,27 @@ public class Pigeon : NetworkBehaviour
 
         if (isKnockedOut.Value)
         {
+            if (isFlying.Value)
+            {
+                sr.sortingOrder = 1;
+                if (currentFlySprite.Value == 0) sr.sprite = pigeonFlap1Sprite;
+                else sr.sprite = pigeonFlap2Sprite;
+
+                sr.flipY = false;
+
+            }
+            else
+            {
+                sr.sortingOrder = -1;
+                sr.flipY = true;
+
+            }
             bodyCollider.enabled = false;
-            sr.sortingOrder = -1;
 
             if (!IsOwner)
             {
                 hpBar.gameObject.SetActive(false);
             }
-            sr.flipY = true;
         }
         else if (isSlaming.Value)
         {
@@ -471,8 +486,7 @@ public class Pigeon : NetworkBehaviour
     }
     private IEnumerator Respawn()
     {
-        StartCoroutine(CheckDecollide());
-        yield return new WaitForSeconds(5);
+        yield return new WaitForSeconds(3);
         if (gm.isSuddenDeath.Value)
         {
             StopCoroutine(StopSlam());
@@ -482,14 +496,19 @@ public class Pigeon : NetworkBehaviour
         }
         else
         {
-            canDeCollide = false;
-            currentHP.Value = maxHp.Value;
-            if (pigeonUpgrades.ContainsKey(Upgrades.slam)) canSlam = true;
-            isKnockedOut.Value = false;
+            StartFly();
+
         }
-
-
     }
+    private void StartFly()
+    {
+
+        isFlying.Value = true;
+        slamPos = Vector2.MoveTowards(transform.position, new Vector3(Random.Range(-13f, 13f), Random.Range(-11f, 19f), 0), 50f);
+        StartCoroutine(StopFlight());
+        StartCoroutine(FlyAnimation());
+    }
+
     private IEnumerator JumpAnimation()
     {
         while (true)
@@ -510,6 +529,17 @@ public class Pigeon : NetworkBehaviour
             yield return new WaitForSeconds(0.2f);
         }
     }
+    private IEnumerator FlyAnimation()
+    {
+        while (true)
+        {
+            currentFlySprite.Value = 0;
+            yield return new WaitForSeconds(0.3f);
+            currentFlySprite.Value = 1;
+            yield return new WaitForSeconds(0.3f);
+        }
+    }
+
     private IEnumerator DelayBeforeSpriteChange()
     {
         yield return new WaitForSeconds(0.15f);
@@ -523,11 +553,6 @@ public class Pigeon : NetworkBehaviour
             HealServer(regen);
         }
     }
-    private IEnumerator CheckDecollide()
-    {
-        yield return new WaitForSeconds(1);
-        canDeCollide = true;
-    }
     private IEnumerator SlamCoolDown()
     {
         yield return new WaitForSeconds(3);
@@ -537,6 +562,18 @@ public class Pigeon : NetworkBehaviour
     {
         yield return new WaitForSeconds(0.5f);
         EndSlam();
+    }
+    private IEnumerator StopFlight()
+    {
+        yield return new WaitForSeconds(5f);
+        StopFlying();
+    }
+    protected void StopFlying()
+    {
+        isFlying.Value = false;
+        if (pigeonUpgrades.ContainsKey(Upgrades.slam)) canSlam = true;
+        currentHP.Value = maxHp.Value;
+        isKnockedOut.Value = false;
     }
 
 }

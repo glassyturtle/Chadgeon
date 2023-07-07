@@ -74,11 +74,7 @@ public class PigeonAI : Pigeon
                 }
             }
         }
-        else if (body.velocity.magnitude < 0.1f && canDeCollide)
-        {
-            canDeCollide = false;
-            bodyCollider.enabled = false;
-        }
+
     }
 
     public void AILevelUP()

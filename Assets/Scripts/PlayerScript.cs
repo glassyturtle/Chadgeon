@@ -21,7 +21,16 @@ public class PlayerScript : Pigeon
 
     private void HandleMovement(Vector2 inputVector)
     {
-        if (!isKnockedOut.Value && !isSlaming.Value)
+        if (isFlying.Value)
+        {
+            Vector2 direction = (slamPos - transform.position).normalized;
+            body.AddForce(4 * speed * Time.fixedDeltaTime * direction);
+            if ((transform.position - slamPos).sqrMagnitude <= 0.1f)
+            {
+                StopFlying();
+            }
+        }
+        else if (!isKnockedOut.Value && !isSlaming.Value)
         {
             //Store user input as a movement vector
             body.AddForce(speed * Time.fixedDeltaTime * inputVector);
