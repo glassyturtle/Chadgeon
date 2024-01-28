@@ -196,7 +196,7 @@ public class PigeonAI : Pigeon
                         posX = slamPos.x,
                         posY = slamPos.y,
                     }; if (pigeonUpgrades.TryGetValue(Upgrades.critcalDamage, out bool a)) atkProp.hasCriticalDamage = true;
-                    if (pigeonUpgrades.TryGetValue(Upgrades.knockBack, out bool d)) atkProp.hasKnockBack = true;
+                    if (pigeonUpgrades.TryGetValue(Upgrades.brawler, out bool d)) atkProp.hasKnockBack = true;
                     PigeonAttack(atkProp, theAngle);
                 }
                 else
@@ -235,7 +235,7 @@ public class PigeonAI : Pigeon
                 posY = pos.y,
             };
             if (pigeonUpgrades.TryGetValue(Upgrades.critcalDamage, out bool _)) atkProp.hasCriticalDamage = true;
-            if (pigeonUpgrades.TryGetValue(Upgrades.knockBack, out bool _)) atkProp.hasKnockBack = true;
+            if (pigeonUpgrades.TryGetValue(Upgrades.brawler, out bool _)) atkProp.hasKnockBack = true;
             PigeonAttack(atkProp, theAngle);
         }
         if (targetPigeon && currentHP.Value < maxHp.Value / 2)
@@ -300,7 +300,7 @@ public class PigeonAI : Pigeon
                 posY = pos.y,
             };
             if (pigeonUpgrades.TryGetValue(Upgrades.critcalDamage, out bool _)) atkProp.hasCriticalDamage = true;
-            if (pigeonUpgrades.TryGetValue(Upgrades.knockBack, out bool _)) atkProp.hasKnockBack = true;
+            if (pigeonUpgrades.TryGetValue(Upgrades.brawler, out bool _)) atkProp.hasKnockBack = true;
             PigeonAttack(atkProp, theAngle);
         }
         if (targetPigeon && targetPigeon.currentHP.Value - damage * 3 <= 0 && !gm.isSuddenDeath.Value)

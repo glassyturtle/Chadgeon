@@ -33,7 +33,11 @@ public class PlayerScript : Pigeon
         else if (!isKnockedOut.Value && !isSlaming.Value)
         {
             //Store user input as a movement vector
-            body.AddForce(speed * Time.fixedDeltaTime * inputVector);
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                body.AddForce(speed * 2 * Time.fixedDeltaTime * inputVector);
+            }
+            else body.AddForce(speed * Time.fixedDeltaTime * inputVector);
             if (canSwitchAttackSprites.Value) CheckDirection(inputVector);
         }
         else if (isSlaming.Value)
@@ -78,7 +82,7 @@ public class PlayerScript : Pigeon
                     posY = pos.y,
                 };
                 if (pigeonUpgrades.TryGetValue(Upgrades.critcalDamage, out bool _)) atkProp.hasCriticalDamage = true;
-                if (pigeonUpgrades.TryGetValue(Upgrades.knockBack, out _)) atkProp.hasKnockBack = true;
+                if (pigeonUpgrades.TryGetValue(Upgrades.brawler, out _)) atkProp.hasKnockBack = true;
                 PigeonAttack(atkProp, theAngle);
             }
             else if (Input.GetKeyDown(KeyCode.Space) && canSlam)

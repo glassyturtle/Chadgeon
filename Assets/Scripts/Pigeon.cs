@@ -38,8 +38,8 @@ public class Pigeon : NetworkBehaviour
     [SerializeField] private PigeonAI pigeonAI;
     [SerializeField] private HitScript slash;
 
-    protected int secTillSlam = 5, secTillFly = 15;
-    protected bool canSlam = false, canfly = false;
+    protected int secTillSlam = 5;
+    protected bool canSlam = false;
     protected Vector3 slamPos;
 
     private int regen = 3;
@@ -54,13 +54,20 @@ public class Pigeon : NetworkBehaviour
     {
         regen = 0,
         tough = 1,
-        knockBack = 2,
-        bulk = 3,
-        lifeSteal = 4,
-        dodge = 5,
+        brawler = 2,
+        hearty = 3,
+        bloodLust = 4,
+        evasive = 5,
         critcalDamage = 6,
         slam = 7,
-        fly = 8,
+        nest = 9,
+        swiftness = 10,
+        hiddinTalon = 11,
+        peckingOrder = 12,
+        bleed = 13,
+        enchanted = 14,
+        superFeed = 15,
+        assassin = 16,
     }
     public struct AttackProperties : INetworkSerializable
     {
@@ -103,7 +110,7 @@ public class Pigeon : NetworkBehaviour
     {
 
         //Stops calculating if successufly dodged
-        if (pigeonUpgrades.ContainsKey(Upgrades.dodge) && Random.Range(0, 100) <= 30) return;
+        if (pigeonUpgrades.ContainsKey(Upgrades.evasive) && Random.Range(0, 100) <= 30) return;
 
         //Gets the knockback direction of the hit
         Vector2 direction = transform.position - new Vector3(atkProp.posX, atkProp.posY);
@@ -198,7 +205,7 @@ public class Pigeon : NetworkBehaviour
     public void ReciveDamageClientRpc(DealtDamageProperties ddProp, ulong pigeonID)
     {
         if (!IsOwner || pigeonID != NetworkObjectId) return;
-        if (pigeonUpgrades.ContainsKey(Upgrades.lifeSteal)) HealServer(ddProp.damageDealt / 3);
+        if (pigeonUpgrades.ContainsKey(Upgrades.bloodLust)) HealServer(ddProp.damageDealt / 3);
 
         GainXP(ddProp.damageDealt / 4);
 
@@ -230,12 +237,9 @@ public class Pigeon : NetworkBehaviour
             case Upgrades.regen:
                 regen = 10;
                 break;
-            case Upgrades.bulk:
+            case Upgrades.hearty:
                 maxHp.Value += 50;
                 currentHP.Value += 50;
-                break;
-            case Upgrades.fly:
-                canfly = true;
                 break;
             case Upgrades.slam:
                 if (isPlayer) gm.ShowSlamCoolDown();
@@ -345,7 +349,7 @@ public class Pigeon : NetworkBehaviour
             posY = slamPos.y,
         };
         if (pigeonUpgrades.TryGetValue(Upgrades.critcalDamage, out bool _)) atkProp.hasCriticalDamage = true;
-        if (pigeonUpgrades.TryGetValue(Upgrades.knockBack, out bool _)) atkProp.hasKnockBack = true;
+        if (pigeonUpgrades.TryGetValue(Upgrades.brawler, out bool _)) atkProp.hasKnockBack = true;
         PigeonAttack(atkProp, theAngle);
 
         StartCoroutine(SlamCoolDown());

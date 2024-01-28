@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 737a1e9f7eb9afe439797e17bf6610d2, type: 3}
+  m_Name: ClassicSkin
+  m_EditorClassIdentifier: 
+  skinName: 
+  hop1: {fileID: 21300000, guid: 3adb59ff74753354981f692132e08b32, type: 3}
+  hop2: {fileID: 21300000, guid: 872347edaf40eb64aa702236eb4738c3, type: 3}
+  punch1: {fileID: 21300000, guid: e2aca8b9a7356c94ca1cf8d297c07be2, type: 3}
+  punch2: {fileID: 21300000, guid: 7d3d2a1ec326d7148ab2e4df9443ec06, type: 3}
+  slam: {fileID: 21300000, guid: c045434706829ad4db587b1ecceab1c3, type: 3}
+  fly1: {fileID: 21300000, guid: f6defcd2c1a6b6f4e80029b36c398627, type: 3}
+  fly2: {fileID: 21300000, guid: c1cd77c5052e1464a80ee600a9416266, type: 3}

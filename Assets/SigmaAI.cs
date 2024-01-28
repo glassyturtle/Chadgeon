@@ -39,7 +39,7 @@ public class SigmaAI : PigeonAI
                         posY = pos.y,
                     };
                     if (pigeonUpgrades.TryGetValue(Upgrades.critcalDamage, out bool a)) atkProp.hasCriticalDamage = true;
-                    if (pigeonUpgrades.TryGetValue(Upgrades.knockBack, out bool d)) atkProp.hasKnockBack = true;
+                    if (pigeonUpgrades.TryGetValue(Upgrades.brawler, out bool d)) atkProp.hasKnockBack = true;
                     PigeonAttack(atkProp, theAngle);
                 }
                 else

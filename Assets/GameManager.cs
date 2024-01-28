@@ -23,7 +23,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] AudioSource audioSource, clickSound;
     [SerializeField] AudioClip gigaChadSong;
     [SerializeField] int secondsTillSuddenDeath;
-    [SerializeField] Image icecreamBar;
+    [SerializeField] Image icecreamBar, healthBar, xpBar, sprintBar;
     [SerializeField] Button mainMenuButton, endScreenMainMenuButton;
 
     [SerializeField] GameObject suddenDeathText, endScreen, playerUI, gameUI, upgradeScreen, pauseMenu, cooldownIcon, spectateScreen;
@@ -31,22 +31,17 @@ public class GameManager : NetworkBehaviour
     [SerializeField] GameObject endingLeaderboardTextPrefab;
     [SerializeField] RectTransform leaderBoardTransform;
 
-    [SerializeField] RectTransform hpBar;
-    [SerializeField] RectTransform xpBar;
     [SerializeField] GameObject FoodPrefab;
-    [SerializeField] TextMeshProUGUI hpText, timeleftText, slamCoolDownText;
-    [SerializeField] TextMeshProUGUI xpText;
-    [SerializeField] Sprite defaultChad, hurtChad, criticalChad, blinkChad;
-    [SerializeField] Image chadgeonPic;
-    [SerializeField] Image chadgeonDetialPic;
+    [SerializeField] TextMeshProUGUI hpText, timeleftText;
+    [SerializeField] TextMeshProUGUI levelText;
     [SerializeField] TextMeshProUGUI chageonName;
     [SerializeField] Slider volumeSlider;
     [SerializeField] GameObject playerPrefab;
     [SerializeField] Image[] upgradeButtonImages;
     [SerializeField] TextMeshProUGUI[] upgradeButtonText;
     [SerializeField] Sprite[] upgradeButtonSprites;
-    [SerializeField] int[] spriteLocationsForEachUpgrade;
     [SerializeField] string[] upgradeNames;
+    [SerializeField] string[] upgradeDesc;
     bool gameover = false;
     bool canSpawnFood = true;
     private Pigeon.Upgrades[] upgradesThatCanBeSelected = new Pigeon.Upgrades[3];
@@ -152,8 +147,8 @@ public class GameManager : NetworkBehaviour
             }
             upgradesUsed.Add(upgrade, 1);
             upgradesThatCanBeSelected[i] = upgrade;
-            upgradeButtonImages[i].sprite = upgradeButtonSprites[spriteLocationsForEachUpgrade[(int)upgrade]];
-            upgradeButtonText[i].text = upgradeNames[(int)upgrade];
+            upgradeButtonImages[i].sprite = upgradeButtonSprites[i];
+            upgradeButtonText[i].text = upgradeNames[i];
         }
 
         upgradeScreen.SetActive(true);
@@ -180,13 +175,16 @@ public class GameManager : NetworkBehaviour
     }
     public IEnumerator StartSlamCoolDown()
     {
+        /*
         slamCoolDownText.text = 3.ToString();
         yield return new WaitForSeconds(1);
         slamCoolDownText.text = 2.ToString();
         yield return new WaitForSeconds(1);
         slamCoolDownText.text = 1.ToString();
+                */
         yield return new WaitForSeconds(1);
-        slamCoolDownText.text = 0.ToString();
+        //slamCoolDownText.text = 0.ToString();
+
     }
     public void ShowSlamCoolDown()
     {
@@ -254,6 +252,8 @@ public class GameManager : NetworkBehaviour
             }
             StartCoroutine(DepreciateIceCream());
         }
+        if (GameDataHolder.multiplayerName != "") chageonName.text = GameDataHolder.multiplayerName;
+        else chageonName.text = "Chadgeon ";
     }
     public void SetFullScreen()
     {
@@ -282,36 +282,13 @@ public class GameManager : NetworkBehaviour
         }
         if (!player) return;
 
-        if (GameDataHolder.multiplayerName != "") chageonName.text = GameDataHolder.multiplayerName + " " + " lvl: " + player.level.Value;
-        else chageonName.text = "Chadgeon " + " lvl: " + player.level.Value;
 
 
-        if (player.currentHP.Value <= 0)
-        {
-            chadgeonDetialPic.sprite = criticalChad;
-            hpBar.localScale = new Vector3(0, 1, 1);
-            hpText.text = 0 + "/" + player.maxHp.Value;
-            chadgeonDetialPic.color = Color.white;
 
-        }
-        else
-        {
-            hpBar.localScale = new Vector3((float)player.currentHP.Value / player.maxHp.Value, 1, 1);
-            hpText.text = player.currentHP.Value + "/" + player.maxHp.Value;
-
-            if (player.currentHP.Value >= player.maxHp.Value / 2)
-            {
-                chadgeonDetialPic.sprite = null;
-                chadgeonDetialPic.color = new Color(0, 0, 0, 0);
-            }
-            else
-            {
-                chadgeonDetialPic.sprite = hurtChad;
-                chadgeonDetialPic.color = Color.white;
-            }
-        }
-        xpBar.localScale = new Vector3((float)player.xp.Value / player.xpTillLevelUp.Value, 1, 1);
-        xpText.text = player.xp.Value + "/" + player.xpTillLevelUp.Value;
+        healthBar.fillAmount = (float)player.currentHP.Value / player.maxHp.Value;
+        hpText.text = (float)player.currentHP.Value + "/" + player.maxHp.Value;
+        xpBar.fillAmount = (float)player.xp.Value / player.xpTillLevelUp.Value;
+        levelText.text = player.level.Value.ToString();
 
         if (IsServer && canSpawnFood && !isSuddenDeath.Value)
         {
