@@ -23,15 +23,16 @@ public class GameManager : NetworkBehaviour
     [SerializeField] AudioSource audioSource, clickSound;
     [SerializeField] AudioClip gigaChadSong;
     [SerializeField] int secondsTillSuddenDeath;
-    [SerializeField] Image icecreamBar, healthBar, xpBar, sprintBar;
+    [SerializeField] Image icecreamBar, healthBar, xpBar, sprintBar, staminaCooldownBar;
     [SerializeField] Button mainMenuButton, endScreenMainMenuButton;
 
-    [SerializeField] GameObject suddenDeathText, endScreen, playerUI, gameUI, upgradeScreen, pauseMenu, cooldownIcon, spectateScreen;
-    [SerializeField] TMP_Text endGameDescriptionText, spectatingText;
-    [SerializeField] GameObject endingLeaderboardTextPrefab;
+    [SerializeField] GameObject suddenDeathText, endScreen, playerUI, gameUI, upgradeScreen, pauseMenu, cooldownIcon, spectateScreen, leaderboard, sprintUI;
+    [SerializeField] TMP_Text endGameDescriptionText, spectatingText, upgradeDescText;
+    [SerializeField] GameObject endingLeaderboardTextPrefab, upgradeDescUI;
     [SerializeField] RectTransform leaderBoardTransform;
+    [SerializeField] private GameObject[] upgradeDisplays;
 
-    [SerializeField] GameObject FoodPrefab;
+    [SerializeField] GameObject FoodPrefab, upgradeHolder;
     [SerializeField] TextMeshProUGUI hpText, timeleftText;
     [SerializeField] TextMeshProUGUI levelText;
     [SerializeField] TextMeshProUGUI chageonName;
@@ -44,6 +45,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] string[] upgradeDesc;
     bool gameover = false;
     bool canSpawnFood = true;
+    bool pauseMenuOpen = false;
     private Pigeon.Upgrades[] upgradesThatCanBeSelected = new Pigeon.Upgrades[3];
     private int currentSpectate = 0;
 
@@ -109,7 +111,21 @@ public class GameManager : NetworkBehaviour
 
         endScreen.SetActive(true);
     }
-
+    public void AddUpgradeToDisply(int upgrade)
+    {
+        upgradeHolder.SetActive(true);
+        upgradeDisplays[upgrade].SetActive(true);
+    }
+    public void ShowUpgradeDes(int desc)
+    {
+        upgradeDescUI.SetActive(true);
+        upgradeDescText.text = upgradeDesc[desc];
+    }
+    public void CloseUpgradeDes()
+    {
+        upgradeDescText.text = "";
+        upgradeDescUI.SetActive(false);
+    }
     public void StartSpectating()
     {
         for (int i = 0; i < allpigeons.Count; i++)
@@ -158,20 +174,6 @@ public class GameManager : NetworkBehaviour
         clickSound.Play();
         upgradeScreen.SetActive(false);
         player.AddUpgrade(upgradesThatCanBeSelected[selected]);
-    }
-    public void OpenPauseMenu(bool isOpen)
-    {
-        clickSound.Play();
-        if (isOpen)
-        {
-            pauseMenu.SetActive(false);
-            gameUI.SetActive(true);
-        }
-        else
-        {
-            pauseMenu.SetActive(true);
-            gameUI.SetActive(false);
-        }
     }
     public IEnumerator StartSlamCoolDown()
     {
@@ -282,8 +284,40 @@ public class GameManager : NetworkBehaviour
         }
         if (!player) return;
 
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (pauseMenuOpen == true)
+            {
+                pauseMenuOpen = false;
+                pauseMenu.SetActive(false);
+            }
+            else
+            {
+                pauseMenuOpen = true;
+                pauseMenu.SetActive(true);
 
+            }
+        }
 
+        if (Input.GetKey(KeyCode.Tab))
+        {
+            leaderboard.SetActive(true);
+        }
+        else
+        {
+            leaderboard.SetActive(false);
+        }
+
+        if (player.isSprinting.Value == true)
+        {
+            sprintUI.SetActive(true);
+            sprintBar.fillAmount = player.stamina / player.maxStamina;
+        }
+        else
+        {
+            staminaCooldownBar.fillAmount = player.stamina / player.maxStamina;
+            sprintUI.SetActive(false);
+        }
 
         healthBar.fillAmount = (float)player.currentHP.Value / player.maxHp.Value;
         hpText.text = (float)player.currentHP.Value + "/" + player.maxHp.Value;

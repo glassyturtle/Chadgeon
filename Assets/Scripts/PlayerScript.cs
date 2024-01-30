@@ -33,11 +33,29 @@ public class PlayerScript : Pigeon
         else if (!isKnockedOut.Value && !isSlaming.Value)
         {
             //Store user input as a movement vector
-            if (Input.GetKey(KeyCode.LeftShift))
+            if (Input.GetKey(KeyCode.LeftShift) && (stamina >= maxStamina || isSprinting.Value == true))
             {
+                if (stamina <= 0)
+                {
+                    isSprinting.Value = false;
+                    stamina = 0;
+                    return;
+                }
+                isSprinting.Value = true;
                 body.AddForce(speed * 2 * Time.fixedDeltaTime * inputVector);
+                stamina -= Time.fixedDeltaTime;
             }
-            else body.AddForce(speed * Time.fixedDeltaTime * inputVector);
+            else
+            {
+                body.AddForce(speed * Time.fixedDeltaTime * inputVector);
+                if (stamina < maxStamina)
+                {
+                    isSprinting.Value = false;
+                    stamina += Time.fixedDeltaTime;
+                    if (stamina > maxStamina) stamina = maxStamina;
+                }
+            }
+
             if (canSwitchAttackSprites.Value) CheckDirection(inputVector);
         }
         else if (isSlaming.Value)
@@ -58,8 +76,10 @@ public class PlayerScript : Pigeon
         if (!IsOwner) return;
         if (!isKnockedOut.Value && !isSlaming.Value)
         {
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButton(0) && !isSprinting.Value && punchCooldown <= 0)
             {
+                punchCooldown = 0.3f;
+
                 Vector2 pos = transform.position;
                 pos = Vector2.MoveTowards(pos, Camera.main.ScreenToWorldPoint(Input.mousePosition), 0.5f);
 
@@ -88,6 +108,15 @@ public class PlayerScript : Pigeon
             else if (Input.GetKeyDown(KeyCode.Space) && canSlam)
             {
                 StartSlam(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+            }
+
+            if (punchCooldown > 0)
+            {
+                punchCooldown -= Time.deltaTime;
+            }
+            else
+            {
+                punchCooldown = 0;
             }
         }
     }

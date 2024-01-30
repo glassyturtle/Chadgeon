@@ -9,13 +9,16 @@ public class Pigeon : NetworkBehaviour
     public NetworkVariable<bool> isKnockedOut = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<bool> isFlying = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<bool> isSlaming = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-    public NetworkVariable<int> maxHp = new(50, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-    public NetworkVariable<int> currentHP = new(50, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<int> maxHp = new(20, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<int> currentHP = new(20, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> xp = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> xpTillLevelUp = new(20, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> level = new(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<FixedString128Bytes> pigeonName = new("", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public Dictionary<Upgrades, bool> pigeonUpgrades = new();
+    public NetworkVariable<bool> isSprinting = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public float stamina = 5, maxStamina = 5;
+
 
     [SerializeField] protected GameManager gm;
     [SerializeField] protected TextMesh displayText;
@@ -39,6 +42,7 @@ public class Pigeon : NetworkBehaviour
     [SerializeField] private HitScript slash;
 
     protected int secTillSlam = 5;
+    protected float punchCooldown = 0;
     protected bool canSlam = false;
     protected Vector3 slamPos;
 
@@ -60,14 +64,14 @@ public class Pigeon : NetworkBehaviour
         evasive = 5,
         critcalDamage = 6,
         slam = 7,
-        nest = 9,
-        swiftness = 10,
-        hiddinTalon = 11,
-        peckingOrder = 12,
-        bleed = 13,
-        enchanted = 14,
-        superFeed = 15,
-        assassin = 16,
+        nest = 8,
+        swiftness = 9,
+        hiddinTalon = 10,
+        peckingOrder = 11,
+        bleed = 12,
+        enchanted = 13,
+        superFeed = 14,
+        assassin = 15,
     }
     public struct AttackProperties : INetworkSerializable
     {
@@ -231,7 +235,7 @@ public class Pigeon : NetworkBehaviour
     public void AddUpgrade(Upgrades upgrade)
     {
         pigeonUpgrades.Add(upgrade, true);
-
+        gm.AddUpgradeToDisply((int)upgrade);
         switch (upgrade)
         {
             case Upgrades.regen:
@@ -280,6 +284,8 @@ public class Pigeon : NetworkBehaviour
 
     protected void OnPigeonSpawn()
     {
+        stamina = 3;
+        maxStamina = 3;
         if (IsOwner)
         {
             if (GameDataHolder.multiplayerName == "") pigeonName.Value = "Chadgeon";
@@ -451,8 +457,8 @@ public class Pigeon : NetworkBehaviour
         xpTillLevelUp.Value += 5 * level.Value;
         level.Value++;
         damage++;
-        maxHp.Value += 5;
-        currentHP.Value += 5;
+        maxHp.Value += 2;
+        currentHP.Value += 2;
         speed += 20;
 
         if (pigeonAI != null)
