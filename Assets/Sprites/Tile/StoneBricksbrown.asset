@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: StoneBricksbrown
   m_EditorClassIdentifier: 
   m_Sprite: {fileID: 21300000, guid: 5457668ed19a7604099e8c7189dc773d, type: 3}
-  m_Color: {r: 0.6792453, g: 0.6490682, b: 0.5927376, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Transform:
     e00: 1
     e01: 0

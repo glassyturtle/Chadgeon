@@ -52,6 +52,20 @@ public class PigeonAI : Pigeon
 
     private void FixedUpdate()
     {
+        SyncPigeonAttributes();
+        if (!IsOwner || gm.currentSecound.Value < 2) return;
+
+        if (isFlying.Value)
+        {
+            Vector2 direction = (slamPos - transform.position).normalized;
+            body.AddForce(4 * speed * Time.fixedDeltaTime * direction);
+            if ((transform.position - slamPos).sqrMagnitude <= 0.1f)
+            {
+                StopFlying();
+            }
+        }
+
+
         if (!isKnockedOut.Value)
         {
             if (!isSlaming.Value)
@@ -146,6 +160,8 @@ public class PigeonAI : Pigeon
 
     private void SimpBehavior(float distanceToPigeon, float distanceToFood)
     {
+
+
         if (targetPigeon && currentHP.Value < maxHp.Value / 2)
         {
             if (distanceToPigeon <= 10)
@@ -179,7 +195,10 @@ public class PigeonAI : Pigeon
                     canHit = false;
                     StartCoroutine(RechargeHitColldown());
 
-                    Vector3 targ = slamPos;
+                    Vector2 pos = transform.position;
+                    pos = Vector2.MoveTowards(pos, targetPigeon.transform.position, 0.5f);
+
+                    Vector3 targ = pos;
                     targ.z = 0f;
                     targ.x -= transform.position.x;
                     targ.y -= transform.position.y;
@@ -193,8 +212,8 @@ public class PigeonAI : Pigeon
                         damage = damage,
                         hasCriticalDamage = false,
                         hasKnockBack = false,
-                        posX = slamPos.x,
-                        posY = slamPos.y,
+                        posX = pos.x,
+                        posY = pos.y,
                     }; if (pigeonUpgrades.TryGetValue(Upgrades.critcalDamage, out bool a)) atkProp.hasCriticalDamage = true;
                     if (pigeonUpgrades.TryGetValue(Upgrades.brawler, out bool d)) atkProp.hasKnockBack = true;
                     PigeonAttack(atkProp, theAngle);
@@ -211,20 +230,21 @@ public class PigeonAI : Pigeon
     }
     private void ChadBehavior(float distanceToPigeon, float distanceToFood)
     {
+
         if (canHit && distanceToPigeon <= 3f)
         {
             canHit = false;
             StartCoroutine(RechargeHitColldown());
+            Vector2 pos = transform.position;
+            pos = Vector2.MoveTowards(pos, targetPigeon.transform.position, 0.5f);
 
-            Vector3 targ = slamPos;
+            Vector3 targ = pos;
             targ.z = 0f;
             targ.x -= transform.position.x;
             targ.y -= transform.position.y;
 
             float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
             Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
-
-            Vector3 pos = transform.position;
             AttackProperties atkProp = new()
             {
                 pigeonID = NetworkObjectId,
@@ -276,20 +296,26 @@ public class PigeonAI : Pigeon
     }
     private void SigmaBehavior(float distanceToPigeon, float distanceToFood)
     {
+
+
+
         if (targetPigeon && canHit && distanceToPigeon <= 3.7f)
         {
             canHit = false;
             StartCoroutine(RechargeHitColldown());
 
-            Vector3 targ = slamPos;
+            canHit = false;
+            StartCoroutine(RechargeHitColldown());
+            Vector2 pos = transform.position;
+            pos = Vector2.MoveTowards(pos, targetPigeon.transform.position, 0.5f);
+
+            Vector3 targ = pos;
             targ.z = 0f;
             targ.x -= transform.position.x;
             targ.y -= transform.position.y;
 
             float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
             Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
-
-            Vector3 pos = transform.position;
             AttackProperties atkProp = new()
             {
                 pigeonID = NetworkObjectId,

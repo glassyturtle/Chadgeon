@@ -7,19 +7,21 @@ TagManager:
   - damage
   - food
   - banish
+  - Border
+  - Pigeon
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - attyac
   - Water
   - UI
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Border
+  - Pigeon
+  - DeadPigeon
+  - ImpassibleTiles
+  - FlyingPigeon
+  - Collectables
   - 
   - 
   - 

@@ -51,7 +51,7 @@ public class PlayerScript : Pigeon
                 if (stamina < maxStamina)
                 {
                     isSprinting.Value = false;
-                    stamina += Time.fixedDeltaTime;
+                    stamina += Time.fixedDeltaTime * staminaRecoveryRate * 0.5f;
                     if (stamina > maxStamina) stamina = maxStamina;
                 }
             }
@@ -62,7 +62,7 @@ public class PlayerScript : Pigeon
         {
             Vector2 direction = (slamPos - transform.position).normalized;
             if (!canSwitchAttackSprites.Value) CheckDirection(direction);
-            body.AddForce(4 * speed * Time.fixedDeltaTime * direction);
+            body.AddForce(4 * speed * Time.fixedDeltaTime * direction * speedMod);
             if ((transform.position - slamPos).sqrMagnitude <= 0.1f)
             {
                 EndSlam();
@@ -76,6 +76,7 @@ public class PlayerScript : Pigeon
         if (!IsOwner) return;
         if (!isKnockedOut.Value && !isSlaming.Value)
         {
+
             if (Input.GetMouseButton(0) && !isSprinting.Value && punchCooldown <= 0)
             {
                 punchCooldown = 0.3f;
@@ -97,12 +98,18 @@ public class PlayerScript : Pigeon
                     pigeonID = NetworkObjectId,
                     damage = damage,
                     hasCriticalDamage = false,
+                    isEnchanted = false,
+                    isAssassin = false,
                     hasKnockBack = false,
                     posX = pos.x,
                     posY = pos.y,
                 };
                 if (pigeonUpgrades.TryGetValue(Upgrades.critcalDamage, out bool _)) atkProp.hasCriticalDamage = true;
                 if (pigeonUpgrades.TryGetValue(Upgrades.brawler, out _)) atkProp.hasKnockBack = true;
+                if (pigeonUpgrades.TryGetValue(Upgrades.assassin, out _)) atkProp.isAssassin = true;
+                if (pigeonUpgrades.TryGetValue(Upgrades.enchanted, out _)) atkProp.isEnchanted = true;
+
+
                 PigeonAttack(atkProp, theAngle);
             }
             else if (Input.GetKeyDown(KeyCode.Space) && canSlam)
@@ -131,5 +138,18 @@ public class PlayerScript : Pigeon
         {
             transform.position = Vector3.zero;
         }
+        if (collision.CompareTag("Border"))
+        {
+            inBorder = true;
+        }
     }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Border"))
+        {
+            inBorder = false;
+        }
+    }
+
 }

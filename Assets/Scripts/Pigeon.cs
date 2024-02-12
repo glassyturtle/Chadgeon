@@ -23,7 +23,6 @@ public class Pigeon : NetworkBehaviour
     [SerializeField] protected GameManager gm;
     [SerializeField] protected TextMesh displayText;
     [SerializeField] protected Rigidbody2D body;
-    [SerializeField] protected CircleCollider2D bodyCollider;
     [SerializeField] protected float speed;
     [SerializeField] protected int damage;
 
@@ -45,8 +44,13 @@ public class Pigeon : NetworkBehaviour
     protected float punchCooldown = 0;
     protected bool canSlam = false;
     protected Vector3 slamPos;
+    protected float speedMod = 1;
+    private float knockbackMod = 1;
+    protected float staminaRecoveryRate = 1;
+    protected bool inBorder = true;
 
-    private int regen = 3;
+
+    private float regen = 0.02f;
     private NetworkVariable<bool> isPointingLeft = new(true, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     private NetworkVariable<bool> isSpriteNotHopping = new(true, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     protected NetworkVariable<bool> canSwitchAttackSprites = new(true, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
@@ -64,23 +68,20 @@ public class Pigeon : NetworkBehaviour
         evasive = 5,
         critcalDamage = 6,
         slam = 7,
-        nest = 8,
-        swiftness = 9,
-        hiddinTalon = 10,
-        peckingOrder = 11,
-        bleed = 12,
-        enchanted = 13,
-        superFeed = 14,
-        assassin = 15,
+        swiftness = 8,
+        enchanted = 9,
+        assassin = 10,
     }
     public struct AttackProperties : INetworkSerializable
     {
         public ulong pigeonID;
         public int damage;
         public bool hasCriticalDamage;
+        public bool isAssassin;
         public bool hasKnockBack;
         public bool attackingUp;
         public bool isFacingLeft;
+        public bool isEnchanted;
         public float posX;
         public float posY;
 
@@ -91,9 +92,11 @@ public class Pigeon : NetworkBehaviour
             serializer.SerializeValue(ref hasCriticalDamage);
             serializer.SerializeValue(ref hasKnockBack);
             serializer.SerializeValue(ref isFacingLeft);
+            serializer.SerializeValue(ref isEnchanted);
             serializer.SerializeValue(ref posX);
             serializer.SerializeValue(ref posY);
             serializer.SerializeValue(ref attackingUp);
+            serializer.SerializeValue(ref isAssassin);
         }
     }
     public struct DealtDamageProperties : INetworkSerializable
@@ -114,7 +117,7 @@ public class Pigeon : NetworkBehaviour
     {
 
         //Stops calculating if successufly dodged
-        if (pigeonUpgrades.ContainsKey(Upgrades.evasive) && Random.Range(0, 100) <= 30) return;
+        if (!atkProp.isEnchanted && pigeonUpgrades.ContainsKey(Upgrades.evasive) && Random.Range(0, 100) <= 25) return;
 
         //Gets the knockback direction of the hit
         Vector2 direction = transform.position - new Vector3(atkProp.posX, atkProp.posY);
@@ -123,15 +126,16 @@ public class Pigeon : NetworkBehaviour
         //Calculates total damage taken with modifiers
         int totalDamageTaking = atkProp.damage;
         if (isSlaming.Value) totalDamageTaking /= 2;
-        if (atkProp.hasCriticalDamage && Random.Range(0, 100) <= 10) totalDamageTaking *= 4;
-        if (pigeonUpgrades.ContainsKey(Upgrades.tough)) totalDamageTaking = Mathf.RoundToInt(totalDamageTaking * 0.7f);
+        if (atkProp.hasCriticalDamage && Random.Range(0, 100) <= 25) totalDamageTaking *= 2;
+        if (atkProp.isAssassin && ((float)currentHP.Value / maxHp.Value) <= 0.33f) totalDamageTaking *= 2;
+        if (!atkProp.isEnchanted && pigeonUpgrades.ContainsKey(Upgrades.tough)) totalDamageTaking = Mathf.RoundToInt(totalDamageTaking * 0.8f);
         currentHP.Value -= totalDamageTaking;
 
         //Calculates Life Steal
 
         //Calculates Knockback
-        if (atkProp.hasKnockBack) body.AddForce(50 * totalDamageTaking * direction);
-        else body.AddForce(10 * totalDamageTaking * direction);
+        if (atkProp.hasKnockBack) body.AddForce(40 * totalDamageTaking * direction * knockbackMod);
+        else body.AddForce(20 * totalDamageTaking * direction * knockbackMod);
 
         //Sound Effects and Blood
         SpawnBloodServerRpc();
@@ -174,7 +178,7 @@ public class Pigeon : NetworkBehaviour
         {
             hasDied = hasBeenKO,
             damageDealt = totalDamageTaking,
-            xpOnKill = level.Value * 15,
+            xpOnKill = 100 + (level.Value * 30),
         };
 
         OnDealtDamageServerRpc(ddProp, atkProp.pigeonID);
@@ -189,10 +193,10 @@ public class Pigeon : NetworkBehaviour
             LevelUP();
         }
     }
-    public void HealServer(int amt)
+    public void HealServer(float amt)
     {
         if (isKnockedOut.Value) return;
-        currentHP.Value += amt;
+        currentHP.Value += Mathf.RoundToInt(amt);
         if (currentHP.Value > maxHp.Value) currentHP.Value = maxHp.Value;
 
     }
@@ -209,7 +213,7 @@ public class Pigeon : NetworkBehaviour
     public void ReciveDamageClientRpc(DealtDamageProperties ddProp, ulong pigeonID)
     {
         if (!IsOwner || pigeonID != NetworkObjectId) return;
-        if (pigeonUpgrades.ContainsKey(Upgrades.bloodLust)) HealServer(ddProp.damageDealt / 3);
+        if (pigeonUpgrades.ContainsKey(Upgrades.bloodLust)) HealServer(ddProp.damageDealt / 4);
 
         GainXP(ddProp.damageDealt / 4);
 
@@ -234,16 +238,31 @@ public class Pigeon : NetworkBehaviour
     }
     public void AddUpgrade(Upgrades upgrade)
     {
+        if (!IsOwner) return;
         pigeonUpgrades.Add(upgrade, true);
-        gm.AddUpgradeToDisply((int)upgrade);
+        if (!pigeonAI) gm.AddUpgradeToDisply((int)upgrade);
         switch (upgrade)
         {
             case Upgrades.regen:
-                regen = 10;
+                regen = 0.06f;
+                break;
+            case Upgrades.tough:
+                speedMod -= .1f;
+                knockbackMod -= .4f;
+                break;
+            case Upgrades.brawler:
+                knockbackMod -= .4f;
+                break;
+            case Upgrades.swiftness:
+                speedMod += .1f;
+                staminaRecoveryRate *= 1.5f;
+                break;
+            case Upgrades.evasive:
+                speedMod += .1f;
                 break;
             case Upgrades.hearty:
-                maxHp.Value += 50;
-                currentHP.Value += 50;
+                maxHp.Value += level.Value;
+                currentHP.Value += level.Value;
                 break;
             case Upgrades.slam:
                 if (isPlayer) gm.ShowSlamCoolDown();
@@ -291,9 +310,13 @@ public class Pigeon : NetworkBehaviour
             if (GameDataHolder.multiplayerName == "") pigeonName.Value = "Chadgeon";
             else pigeonName.Value = GameDataHolder.multiplayerName;
             StartCoroutine(JumpAnimation());
-            healthBarGameobject.SetActive(false);
-            displayText.gameObject.SetActive(false);
-            hpBar.gameObject.SetActive(false);
+            if (!pigeonAI)
+            {
+                healthBarGameobject.SetActive(false);
+                displayText.gameObject.SetActive(false);
+                hpBar.gameObject.SetActive(false);
+            }
+
             StartCoroutine(Regen());
         }
 
@@ -369,7 +392,7 @@ public class Pigeon : NetworkBehaviour
     protected void SyncPigeonAttributes()
     {
         sr.flipX = isPointingLeft.Value;
-        if (!IsOwner)
+        if (!IsOwner || (IsOwner && pigeonAI))
         {
             displayText.text = pigeonName.Value + " LVL:" + level.Value;
         }
@@ -383,33 +406,33 @@ public class Pigeon : NetworkBehaviour
                 else sr.sprite = pigeonFlap2Sprite;
 
                 sr.flipY = false;
+                gameObject.layer = 10;
 
             }
             else
             {
                 sr.sortingOrder = -1;
                 sr.flipY = true;
+                gameObject.layer = 8;
 
             }
-            bodyCollider.enabled = false;
 
-            if (!IsOwner)
+            if (!IsOwner || (IsOwner && pigeonAI))
             {
                 hpBar.gameObject.SetActive(false);
             }
         }
         else if (isSlaming.Value)
         {
-            bodyCollider.enabled = false;
+            gameObject.layer = 8;
             sr.sprite = pigeonSlamSprite;
             sr.sortingOrder = 1;
         }
         else
         {
-            bodyCollider.enabled = true;
-            sr.sortingOrder = 0;
+            gameObject.layer = 7;
 
-            if (!IsOwner)
+            if (!IsOwner || (IsOwner && pigeonAI))
             {
                 hpBar.gameObject.SetActive(true);
                 hpBar.localScale = new Vector3((float)currentHP.Value / maxHp.Value, 0.097f, 1);
@@ -456,19 +479,23 @@ public class Pigeon : NetworkBehaviour
         xp.Value -= xpTillLevelUp.Value;
         xpTillLevelUp.Value += 5 * level.Value;
         level.Value++;
-        damage++;
-        maxHp.Value += 2;
-        currentHP.Value += 2;
-        speed += 20;
-
-        if (pigeonAI != null)
+        damage += 3;
+        if (pigeonUpgrades.TryGetValue(Upgrades.hearty, out bool _))
         {
-            pigeonAI.AILevelUP();
+            maxHp.Value += 7;
+            currentHP.Value += 7;
         }
+        else
+        {
+            maxHp.Value += 5;
+            currentHP.Value += 5;
+        }
+
+        speed += 20;
 
         if (0 == level.Value % 5)
         {
-            if (pigeonAI)
+            if (pigeonAI && IsHost && IsOwner)
             {
                 AddRandomUpgrade();
             }
@@ -512,7 +539,7 @@ public class Pigeon : NetworkBehaviour
     }
     private void StartFly()
     {
-
+        if (!IsOwner) return;
         isFlying.Value = true;
         slamPos = Vector2.MoveTowards(transform.position, new Vector3(Random.Range(-13f, 13f), Random.Range(-11f, 19f), 0), 50f);
         StartCoroutine(StopFlight());
@@ -560,7 +587,20 @@ public class Pigeon : NetworkBehaviour
         while (true)
         {
             yield return new WaitForSeconds(1);
-            HealServer(regen);
+            HealServer(regen * maxHp.Value);
+            if (!inBorder && !isKnockedOut.Value)
+            {
+                currentHP.Value -= 50;
+
+                if (currentHP.Value <= 0)
+                {
+                    currentHP.Value = 0;
+                    isSlaming.Value = false;
+                    StopCoroutine(StopSlam());
+                    isKnockedOut.Value = true;
+                    gm.StartSpectating();
+                }
+            }
         }
     }
     private IEnumerator SlamCoolDown()
@@ -578,6 +618,7 @@ public class Pigeon : NetworkBehaviour
         yield return new WaitForSeconds(5f);
         StopFlying();
     }
+
     protected void StopFlying()
     {
         isFlying.Value = false;

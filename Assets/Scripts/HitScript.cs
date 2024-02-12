@@ -7,7 +7,7 @@ public class HitScript : NetworkBehaviour
     public NetworkVariable<Pigeon.AttackProperties> attackProperties = new(new Pigeon.AttackProperties(), NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<bool> isVisible = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
-    [SerializeField] private CircleCollider2D area;
+    [SerializeField] private Collider2D area;
     [SerializeField] private GameObject mask;
     [SerializeField] private SpriteRenderer sr;
 
