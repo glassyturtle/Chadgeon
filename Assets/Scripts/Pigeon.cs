@@ -204,9 +204,12 @@ public class Pigeon : NetworkBehaviour
     [ServerRpc]
     private void OnDealtDamageServerRpc(DealtDamageProperties ddProp, ulong pigeonID)
     {
-        NetworkObject ob = NetworkManager.Singleton.SpawnManager.SpawnedObjects[pigeonID];
-        if (!ob) return;
-        ob.GetComponent<Pigeon>().ReciveDamageClientRpc(ddProp, pigeonID);
+        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects[pigeonID])
+        {
+            NetworkObject ob = NetworkManager.Singleton.SpawnManager.SpawnedObjects[pigeonID];
+            if (!ob) return;
+            ob.GetComponent<Pigeon>().ReciveDamageClientRpc(ddProp, pigeonID);
+        }
     }
 
     [ClientRpc]
@@ -541,7 +544,8 @@ public class Pigeon : NetworkBehaviour
     {
         if (!IsOwner) return;
         isFlying.Value = true;
-        slamPos = Vector2.MoveTowards(transform.position, new Vector3(Random.Range(-13f, 13f), Random.Range(-11f, 19f), 0), 50f);
+        Vector3 pos = gm.GetSpawnPos();
+        slamPos = Vector2.MoveTowards(transform.position, new Vector3(pos.x, pos.y, 0), 50f);
         StartCoroutine(StopFlight());
         StartCoroutine(FlyAnimation());
     }
@@ -615,7 +619,7 @@ public class Pigeon : NetworkBehaviour
     }
     private IEnumerator StopFlight()
     {
-        yield return new WaitForSeconds(5f);
+        yield return new WaitForSeconds(10f);
         StopFlying();
     }
 

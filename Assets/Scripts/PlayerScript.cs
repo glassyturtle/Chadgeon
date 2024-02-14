@@ -2,10 +2,6 @@ using UnityEngine;
 
 public class PlayerScript : Pigeon
 {
-    private void Awake()
-    {
-        transform.position = new Vector3(Random.Range(-13, 13), Random.Range(-11, 19), 0);
-    }
     private void Start()
     {
         OnPigeonSpawn();

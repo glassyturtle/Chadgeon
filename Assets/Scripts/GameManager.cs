@@ -236,13 +236,18 @@ public class GameManager : NetworkBehaviour
     {
         foreach (ulong client in NetworkManager.Singleton.ConnectedClientsIds)
         {
-            GameObject player = Instantiate(playerPrefab, transform.position, transform.rotation);
+            float spawnX = transform.position.x;
+            float spawnY = transform.position.y;
+            Vector3 spawnPos = GetSpawnPos();
+            GameObject player = Instantiate(playerPrefab, spawnPos, transform.rotation);
             player.GetComponent<NetworkObject>().SpawnAsPlayerObject(client, true);
         }
 
         for (int i = 0; i < GameDataHolder.botsToSpawn; i++)
         {
-            GameObject pigeon = Instantiate(pigeonPrefab, new Vector3(Random.Range(-13f, 13f), Random.Range(-11f, 19f), 0), transform.rotation);
+
+            Vector3 spawnPos = GetSpawnPos();
+            GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
             PigeonAI ai = pigeon.GetComponent<PigeonAI>();
             ai.SetAI(GameDataHolder.botDifficulty);
             pigeon.GetComponent<NetworkObject>().Spawn();
@@ -251,7 +256,41 @@ public class GameManager : NetworkBehaviour
         currentSecound.Value = secondsTillSuddenDeath;
         StartCoroutine(DepreciateIceCream());
     }
+    public Vector3 GetSpawnPos()
+    {
+        float spawnX = transform.position.x;
+        float spawnY = transform.position.y;
+        float minRange = 8;
+        float spawnRange = 17;
 
+        if (Random.Range(0, 100) <= 50)
+        {
+            if (Random.Range(0, 100) <= 50)
+            {
+                spawnX += Random.Range(minRange, spawnRange);
+                spawnY += Random.Range(-spawnRange, spawnRange);
+            }
+            else
+            {
+                spawnX += Random.Range(-minRange, -spawnRange);
+                spawnY += Random.Range(-spawnRange, spawnRange);
+            }
+        }
+        else
+        {
+            if (Random.Range(0, 100) <= 50)
+            {
+                spawnX += Random.Range(-spawnRange, spawnRange);
+                spawnY += Random.Range(minRange, spawnRange);
+            }
+            else
+            {
+                spawnX += Random.Range(-spawnRange, spawnRange);
+                spawnY += Random.Range(-minRange, -spawnRange);
+            }
+        }
+        return new Vector3(spawnX, spawnY);
+    }
     private void Start()
     {
         if (GameDataHolder.multiplayerName != "") chageonName.text = GameDataHolder.multiplayerName;
@@ -357,9 +396,9 @@ public class GameManager : NetworkBehaviour
     IEnumerator SpawnFoodDelay()
     {
         canSpawnFood = false;
-        GameObject food = Instantiate(FoodPrefab, new Vector3(Random.Range(-13f, 13f), Random.Range(-11f, 19f), 0), transform.rotation);
+        GameObject food = Instantiate(FoodPrefab, new Vector3(Random.Range(-17f, 17f), Random.Range(-17f, 17f), 0) + transform.position, transform.rotation);
         food.GetComponent<NetworkObject>().Spawn();
-        yield return new WaitForSeconds(1f);
+        yield return new WaitForSeconds(0.8f);
         canSpawnFood = true;
     }
     IEnumerator DepreciateIceCream()
