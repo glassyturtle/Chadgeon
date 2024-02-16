@@ -28,7 +28,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] Button endScreenMainMenuButton;
     [SerializeField] Transform borderTransform;
 
-    [SerializeField] GameObject endScreen, playerUI, gameUI, upgradeScreen, pauseMenu, cooldownIcon, spectateScreen, leaderboard, sprintUI;
+    [SerializeField] GameObject endScreen, playerUI, gameUI, upgradeScreen, pauseMenu, cooldownIcon, spectateScreen, leaderboard, sprintUI, churchDoor;
     [SerializeField] TMP_Text endGameDescriptionText, spectatingText, upgradeDescText, slamCoolDownText;
     [SerializeField] GameObject endingLeaderboardTextPrefab, upgradeDescUI;
     [SerializeField] RectTransform leaderBoardTransform;
@@ -51,6 +51,7 @@ public class GameManager : NetworkBehaviour
     bool pauseMenuOpen = false;
     private Pigeon.Upgrades[] upgradesThatCanBeSelected = new Pigeon.Upgrades[3];
     private int currentSpectate = 0;
+    private bool hasOpenedChurch = false;
 
     public override void OnNetworkSpawn()
     {
@@ -369,7 +370,11 @@ public class GameManager : NetworkBehaviour
         if (IsServer && canSpawnFood && !isSuddenDeath.Value)
         {
             SpawnFoodServerRpc();
-
+            if (!hasOpenedChurch && currentSecound.Value < 120)
+            {
+                hasOpenedChurch = true;
+                OpenChurchDoorClientRpc();
+            }
         }
         if (IsServer && isSuddenDeath.Value)
         {
@@ -396,7 +401,9 @@ public class GameManager : NetworkBehaviour
     IEnumerator SpawnFoodDelay()
     {
         canSpawnFood = false;
-        GameObject food = Instantiate(FoodPrefab, new Vector3(Random.Range(-17f, 17f), Random.Range(-17f, 17f), 0) + transform.position, transform.rotation);
+        Vector3 pos = GetSpawnPos();
+
+        GameObject food = Instantiate(FoodPrefab, pos, transform.rotation);
         food.GetComponent<NetworkObject>().Spawn();
         yield return new WaitForSeconds(0.8f);
         canSpawnFood = true;
@@ -422,5 +429,11 @@ public class GameManager : NetworkBehaviour
     private void ActivateSuddenDeathUIClientRpc()
     {
         //suddenDeathText.SetActive(true);
+    }
+
+    [ClientRpc]
+    private void OpenChurchDoorClientRpc()
+    {
+        churchDoor.SetActive(false);
     }
 }

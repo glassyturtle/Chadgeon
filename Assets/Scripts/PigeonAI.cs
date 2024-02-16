@@ -1,3 +1,4 @@
+using Pathfinding;
 using System;
 using System.Collections;
 using UnityEngine;
@@ -7,13 +8,14 @@ public class PigeonAI : Pigeon
 
     [SerializeField] protected Pigeon targetPigeon;
     [SerializeField] protected food targetFood;
+    IAstarAI ai;
 
 
     private float hitColldown = 0.3f;
     protected bool canHit = true;
 
     private Action<float, float> behaviorAI;
-
+    private bool isFleeing = false;
 
 
     public void SetAI(int difficulty)
@@ -43,6 +45,8 @@ public class PigeonAI : Pigeon
     private void Start()
     {
         OnPigeonSpawn();
+        ai = GetComponent<IAstarAI>();
+        ai.maxSpeed = 2;
     }
     private void Update()
     {
@@ -57,6 +61,7 @@ public class PigeonAI : Pigeon
 
         if (isFlying.Value)
         {
+            ai.canMove = false;
             Vector2 direction = (slamPos - transform.position).normalized;
             body.AddForce(4 * speed * Time.fixedDeltaTime * direction);
             if ((transform.position - slamPos).sqrMagnitude <= 0.1f)
@@ -79,9 +84,10 @@ public class PigeonAI : Pigeon
             }
             else if (isSlaming.Value)
             {
+                ai.canMove = false;
                 Vector2 direction = (slamPos - transform.position).normalized;
                 CheckDirection(direction);
-                body.AddForce(direction * speed * 4 * Time.deltaTime);
+                body.AddForce(direction * speed * 4 * Time.deltaTime * speedMod);
                 if ((transform.position - slamPos).sqrMagnitude <= 2.5f)
                 {
                     EndSlam();
@@ -89,11 +95,12 @@ public class PigeonAI : Pigeon
             }
         }
 
+
     }
 
     public void AILevelUP()
     {
-        displayText.text = pigeonName + " lvl " + level;
+        ai.maxSpeed = 2;
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -161,72 +168,100 @@ public class PigeonAI : Pigeon
     private void SimpBehavior(float distanceToPigeon, float distanceToFood)
     {
 
-
-        if (targetPigeon && currentHP.Value < maxHp.Value / 2)
+        if (isFleeing)
         {
-            if (distanceToPigeon <= 10)
+            Vector2 direction = (transform.position - targetPigeon.transform.position).normalized;
+            CheckDirection(direction);
+            ai.canMove = false;
+            body.AddForce(speed * Time.deltaTime * direction);
+            if (distanceToPigeon <= 15 || currentHP.Value >= maxHp.Value / 2)
             {
                 //runs away when another pigeon is near and on less than half hp
-                Vector2 direction = (transform.position - targetPigeon.transform.position).normalized;
-                CheckDirection(direction);
-                body.AddForce(speed * Time.deltaTime * direction);
-            }
-            else if (targetFood)
-            {
-                //goes to neaby food item 
-                Vector2 direction = (targetFood.transform.position - transform.position).normalized;
-                CheckDirection(direction);
-                body.AddForce(speed * Time.deltaTime * direction);
+                isFleeing = false;
             }
         }
         else
         {
-            if (targetPigeon && targetFood && distanceToFood < distanceToPigeon * 2)
+            if (targetPigeon && currentHP.Value < maxHp.Value / 2)
             {
-                //goes to neaby food item 
-                Vector2 direction = (targetFood.transform.position - transform.position).normalized;
-                CheckDirection(direction);
-                body.AddForce(speed * Time.deltaTime * direction);
-            }
-            else if (targetPigeon)
-            {
-                if (canHit && distanceToPigeon <= 2f)
+
+                if (distanceToPigeon <= 10)
                 {
-                    canHit = false;
-                    StartCoroutine(RechargeHitColldown());
-
-                    Vector2 pos = transform.position;
-                    pos = Vector2.MoveTowards(pos, targetPigeon.transform.position, 0.5f);
-
-                    Vector3 targ = pos;
-                    targ.z = 0f;
-                    targ.x -= transform.position.x;
-                    targ.y -= transform.position.y;
-
-                    float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
-                    Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
-
-                    AttackProperties atkProp = new()
-                    {
-                        pigeonID = NetworkObjectId,
-                        damage = damage,
-                        hasCriticalDamage = false,
-                        hasKnockBack = false,
-                        posX = pos.x,
-                        posY = pos.y,
-                    }; if (pigeonUpgrades.TryGetValue(Upgrades.critcalDamage, out bool a)) atkProp.hasCriticalDamage = true;
-                    if (pigeonUpgrades.TryGetValue(Upgrades.brawler, out bool d)) atkProp.hasKnockBack = true;
-                    PigeonAttack(atkProp, theAngle);
+                    //runs away when another pigeon is near and on less than half hp
+                    isFleeing = true;
                 }
-                else
+                else if (targetFood)
                 {
-                    StartSlam(targetPigeon.transform.position);
-                    Vector2 direction = (targetPigeon.transform.position - transform.position).normalized;
+                    //goes to neaby food item 
+                    Vector2 direction = (targetFood.transform.position - transform.position).normalized;
                     CheckDirection(direction);
-                    body.AddForce(speed * Time.deltaTime * direction);
+                    ai.canMove = true;
+                    ai.destination = targetFood.transform.position;
+                }
+            }
+            else
+            {
+                isFleeing = false;
+                if (targetPigeon && targetFood && distanceToFood < distanceToPigeon * 2)
+                {
+                    //goes to neaby food item 
+                    Vector2 direction = (targetFood.transform.position - transform.position).normalized;
+                    CheckDirection(direction);
+                    ai.canMove = true;
+                    ai.destination = targetFood.transform.position;
+                }
+                else if (targetPigeon)
+                {
+                    if (canHit && distanceToPigeon <= 2f)
+                    {
+                        ai.canMove = true;
+                        ai.destination = targetPigeon.transform.position;
+
+                        canHit = false;
+                        StartCoroutine(RechargeHitColldown());
+
+                        Vector2 pos = transform.position;
+                        pos = Vector2.MoveTowards(pos, targetPigeon.transform.position, 0.5f);
+
+                        Vector3 targ = pos;
+                        targ.z = 0f;
+                        targ.x -= transform.position.x;
+                        targ.y -= transform.position.y;
+
+                        float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
+                        Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
+
+                        AttackProperties atkProp = new()
+                        {
+                            pigeonID = NetworkObjectId,
+                            damage = damage,
+                            hasCriticalDamage = false,
+                            hasKnockBack = false,
+                            posX = pos.x,
+                            posY = pos.y,
+                        }; if (pigeonUpgrades.TryGetValue(Upgrades.critcalDamage, out bool a)) atkProp.hasCriticalDamage = true;
+                        if (pigeonUpgrades.TryGetValue(Upgrades.brawler, out bool d)) atkProp.hasKnockBack = true;
+                        PigeonAttack(atkProp, theAngle);
+                    }
+                    else
+                    {
+                        Vector2 direction = (targetPigeon.transform.position - transform.position).normalized;
+                        CheckDirection(direction);
+                        if (StartSlam(targetPigeon.transform.position))
+                        {
+                            ai.canMove = false;
+                        }
+                        else
+                        {
+                            ai.canMove = true;
+                            ai.destination = targetPigeon.transform.position;
+                        }
+                    }
                 }
             }
         }
+
+
     }
     private void ChadBehavior(float distanceToPigeon, float distanceToFood)
     {

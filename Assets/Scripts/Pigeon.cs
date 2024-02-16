@@ -204,12 +204,22 @@ public class Pigeon : NetworkBehaviour
     [ServerRpc]
     private void OnDealtDamageServerRpc(DealtDamageProperties ddProp, ulong pigeonID)
     {
-        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects[pigeonID])
+        try
         {
-            NetworkObject ob = NetworkManager.Singleton.SpawnManager.SpawnedObjects[pigeonID];
-            if (!ob) return;
-            ob.GetComponent<Pigeon>().ReciveDamageClientRpc(ddProp, pigeonID);
+
+            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects[pigeonID])
+            {
+                NetworkObject ob = NetworkManager.Singleton.SpawnManager.SpawnedObjects[pigeonID];
+                if (!ob) return;
+                ob.GetComponent<Pigeon>().ReciveDamageClientRpc(ddProp, pigeonID);
+            }
         }
+        catch
+        {
+            Debug.Log("Start Error");
+        }
+
+
     }
 
     [ClientRpc]
@@ -340,9 +350,9 @@ public class Pigeon : NetworkBehaviour
             isPointingLeft.Value = false;
         }
     }
-    protected void StartSlam(Vector3 desiredSlamPos)
+    protected bool StartSlam(Vector3 desiredSlamPos)
     {
-        if (!canSlam) return;
+        if (!canSlam) return false;
         canSlam = false;
         isSlaming.Value = true;
         canSwitchAttackSprites.Value = false;
@@ -356,6 +366,7 @@ public class Pigeon : NetworkBehaviour
         }
         slamPos = Vector2.MoveTowards(transform.position, desiredSlamPos, 5f);
         StartCoroutine(StopSlam());
+        return true;
     }
     protected void EndSlam()
     {
@@ -501,6 +512,7 @@ public class Pigeon : NetworkBehaviour
             if (pigeonAI && IsHost && IsOwner)
             {
                 AddRandomUpgrade();
+                pigeonAI.AILevelUP();
             }
             else
             {
