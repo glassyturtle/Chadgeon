@@ -28,6 +28,7 @@ public class food : NetworkBehaviour
             hitPigeon.PlayEatSound();
             if (hitPigeon.IsOwner)
             {
+                Debug.Log("HitPigeon" + Time.time);
                 hitPigeon.GainXP(10);
                 hitPigeon.HealServer(hitPigeon.maxHp.Value / 5);
                 DestroyFoodObject(this);

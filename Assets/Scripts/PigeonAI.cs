@@ -8,8 +8,13 @@ public class PigeonAI : Pigeon
 
     [SerializeField] protected Pigeon targetPigeon;
     [SerializeField] protected food targetFood;
-    IAstarAI ai;
+    [SerializeField] private float nextWaypointDistance = 3f;
 
+    // IAstarAI ai;
+    //AI configurations
+    private Path path;
+    private Seeker seeker;
+    private int currentWaypoint = 0;
 
     private float hitColldown = 0.3f;
     protected bool canHit = true;
@@ -45,8 +50,11 @@ public class PigeonAI : Pigeon
     private void Start()
     {
         OnPigeonSpawn();
-        ai = GetComponent<IAstarAI>();
-        ai.maxSpeed = 2;
+        seeker = GetComponent<Seeker>();
+
+        InvokeRepeating("UpdatePath", 0f, .2f);
+        //ai = GetComponent<IAstarAI>();
+        //ai.maxSpeed = speed * speedMod;
     }
     private void Update()
     {
@@ -56,12 +64,42 @@ public class PigeonAI : Pigeon
 
     private void FixedUpdate()
     {
+        if (path == null) return;
+
+        Vector3 nextPoint;
+        if (currentWaypoint >= path.vectorPath.Count)
+        {
+            nextPoint = Vector3.MoveTowards(body.position, targetFood.transform.position, speed * speedMod * Time.deltaTime);
+        }
+        else
+        {
+            nextPoint = Vector3.MoveTowards(body.position, path.vectorPath[currentWaypoint], speed * speedMod * Time.deltaTime);
+            float distance = Vector2.Distance(body.position, path.vectorPath[currentWaypoint]);
+
+            if (distance < nextWaypointDistance)
+            {
+                currentWaypoint++;
+            }
+        }
+
+
+
+        Vector3 direction = (nextPoint - transform.position).normalized;
+
+        Vector3 force = direction * speed * speedMod * Time.deltaTime;
+
+        body.AddForce(force);
+
+
+        SyncPigeonAttributes();
+
+        /*
         SyncPigeonAttributes();
         if (!IsOwner || gm.currentSecound.Value < 2) return;
 
         if (isFlying.Value)
         {
-            ai.canMove = false;
+            //ai.canMove = false;
             Vector2 direction = (slamPos - transform.position).normalized;
             body.AddForce(4 * speed * Time.fixedDeltaTime * direction);
             if ((transform.position - slamPos).sqrMagnitude <= 0.1f)
@@ -84,7 +122,7 @@ public class PigeonAI : Pigeon
             }
             else if (isSlaming.Value)
             {
-                ai.canMove = false;
+                //ai.canMove = false;
                 Vector2 direction = (slamPos - transform.position).normalized;
                 CheckDirection(direction);
                 body.AddForce(direction * speed * 4 * Time.deltaTime * speedMod);
@@ -93,14 +131,16 @@ public class PigeonAI : Pigeon
                     EndSlam();
                 }
             }
+        
         }
+    */
 
 
     }
 
     public void AILevelUP()
     {
-        ai.maxSpeed = 2;
+        //ai.maxSpeed = speed * speedMod;
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -165,6 +205,8 @@ public class PigeonAI : Pigeon
     }
 
 
+
+
     private void SimpBehavior(float distanceToPigeon, float distanceToFood)
     {
 
@@ -172,7 +214,7 @@ public class PigeonAI : Pigeon
         {
             Vector2 direction = (transform.position - targetPigeon.transform.position).normalized;
             CheckDirection(direction);
-            ai.canMove = false;
+            //ai.canMove = false;
             body.AddForce(speed * Time.deltaTime * direction);
             if (distanceToPigeon <= 15 || currentHP.Value >= maxHp.Value / 2)
             {
@@ -195,8 +237,8 @@ public class PigeonAI : Pigeon
                     //goes to neaby food item 
                     Vector2 direction = (targetFood.transform.position - transform.position).normalized;
                     CheckDirection(direction);
-                    ai.canMove = true;
-                    ai.destination = targetFood.transform.position;
+                    //ai.canMove = true;
+                    //ai.destination = targetFood.transform.position;
                 }
             }
             else
@@ -207,15 +249,15 @@ public class PigeonAI : Pigeon
                     //goes to neaby food item 
                     Vector2 direction = (targetFood.transform.position - transform.position).normalized;
                     CheckDirection(direction);
-                    ai.canMove = true;
-                    ai.destination = targetFood.transform.position;
+                    //ai.canMove = true;
+                    //ai.destination = targetFood.transform.position;
                 }
                 else if (targetPigeon)
                 {
                     if (canHit && distanceToPigeon <= 2f)
                     {
-                        ai.canMove = true;
-                        ai.destination = targetPigeon.transform.position;
+                        //ai.canMove = true;
+                        //ai.destination = targetPigeon.transform.position;
 
                         canHit = false;
                         StartCoroutine(RechargeHitColldown());
@@ -249,12 +291,12 @@ public class PigeonAI : Pigeon
                         CheckDirection(direction);
                         if (StartSlam(targetPigeon.transform.position))
                         {
-                            ai.canMove = false;
+                            //ai.canMove = false;
                         }
                         else
                         {
-                            ai.canMove = true;
-                            ai.destination = targetPigeon.transform.position;
+                            //ai.canMove = true;
+                            //ai.destination = targetPigeon.transform.position;
                         }
                     }
                 }
@@ -424,6 +466,21 @@ public class PigeonAI : Pigeon
                     body.AddForce(speed * Time.deltaTime * direction);
                 }
             }
+        }
+    }
+
+    private void UpdatePath()
+    {
+        if (seeker.IsDone() && targetFood)
+            seeker.StartPath(body.position, targetFood.transform.position, OnPathComplete);
+    }
+
+    private void OnPathComplete(Path p)
+    {
+        if (!p.error)
+        {
+            path = p;
+            currentWaypoint = 0;
         }
     }
 }

@@ -405,7 +405,7 @@ public class GameManager : NetworkBehaviour
 
         GameObject food = Instantiate(FoodPrefab, pos, transform.rotation);
         food.GetComponent<NetworkObject>().Spawn();
-        yield return new WaitForSeconds(0.8f);
+        yield return new WaitForSeconds(5);
         canSpawnFood = true;
     }
     IEnumerator DepreciateIceCream()

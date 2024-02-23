@@ -29,24 +29,29 @@ public class PlayerScript : Pigeon
         else if (!isKnockedOut.Value && !isSlaming.Value)
         {
             //Store user input as a movement vector
-            if (Input.GetKey(KeyCode.LeftShift) && (stamina >= maxStamina || isSprinting.Value == true))
+            if (Input.GetKey(KeyCode.LeftShift) && stamina > 0)
             {
                 if (stamina <= 0)
                 {
-                    isSprinting.Value = false;
                     stamina = 0;
                     return;
                 }
+                sprintOnCooldown = true;
                 isSprinting.Value = true;
                 body.AddForce(speed * 2 * Time.fixedDeltaTime * inputVector);
                 stamina -= Time.fixedDeltaTime;
             }
             else
             {
-                body.AddForce(speed * Time.fixedDeltaTime * inputVector);
-                if (stamina < maxStamina)
+                if (isSprinting.Value == true)
                 {
                     isSprinting.Value = false;
+                    StartCoroutine(StartSprintCooldown());
+                }
+
+                body.AddForce(speed * Time.fixedDeltaTime * inputVector);
+                if (stamina < maxStamina && !sprintOnCooldown)
+                {
                     stamina += Time.fixedDeltaTime * staminaRecoveryRate * 0.5f;
                     if (stamina > maxStamina) stamina = maxStamina;
                 }

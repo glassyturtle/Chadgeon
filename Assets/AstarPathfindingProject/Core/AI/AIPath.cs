@@ -400,7 +400,6 @@ namespace Pathfinding
                 // (at least compared to a local variable)
                 simulatedPosition = tr.position;
             }
-            if (updateRotation) simulatedRotation = tr.rotation;
 
             var currentPosition = simulatedPosition;
 
@@ -448,7 +447,6 @@ namespace Pathfinding
 
             velocity2D = MovementUtilities.ClampVelocity(velocity2D, maxSpeed, slowdown, slowWhenNotFacingTarget && enableRotation, forwards);
 
-            ApplyGravity(deltaTime);
 
             if (rvoController != null && rvoController.enabled)
             {
@@ -467,6 +465,7 @@ namespace Pathfinding
 
             // Set how much the agent wants to move during this frame
             var delta2D = lastDeltaPosition = CalculateDeltaToMoveThisFrame(movementPlane.ToPlane(currentPosition), distanceToEnd, deltaTime);
+
             nextPosition = currentPosition + movementPlane.ToWorld(delta2D, verticalVelocity * lastDeltaTime);
             CalculateNextRotation(slowdown, out nextRotation);
         }

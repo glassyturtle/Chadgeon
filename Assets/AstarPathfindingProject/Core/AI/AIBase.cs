@@ -685,15 +685,13 @@ namespace Pathfinding
             Debug.Log("current" + transform.position + " New" + nextPosition);
 
 
-            Vector2 direction = (transform.position - nextPosition).normalized;
+            Vector2 direction = (nextPosition - transform.position).normalized;
 
 
             // Assign the final position to the character if we haven't already set it (mostly for performance, setting the position can be slow)
             if (updatePosition)
             {
-                // Note that rigid.MovePosition may or may not move the character immediately.
-                // Check the Unity documentation for the special cases.
-                rigid2D.AddForce(-direction * Time.fixedDeltaTime * 500);
+                rigid2D.AddForce(direction * Time.fixedDeltaTime * maxSpeed);
             }
         }
 

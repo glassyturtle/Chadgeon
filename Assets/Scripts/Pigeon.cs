@@ -48,6 +48,7 @@ public class Pigeon : NetworkBehaviour
     private float knockbackMod = 1;
     protected float staminaRecoveryRate = 1;
     protected bool inBorder = true;
+    protected bool sprintOnCooldown = false;
 
 
     private float regen = 0.02f;
@@ -628,6 +629,12 @@ public class Pigeon : NetworkBehaviour
     {
         yield return new WaitForSeconds(0.5f);
         EndSlam();
+    }
+    protected IEnumerator StartSprintCooldown()
+    {
+        yield return new WaitForSeconds(1);
+        sprintOnCooldown = false;
+        Debug.Log(Time.time);
     }
     private IEnumerator StopFlight()
     {
