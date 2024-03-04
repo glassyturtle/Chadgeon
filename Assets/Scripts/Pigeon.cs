@@ -41,7 +41,6 @@ public class Pigeon : NetworkBehaviour
     [SerializeField] private HitScript slash;
 
     protected int secTillSlam = 5;
-    protected float punchCooldown = 0;
     protected bool canSlam = false;
     protected Vector3 slamPos;
     protected float speedMod = 1;
@@ -49,6 +48,7 @@ public class Pigeon : NetworkBehaviour
     protected float staminaRecoveryRate = 1;
     protected bool inBorder = true;
     protected bool sprintOnCooldown = false;
+    protected float hitColldown = 0.3f;
 
 
     private float regen = 0.02f;
@@ -321,8 +321,12 @@ public class Pigeon : NetworkBehaviour
         maxStamina = 3;
         if (IsOwner)
         {
-            if (GameDataHolder.multiplayerName == "") pigeonName.Value = "Chadgeon";
-            else pigeonName.Value = GameDataHolder.multiplayerName;
+            if (!pigeonAI)
+            {
+                if (GameDataHolder.multiplayerName == "") pigeonName.Value = "Chadgeon";
+                else pigeonName.Value = GameDataHolder.multiplayerName;
+            }
+
             StartCoroutine(JumpAnimation());
             if (!pigeonAI)
             {
@@ -634,7 +638,6 @@ public class Pigeon : NetworkBehaviour
     {
         yield return new WaitForSeconds(1);
         sprintOnCooldown = false;
-        Debug.Log(Time.time);
     }
     private IEnumerator StopFlight()
     {

@@ -38,7 +38,7 @@ public class PlayerScript : Pigeon
                 }
                 sprintOnCooldown = true;
                 isSprinting.Value = true;
-                body.AddForce(speed * 2 * Time.fixedDeltaTime * inputVector);
+                body.AddForce(speed * 2 * Time.fixedDeltaTime * speedMod * inputVector);
                 stamina -= Time.fixedDeltaTime;
             }
             else
@@ -49,7 +49,7 @@ public class PlayerScript : Pigeon
                     StartCoroutine(StartSprintCooldown());
                 }
 
-                body.AddForce(speed * Time.fixedDeltaTime * inputVector);
+                body.AddForce(speed * Time.fixedDeltaTime * speedMod * inputVector);
                 if (stamina < maxStamina && !sprintOnCooldown)
                 {
                     stamina += Time.fixedDeltaTime * staminaRecoveryRate * 0.5f;
@@ -63,7 +63,7 @@ public class PlayerScript : Pigeon
         {
             Vector2 direction = (slamPos - transform.position).normalized;
             if (!canSwitchAttackSprites.Value) CheckDirection(direction);
-            body.AddForce(4 * speed * Time.fixedDeltaTime * direction * speedMod);
+            body.AddForce(4 * speed * Time.fixedDeltaTime * speedMod * direction);
             if ((transform.position - slamPos).sqrMagnitude <= 0.1f)
             {
                 EndSlam();
@@ -78,9 +78,9 @@ public class PlayerScript : Pigeon
         if (!isKnockedOut.Value && !isSlaming.Value)
         {
 
-            if (Input.GetMouseButton(0) && !isSprinting.Value && punchCooldown <= 0)
+            if (Input.GetMouseButton(0) && !isSprinting.Value && hitColldown <= 0)
             {
-                punchCooldown = 0.3f;
+                hitColldown = 0.3f;
 
                 Vector2 pos = transform.position;
                 pos = Vector2.MoveTowards(pos, Camera.main.ScreenToWorldPoint(Input.mousePosition), 0.5f);
@@ -118,13 +118,13 @@ public class PlayerScript : Pigeon
                 StartSlam(Camera.main.ScreenToWorldPoint(Input.mousePosition));
             }
 
-            if (punchCooldown > 0)
+            if (hitColldown > 0)
             {
-                punchCooldown -= Time.deltaTime;
+                hitColldown -= Time.deltaTime;
             }
             else
             {
-                punchCooldown = 0;
+                hitColldown = 0;
             }
         }
     }

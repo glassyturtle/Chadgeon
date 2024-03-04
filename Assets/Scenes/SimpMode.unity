@@ -1474,7 +1474,7 @@ RectTransform:
   - {fileID: 1901497963}
   - {fileID: 1060073166}
   m_Father: {fileID: 700671452}
-  m_RootOrder: 2
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -3008,7 +3008,7 @@ RectTransform:
   - {fileID: 1970083476}
   - {fileID: 835299358}
   m_Father: {fileID: 700671452}
-  m_RootOrder: 7
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -4263,7 +4263,7 @@ RectTransform:
   m_Children:
   - {fileID: 1742249906}
   m_Father: {fileID: 700671452}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
@@ -4430,7 +4430,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 700671452}
-  m_RootOrder: 3
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
   m_AnchorMin: {x: 1, y: 1}
   m_AnchorMax: {x: 1, y: 1}
@@ -5462,12 +5462,12 @@ RectTransform:
   m_Children:
   - {fileID: 355223246}
   - {fileID: 1452547415}
-  - {fileID: 262762194}
   - {fileID: 604052529}
   - {fileID: 573602208}
   - {fileID: 1947515365}
   - {fileID: 1110509522}
   - {fileID: 437334867}
+  - {fileID: 262762194}
   m_Father: {fileID: 1203725430}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -38649,73 +38649,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gm: {fileID: 1829804830}
   desc: 0
---- !u!1 &1033644476
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1033644479}
-  - component: {fileID: 1033644478}
-  - component: {fileID: 1033644477}
-  m_Layer: 0
-  m_Name: RVO
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1033644477
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1033644476}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 52e10183f1ec74d27ba5e19d5a2242c0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  version: 1
-  uniqueID: 930102364907012609
-  wallHeight: 1
---- !u!114 &1033644478
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1033644476}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1764de1de43cc4d19af52679d3eaae06, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  version: 1
-  desiredSimulationFPS: 40
-  workerThreads: 0
-  doubleBuffering: 0
-  symmetryBreakingBias: 0.1
-  movementPlane: 1
-  drawObstacles: 0
---- !u!4 &1033644479
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1033644476}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 8
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1038561456
 GameObject:
   m_ObjectHideFlags: 0
@@ -39468,7 +39401,7 @@ RectTransform:
   - {fileID: 10041398}
   - {fileID: 258164422}
   m_Father: {fileID: 700671452}
-  m_RootOrder: 6
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -40852,7 +40785,7 @@ MonoBehaviour:
   m_Priority: 10
   m_StandbyUpdate: 2
   m_LookAt: {fileID: 0}
-  m_Follow: {fileID: 1829804829}
+  m_Follow: {fileID: 0}
   m_Lens:
     FieldOfView: 60
     OrthographicSize: 5
@@ -47404,7 +47337,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 35, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 20}
   m_Pivot: {x: 0, y: 0}
 --- !u!222 &1447109459
@@ -49603,7 +49536,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1776786524}
   - component: {fileID: 1776786527}
-  - component: {fileID: 1776786526}
   - component: {fileID: 1776786525}
   m_Layer: 0
   m_Name: cm
@@ -49639,43 +49571,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa7155796051b734daa718462081dc5f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_BindingMode: 1
+  m_BindingMode: 3
   m_FollowOffset: {x: 0, y: 0, z: -10}
-  m_XDamping: 1
-  m_YDamping: 1
-  m_ZDamping: 1
+  m_XDamping: 0.3
+  m_YDamping: 0.3
+  m_ZDamping: 0
   m_AngularDampingMode: 0
   m_PitchDamping: 0
   m_YawDamping: 0
   m_RollDamping: 0
   m_AngularDamping: 0
---- !u!114 &1776786526
-MonoBehaviour:
-  m_ObjectHideFlags: 3
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1776786523}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4044717213e31446939f7bd49c896ea, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_TrackedObjectOffset: {x: 0, y: 0, z: 0}
-  m_LookaheadTime: 0
-  m_LookaheadSmoothing: 0
-  m_LookaheadIgnoreY: 0
-  m_HorizontalDamping: 0.5
-  m_VerticalDamping: 0.5
-  m_ScreenX: 0.5
-  m_ScreenY: 0.5
-  m_DeadZoneWidth: 0
-  m_DeadZoneHeight: 0
-  m_SoftZoneWidth: 0.8
-  m_SoftZoneHeight: 0.8
-  m_BiasX: 0
-  m_BiasY: 0
-  m_CenterOnActivate: 1
 --- !u!114 &1776786527
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -50041,7 +49946,7 @@ MonoBehaviour:
   currentSecound:
     m_InternalValue: 0
   borderSize:
-    m_InternalValue: 0.55
+    m_InternalValue: 300
   player: {fileID: 0}
   allpigeons: []
   pigeonPrefab: {fileID: 8403198379236519254, guid: eee11008ef1bcb2458e8cc0f3421fa23, type: 3}
@@ -50137,8 +50042,7 @@ MonoBehaviour:
     second.
   - Damage recived -20%, kockback taken -40%, and speed - 10%. Makes you more tanky,
     but a little slower.
-  - Knockback dealt +100%, kockback taken - 40%, and pigeons hit have a 25% chance
-    to be stuned for 1 second.
+  - Knockback dealt +100%, kockback taken - 40%.
   - Max Health + current level x 2. Leveling up gains 4 additional health points
     instead of 2. A very healthy pigeon
   - Heal 25% of all damage you deal.
@@ -51417,7 +51321,7 @@ RectTransform:
   - {fileID: 982520471}
   - {fileID: 1985209260}
   m_Father: {fileID: 700671452}
-  m_RootOrder: 5
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
@@ -52037,7 +51941,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 1
   data:
-    dataString: UEsDBBQAAAgIAAAIIeyyIdxmvQIAAMYFAAALACQAZ3JhcGgwLmpzb24KACAAAAAAAAEAGAAAgD7V3rGdAQCAPtXesZ0BAIA+1d6xnQFtVNtO4zAQ/ZXKzwtKQi9033bTUnYloKKseNjwYOJJY9WxI19oC+q/M3bSJnS3qhTnzPWcGeeDcGlqyK3SC83ZnWJAvg+IP5Nvg854Czu6VnLF3+Ho88yZLb0TDT6P1HKFeOzDjKrAap7/kGvhnSMEneSF0tWcrSFVxhqECyoMoEkr66MlQh8DssPHxdSH7PGUTPzpHU/TaHDAYw7Sgu5ck/hynBydLyfDKf5GSRvThDiZC1rVwHz/XeT1qA2bDIObRGath2eRKyG4adsidl8H2imtjUNS6MA4RZqhl+jyaoxICXxdWt9IP/6hKAzYVgZN9zOuUbAmMfmpGhUrajZNa29UOF9qFCehrSbp3T/2iziYC62q22PdOPI1bMnzzSPd59TYnsx9eNb1HgeFtlRs6KuA5xLkvVpo5SRDo9XOhzoDyax7PVFLS8g3Hd60ega6upP8ONXjTD2HQ2C/SwWvXoOUwwZYCRUkD6sAGofzCxsOi2LaFIj6Lv4YeKLr/ka1hhuujUVTy1L69l6V096VzINmno2zqdISAtw2XYOkwu6XmMaej/DM1it7Zrmh/u60xVvb8UqchQS484+iM9NSbbthGfjtqnqpuLQroDove/lMqbZ3YMoHZwWX0DHyhnsUMVVSNutn/hO2crqgeS/Mws46DTNqabgH2BNuCeuHoqAhQjoh/EIGFj75X2Th/y9e5JJiXRFgcq9kuEFfni9+EdaOs69rTiZ0WIxjOrpKrot4mLCLYR5Np0UyHo+jSTyKchLuAZeoORXLRrR2VLhBsuMiceePn7fBQtM63Dym6XbB3yvVGz+XhVrlGkA+NBlOZEFjEfxIsDnjSHMF1nIZdo98ZESofAMsOyXKgrDzndU067JkpOZvynokI2n4nmXEw6d7tdTwxmHri39JBgJHB+yJC6ho7U3RgRw+AVBLAwQUAAAICAAACCHsbIbQh20AAAB4AAAACQAkAG1ldGEuanNvbgoAIAAAAAAAAQAYAACAPtXesZ0BAIA+1d6xnQEAgD7V3rGdAatWKkstKs7Mz1OyUjDRM9IztNRRUEovSizIKAaKGII4pZkpIHa0knmiSZqZYaKpsZFFmqGJUYquSbKBpWWakZmZmYG5oalBslIsUH1JZUGqX2JuKkRPQGJJRlpmXkpmXrqee1FmijvIaKXYWgBQSwECLQAUAAAICAAACCHssiHcZr0CAADGBQAACwAkAAAAAAAAAAAAAAAAAAAAZ3JhcGgwLmpzb24KACAAAAAAAAEAGAAAgD7V3rGdAQCAPtXesZ0BAIA+1d6xnQFQSwECLQAUAAAICAAACCHsbIbQh20AAAB4AAAACQAkAAAAAAAAAAAAAAAKAwAAbWV0YS5qc29uCgAgAAAAAAABABgAAIA+1d6xnQEAgD7V3rGdAQCAPtXesZ0BUEsFBgAAAAACAAIAuAAAAMIDAAAAAA==
+    dataString: UEsDBBQAAAgIAAAIIexx26EyuAIAAMUFAAALACQAZ3JhcGgwLmpzb24KACAAAAAAAAEAGAAAgD7V3rGdAQCAPtXesZ0BAIA+1d6xnQF1VNtu2zAM/ZVAz2thu7k0e9uSNN2AtkHToQ9zH1SLjoXIkqFLk7TIv4+S7djNtiCAZZKH4jkk/UG4NBVkVuml5uxOMSBfB8SfyZdB57yFPd0ouebv0MY8c2YLH0RDzCO1XKE99jCjSrCaZ9/kRvjgCI1O8lzpcsE2MFPGGjTnVBhAl1bWoyWaPgZkj4+LqYcc8JRM/OkdT9NocMRjBtKC7kKT+HLUxF5dRuE3SRpIjXAyE7SsgPnyO+B1C5sMQ5hEYk2EJ5EpIbhpqiL2UAXWM1oZh5wwgHGKLEMpUSihAL4prC+pD3/IcwO2EUHTw5xrlKvOS76rWsOSmm1d2RsVzt80ipNQVZ307i//RRzcuVblbXtvHPk7bMGz7SM9ZNTYnsh987wrPQ4C7ajY0lcBzwXIe7XUykmGTqudhzoDybx7PVGbFZBtO3td6pnRVZ3ibU/bjnoOx8B+PxO8fA1KDmvDWqigeBgE0NibH1hwGBPTpECrr+KXgSe66c9T47jh2lh0NSylL+9VOe1DySJo5tk4O1Nagu5nqEBSYQ8rzGPPe3jm+z/qhvrVaW5vfO1GnEGCuYuPojPXSu26bhn46cpqpbi0a6A6K3r5TKF2d2CKB2cFl9D1wTvuUcWZkrKeP/MP2NrpnGY9mIW9dRrm1NKwB1gTjgnrQ1HRgJBOCD+RgYVP/htZ+P+LV7mgeK8IZnKvZNigT88XPwkbx9nnOScTOszHMR1dJdd5PEzYxTCLptM8GY/H0SQeRRkJi8Alak7FqhataRWOkOy4SBz69us2WGpahdVjmu6W/L1UpovkMlfrTAPIhzrDiSxovAQ/EmzBONJcg7VchuEjHykRKtsCS0+J0iDsYm81TbssKan4m7LekpJZ+JylxJtPi7XS8MZh5y//lAwEtg7YExdQ0sq7oiM5/gFQSwMEFAAACAgAAAgh7GyG0IdtAAAAeAAAAAkAJABtZXRhLmpzb24KACAAAAAAAAEAGAAAgD7V3rGdAQCAPtXesZ0BAIA+1d6xnQGrVipLLSrOzM9TslIw0TPSM7TUUVBKL0osyCgGihiCOKWZKSB2tJJ5okmamWGiqbGRRZqhiVGKrkmygaVlmpGZmZmBuaGpQbJSLFB9SWVBql9ibipET0BiSUZaZl5KZl66nntRZoo7yGil2FoAUEsBAi0AFAAACAgAAAgh7HHboTK4AgAAxQUAAAsAJAAAAAAAAAAAAAAAAAAAAGdyYXBoMC5qc29uCgAgAAAAAAABABgAAIA+1d6xnQEAgD7V3rGdAQCAPtXesZ0BUEsBAi0AFAAACAgAAAgh7GyG0IdtAAAAeAAAAAkAJAAAAAAAAAAAAAAABQMAAG1ldGEuanNvbgoAIAAAAAAAAQAYAACAPtXesZ0BAIA+1d6xnQEAgD7V3rGdAVBLBQYAAAAAAgACALgAAAC9AwAAAAA=
     file_cachedStartup: {fileID: 0}
     cacheStartup: 0
   showNavGraphs: 1
