@@ -6,10 +6,10 @@ using UnityEngine.UI;
 
 public class MainMenuManager : NetworkBehaviour
 {
-    [SerializeField] Button hostGameButton, createGameButton, startGameButton, mainMenuButton;
+    [SerializeField] Button multiplayerButton, createGameButton, startGameButton, mainMenuButton;
     [SerializeField] TMP_InputField inputCode;
     [SerializeField] TMP_Text playersConnectedText, codeText, joinCodeText;
-    [SerializeField] testRelay realy;
+    [SerializeField] MultiplayerManager multiplayerManager;
     [SerializeField] TMP_InputField nameInputField;
     [SerializeField] GameObject mainMenu, joinMenu, connectingMenu, creatingGameMenu;
 
@@ -23,12 +23,11 @@ public class MainMenuManager : NetworkBehaviour
     private void Awake()
     {
         if (nameInputField && GameDataHolder.multiplayerName != "") nameInputField.text = GameDataHolder.multiplayerName;
-        if (hostGameButton)
+        if (multiplayerButton)
         {
-            hostGameButton.onClick.AddListener(() =>
+            multiplayerButton.onClick.AddListener(() =>
             {
-                GoToHostingGameMenu();
-                realy.CreateRelay();
+                multiplayerManager.CreateLobby();
             });
         }
         if (createGameButton)
@@ -36,7 +35,7 @@ public class MainMenuManager : NetworkBehaviour
             createGameButton.onClick.AddListener(() =>
             {
                 GoToConnectingMenu();
-                realy.JoinRelay(inputCode.text);
+                multiplayerManager.JoinRelay(inputCode.text);
             });
         }
         if (startGameButton)

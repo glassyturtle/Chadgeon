@@ -3,12 +3,14 @@ using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport.Relay;
 using Unity.Services.Authentication;
 using Unity.Services.Core;
+using Unity.Services.Lobbies;
+using Unity.Services.Lobbies.Models;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class testRelay : MonoBehaviour
+public class MultiplayerManager : MonoBehaviour
 {
     private async void Start()
     {
@@ -26,12 +28,26 @@ public class testRelay : MonoBehaviour
         {
             Debug.LogException(e);
         }
-
-
-
     }
 
+    #region Lobby
+    public async void CreateLobby()
+    {
+        try
+        {
+            string lobbyName = "MyLobby";
+            int maxPlayers = 20;
+            Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers);
+            Debug.Log("created lobbie uwu" + lobbyName + " playa" + maxPlayers);
+        }
+        catch (RelayServiceException e)
+        {
+            Debug.LogException(e);
+        }
+    }
+    #endregion
 
+    #region Relay
     public async void CreateRelay()
     {
         try
@@ -54,7 +70,6 @@ public class testRelay : MonoBehaviour
             Debug.LogException(e);
         }
     }
-
     public async void JoinRelay(string joinCode)
     {
         try
@@ -73,4 +88,7 @@ public class testRelay : MonoBehaviour
             Debug.Log(e);
         }
     }
+    #endregion
+
+
 }

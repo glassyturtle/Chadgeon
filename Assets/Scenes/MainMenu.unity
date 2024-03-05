@@ -1321,7 +1321,7 @@ GameObject:
   - component: {fileID: 230222899}
   - component: {fileID: 230222900}
   m_Layer: 5
-  m_Name: Host GAme
+  m_Name: Multiplayer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5985,7 +5985,7 @@ GameObject:
   - component: {fileID: 1370225185}
   - component: {fileID: 1370225186}
   m_Layer: 0
-  m_Name: Test Relay
+  m_Name: MultiplayerManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -6907,7 +6907,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f368058557f80de4da5a86447aee6f3a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hostGameButton: {fileID: 230222900}
+  multiplayerButton: {fileID: 230222900}
   createGameButton: {fileID: 917539156}
   startGameButton: {fileID: 0}
   mainMenuButton: {fileID: 0}
@@ -6915,7 +6915,7 @@ MonoBehaviour:
   playersConnectedText: {fileID: 0}
   codeText: {fileID: 0}
   joinCodeText: {fileID: 0}
-  realy: {fileID: 1370225186}
+  multiplayerManager: {fileID: 1370225186}
   nameInputField: {fileID: 2097665615}
   mainMenu: {fileID: 1555582559}
   joinMenu: {fileID: 375495317}
@@ -8116,7 +8116,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Host Game
+  m_text: Multiplayer
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: c98f979f8366ac8418df1bb8eae68b7d, type: 2}
   m_sharedMaterial: {fileID: 2108584977860465703, guid: c98f979f8366ac8418df1bb8eae68b7d, type: 2}
