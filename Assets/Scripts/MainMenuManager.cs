@@ -6,10 +6,9 @@ using UnityEngine.UI;
 
 public class MainMenuManager : NetworkBehaviour
 {
-    [SerializeField] Button multiplayerButton, createGameButton, startGameButton, mainMenuButton;
+    [SerializeField] Button multiplayerButton, createGameButton, mainMenuButton;
     [SerializeField] TMP_InputField inputCode;
     [SerializeField] TMP_Text playersConnectedText, codeText, joinCodeText;
-    [SerializeField] MultiplayerManager multiplayerManager;
     [SerializeField] TMP_InputField nameInputField;
     [SerializeField] GameObject mainMenu, joinMenu, connectingMenu, creatingGameMenu;
 
@@ -18,7 +17,20 @@ public class MainMenuManager : NetworkBehaviour
     [SerializeField] TMP_Text amtOfBots;
     [SerializeField] GameObject HostUI;
 
+    [Header("Lobby List Menu")]
+    [SerializeField] private Button refreshLobbiesButton;
+    [SerializeField] private Button hostNewLobbyButton;
+    [SerializeField] private Button exitLobbiesButton;
 
+
+    [Header("Lobby Menu")]
+    [SerializeField] private Button leaveLobbyButton;
+    [SerializeField] private Button changeGameModeButton;
+    [SerializeField] private Button addBotButton;
+    [SerializeField] private Button startGameButton;
+    [SerializeField] private TextMeshProUGUI lobbyNameText;
+    [SerializeField] private TextMeshProUGUI playerCountText;
+    [SerializeField] private TextMeshProUGUI gameModeText;
 
     private void Awake()
     {
@@ -27,7 +39,7 @@ public class MainMenuManager : NetworkBehaviour
         {
             multiplayerButton.onClick.AddListener(() =>
             {
-                multiplayerManager.CreateLobby();
+                MultiplayerManager.Instance.CreateLobby("Chadgeon's Lobby", 69, false, MultiplayerManager.GameMode.FlockDeathMatch);
             });
         }
         if (createGameButton)
@@ -35,7 +47,7 @@ public class MainMenuManager : NetworkBehaviour
             createGameButton.onClick.AddListener(() =>
             {
                 GoToConnectingMenu();
-                multiplayerManager.JoinRelay(inputCode.text);
+                MultiplayerManager.Instance.JoinRelay(inputCode.text);
             });
         }
         if (startGameButton)
