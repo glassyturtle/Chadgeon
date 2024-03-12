@@ -11,26 +11,40 @@ using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using static LobbyManager;
 
 public class MultiplayerManager : MonoBehaviour
 {
     public static MultiplayerManager Instance { get; private set; }
     public const string KEY_GAME_MODE = "GameMode";
 
-
     private string playerName = "Chadgeon";
     private string playerSkin = "Chadgeon";
 
-    private float heartbeatTimer = 15;
     private float lobbyPollTimer;
     private float refreshLobbyListTimer = 5f;
     private Lobby joinedLobby;
+
+    public event EventHandler OnLeftLobby;
 
     public event EventHandler<LobbyEventArgs> OnJoinedLobby;
     public event EventHandler<LobbyEventArgs> OnJoinedLobbyUpdate;
     public event EventHandler<LobbyEventArgs> OnKickedFromLobby;
     public event EventHandler<LobbyEventArgs> OnLobbyGameModeChanged;
+
+    public const string KEY_PLAYER_FLOCK = "No Flock";
+
+    public class LobbyEventArgs : EventArgs
+    {
+        public Lobby lobby;
+    }
+
+    public event EventHandler<OnLobbyListChangedEventArgs> OnLobbyListChanged;
+    public class OnLobbyListChangedEventArgs : EventArgs
+    {
+        public List<Lobby> lobbyList;
+    }
+
+
 
     public enum GameMode
     {
@@ -80,32 +94,28 @@ public class MultiplayerManager : MonoBehaviour
     #region Lobby
 
     private Lobby hostLobby;
-    private float heartBeatTimer;
+    private float heartBeatTimer = 15;
 
     public async void CreateLobby(string lobbyName, int maxPlayers, bool isPrivate, GameMode gameMode)
     {
-        try
-        {
-            CreateLobbyOptions options = new CreateLobbyOptions
-            {
-                IsPrivate = isPrivate,
-                Player = GetPlayer(),
+        Player player = GetPlayer();
 
-                Data = new Dictionary<string, DataObject> {
+        CreateLobbyOptions options = new CreateLobbyOptions
+        {
+            Player = player,
+            IsPrivate = isPrivate,
+            Data = new Dictionary<string, DataObject> {
                 { KEY_GAME_MODE, new DataObject(DataObject.VisibilityOptions.Public, gameMode.ToString()) }
             }
-            };
+        };
 
+        Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, options);
 
-            Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, options);
+        joinedLobby = lobby;
 
-            hostLobby = lobby;
+        OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = lobby });
 
-        }
-        catch (RelayServiceException e)
-        {
-            Debug.LogException(e);
-        }
+        Debug.Log("Created Lobby " + lobby.Name);
     }
 
     private async void HandleLobbyHeartbeat()
@@ -115,7 +125,7 @@ public class MultiplayerManager : MonoBehaviour
             heartBeatTimer -= Time.deltaTime;
             if (heartBeatTimer < 0)
             {
-                float heartBeatTimerMax = heartbeatTimer;
+                float heartBeatTimerMax = heartBeatTimer;
                 heartBeatTimer = heartBeatTimerMax;
 
                 await LobbyService.Instance.SendHeartbeatPingAsync(hostLobby.Id);
@@ -299,11 +309,40 @@ public class MultiplayerManager : MonoBehaviour
 
             QueryResponse lobbyListQueryResponse = await Lobbies.Instance.QueryLobbiesAsync();
 
-            OnLobbyListChanged?.Invoke(this, new OnLobbyListChangedEventArgs { lobbyList = lobbyListQueryResponse.Results });
+            //OnLobbyListChanged?.Invoke(this, new OnLobbyListChangedEventArgs { lobbyList = lobbyListQueryResponse.Results });
         }
         catch (LobbyServiceException e)
         {
             Debug.Log(e);
+        }
+    }
+    public async void UpdatePlayerFlock(PlayerCharacter playerFlock)
+    {
+        if (joinedLobby != null)
+        {
+            try
+            {
+                UpdatePlayerOptions options = new UpdatePlayerOptions();
+
+                options.Data = new Dictionary<string, PlayerDataObject>() {
+                    {
+                        KEY_PLAYER_FLOCK, new PlayerDataObject(
+                            visibility: PlayerDataObject.VisibilityOptions.Public,
+                            value: playerFlock.ToString())
+                    }
+                };
+
+                string playerId = AuthenticationService.Instance.PlayerId;
+
+                Lobby lobby = await LobbyService.Instance.UpdatePlayerAsync(joinedLobby.Id, playerId, options);
+                joinedLobby = lobby;
+
+                OnJoinedLobbyUpdate?.Invoke(this, new LobbyEventArgs { lobby = joinedLobby });
+            }
+            catch (LobbyServiceException e)
+            {
+                Debug.Log(e);
+            }
         }
     }
 
