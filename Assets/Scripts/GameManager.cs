@@ -28,12 +28,13 @@ public class GameManager : NetworkBehaviour
     [SerializeField] Button endScreenMainMenuButton;
     [SerializeField] Transform borderTransform;
 
-    [SerializeField] GameObject endScreen, playerUI, gameUI, upgradeScreen, pauseMenu, cooldownIcon, spectateScreen, leaderboard, sprintUI, churchDoor;
+    [SerializeField] GameObject endScreen, playerUI, gameUI, upgradeScreen, pauseMenu, slamCooldownUI, spectateScreen, leaderboard, sprintUI, churchDoor;
     [SerializeField] TMP_Text endGameDescriptionText, spectatingText, upgradeDescText, slamCoolDownText;
     [SerializeField] GameObject endingLeaderboardTextPrefab, upgradeDescUI;
     [SerializeField] RectTransform leaderBoardTransform;
     [SerializeField] private GameObject[] upgradeDisplays;
     [SerializeField] private UpgradeDescriber[] upgradeDescibers;
+    [SerializeField] private List<Transform> spawnLocations;
 
     [SerializeField] GameObject FoodPrefab, nestPrefab, pooPrefab, upgradeHolder;
     [SerializeField] TextMeshProUGUI hpText, timeleftText;
@@ -84,6 +85,7 @@ public class GameManager : NetworkBehaviour
     }
     private void Awake()
     {
+
         endScreenMainMenuButton.onClick.AddListener(() =>
         {
             NetworkManager.Singleton.Shutdown();
@@ -192,7 +194,7 @@ public class GameManager : NetworkBehaviour
     }
     public void ShowSlamCoolDown()
     {
-        cooldownIcon.SetActive(true);
+        slamCooldownUI.SetActive(true);
     }
     public void SpectateNext()
     {
@@ -237,8 +239,6 @@ public class GameManager : NetworkBehaviour
     {
         foreach (ulong client in NetworkManager.Singleton.ConnectedClientsIds)
         {
-            float spawnX = transform.position.x;
-            float spawnY = transform.position.y;
             Vector3 spawnPos = GetSpawnPos();
             GameObject player = Instantiate(playerPrefab, spawnPos, transform.rotation);
             player.GetComponent<NetworkObject>().SpawnAsPlayerObject(client, true);
@@ -246,23 +246,63 @@ public class GameManager : NetworkBehaviour
 
         for (int i = 0; i < GameDataHolder.botsToSpawn; i++)
         {
-
             Vector3 spawnPos = GetSpawnPos();
             GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
             PigeonAI ai = pigeon.GetComponent<PigeonAI>();
             ai.SetAI(GameDataHolder.botDifficulty);
             pigeon.GetComponent<NetworkObject>().Spawn();
         }
+        for (int i = 0; i < GameDataHolder.botsFlock1; i++)
+        {
+            Vector3 spawnPos = GetSpawnPos();
+            GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+            PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+            ai.flock.Value = 1;
+            ai.SetAI(GameDataHolder.botDifficulty);
+            pigeon.GetComponent<NetworkObject>().Spawn();
+        }
+        for (int i = 0; i < GameDataHolder.botsFlock2; i++)
+        {
+            Vector3 spawnPos = GetSpawnPos();
+            GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+            PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+            ai.flock.Value = 2;
+            ai.SetAI(GameDataHolder.botDifficulty);
+            pigeon.GetComponent<NetworkObject>().Spawn();
+        }
+        for (int i = 0; i < GameDataHolder.botsFlock3; i++)
+        {
+            Vector3 spawnPos = GetSpawnPos();
+            GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+            PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+            ai.flock.Value = 3;
+            ai.SetAI(GameDataHolder.botDifficulty);
+            pigeon.GetComponent<NetworkObject>().Spawn();
+        }
+        for (int i = 0; i < GameDataHolder.botsFlock4; i++)
+        {
+            Vector3 spawnPos = GetSpawnPos();
+            GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+            PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+            ai.flock.Value = 4;
+            ai.SetAI(GameDataHolder.botDifficulty);
+            pigeon.GetComponent<NetworkObject>().Spawn();
+        }
+
+
 
         currentSecound.Value = secondsTillSuddenDeath;
         StartCoroutine(DepreciateIceCream());
     }
     public Vector3 GetSpawnPos()
     {
-        float spawnX = transform.position.x;
-        float spawnY = transform.position.y;
-        float minRange = 8;
-        float spawnRange = 17;
+        Transform pos = spawnLocations[Random.Range(0, spawnLocations.Count)];
+        float spawnX = pos.position.x;
+        float spawnY = pos.position.y;
+
+
+        float minRange = 2f;
+        float spawnRange = 2f;
 
         if (Random.Range(0, 100) <= 50)
         {
@@ -379,7 +419,7 @@ public class GameManager : NetworkBehaviour
         if (IsServer && isSuddenDeath.Value)
         {
             if (borderSize.Value > 0.05f)
-                borderSize.Value -= Time.deltaTime / 300;
+                borderSize.Value -= Time.deltaTime / 500;
         }
 
         if (IsOwnedByServer && isSuddenDeath.Value)
@@ -434,6 +474,6 @@ public class GameManager : NetworkBehaviour
     [ClientRpc]
     private void OpenChurchDoorClientRpc()
     {
-        churchDoor.SetActive(false);
+        if (churchDoor) churchDoor.SetActive(false);
     }
 }

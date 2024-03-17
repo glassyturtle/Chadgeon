@@ -20,11 +20,12 @@ public class PlayerScript : Pigeon
         if (isFlying.Value)
         {
             Vector2 direction = (slamPos - transform.position).normalized;
-            body.AddForce(4 * speed * Time.fixedDeltaTime * direction);
-            if ((transform.position - slamPos).sqrMagnitude <= 0.1f)
+            body.AddForce(6 * speed * speedMod * Time.fixedDeltaTime * direction);
+            if ((transform.position - slamPos).sqrMagnitude <= 0.05f)
             {
                 StopFlying();
             }
+            return;
         }
         else if (!isKnockedOut.Value && !isSlaming.Value)
         {

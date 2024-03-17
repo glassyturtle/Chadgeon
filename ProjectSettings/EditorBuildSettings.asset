@@ -5,16 +5,25 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/LobbyTutorial/LobbyTutorial_Done.unity
     guid: be8200a558cfff84b8ce074fa6e33558
   - enabled: 1
     path: Assets/Scenes/MainMenu.unity
     guid: 83d26054e1bf0074ca0675635fbd6f48
   - enabled: 1
-    path: Assets/Scenes/SimpMode.unity
+    path: Assets/Scenes/Yu Gardens.unity
     guid: 2cda990e2423bbf4892e6590ba056729
   - enabled: 1
     path: Assets/Scenes/LobbyMenu.unity
     guid: acae8ff80d672354085fdff8f1ceb203
+  - enabled: 1
+    path: Assets/Scenes/KTown.unity
+    guid: 1175b0345e380074695fb68c3918b51c
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 1
+    path: Assets/Scenes/Central Park.unity
+    guid: 58ddfb89dcd1fe14ca6bbc1d341f019f
   m_configObjects: {}

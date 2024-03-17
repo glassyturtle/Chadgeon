@@ -51,6 +51,10 @@ public class OptionsMenu : MonoBehaviour
         soundMenu.SetActive(false);
         applicationMenu.SetActive(true);
     }
+    public void QuitGame()
+    {
+        Application.Quit();
+    }
 
     public void OpenSoundMenu()
     {

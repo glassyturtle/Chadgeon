@@ -24,6 +24,7 @@ public class LobbyCreateUI : MonoBehaviour
         createButton.onClick.AddListener(() =>
         {
             if (lobbyNameField.text != "") lobbyName = lobbyNameField.text;
+            else lobbyName = "Chadgeon's Game";
             MultiplayerManager.Instance.CreateLobby(
                 lobbyName,
                 maxPlayers,
@@ -43,6 +44,10 @@ public class LobbyCreateUI : MonoBehaviour
     {
         gameObject.SetActive(false);
     }
+    public void Cancel()
+    {
+        Hide();
+    }
 
     public void Show()
     {
@@ -50,7 +55,7 @@ public class LobbyCreateUI : MonoBehaviour
 
         lobbyName = "MyLobby";
         isPrivate = false;
-        maxPlayers = 4;
+        maxPlayers = 69;
         gameMode = MultiplayerManager.GameMode.FreeForAll;
     }
 

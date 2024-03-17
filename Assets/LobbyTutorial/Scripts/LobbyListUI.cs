@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,11 +13,12 @@ public class LobbyListUI : MonoBehaviour
 
 
     [SerializeField] private GameObject mainMenu;
+    [SerializeField] private GameObject joinGameMenu;
     [SerializeField] private Transform lobbySingleTemplate;
     [SerializeField] private Transform container;
     [SerializeField] private Button refreshButton;
     [SerializeField] private Button createLobbyButton;
-
+    [SerializeField] private TMP_InputField codeInput;
 
     private void Awake()
     {
@@ -26,6 +28,10 @@ public class LobbyListUI : MonoBehaviour
 
         refreshButton.onClick.AddListener(RefreshButtonClick);
         createLobbyButton.onClick.AddListener(CreateLobbyButtonClick);
+    }
+    public void ChangeMultiplayerName(string name)
+    {
+        GameDataHolder.multiplayerName = name;
     }
 
     private void Start()
@@ -44,6 +50,18 @@ public class LobbyListUI : MonoBehaviour
     private void LobbyManager_OnKickedFromLobby(object sender, MultiplayerManager.LobbyEventArgs e)
     {
         Show();
+    }
+    public void JoinLobbyWithCode()
+    {
+        MultiplayerManager.Instance.JoinLobbyByCode(codeInput.text);
+    }
+    public void CloseJoinMenu()
+    {
+        joinGameMenu.SetActive(false);
+    }
+    public void OpenJoinMenu()
+    {
+        joinGameMenu.SetActive(true);
     }
 
     private void LobbyManager_OnLeftLobby(object sender, EventArgs e)
@@ -92,6 +110,7 @@ public class LobbyListUI : MonoBehaviour
     private void Hide()
     {
         gameObject.SetActive(false);
+        joinGameMenu.SetActive(false);
     }
 
     private void Show()

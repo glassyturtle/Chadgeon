@@ -14,6 +14,7 @@ public class Pigeon : NetworkBehaviour
     public NetworkVariable<int> xp = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> xpTillLevelUp = new(20, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> level = new(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<int> flock = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<FixedString128Bytes> pigeonName = new("", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public Dictionary<Upgrades, bool> pigeonUpgrades = new();
     public NetworkVariable<bool> isSprinting = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
@@ -22,6 +23,7 @@ public class Pigeon : NetworkBehaviour
 
     [SerializeField] protected GameManager gm;
     [SerializeField] protected TextMesh displayText;
+    [SerializeField] protected TextMesh flockDisplayText;
     [SerializeField] protected Rigidbody2D body;
     [SerializeField] protected float speed;
     [SerializeField] protected int damage;
@@ -85,6 +87,7 @@ public class Pigeon : NetworkBehaviour
         public bool isEnchanted;
         public float posX;
         public float posY;
+        public int flock;
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
@@ -116,6 +119,8 @@ public class Pigeon : NetworkBehaviour
 
     public void OnPigeonHit(AttackProperties atkProp)
     {
+        //Does not do anything if on same team or if they are not the owner
+        if ((atkProp.flock == flock.Value && flock.Value != 0) || !IsOwner) return;
 
         //Stops calculating if successufly dodged
         if (!atkProp.isEnchanted && pigeonUpgrades.ContainsKey(Upgrades.evasive) && Random.Range(0, 100) <= 25) return;
@@ -160,7 +165,7 @@ public class Pigeon : NetworkBehaviour
                 isSlaming.Value = false;
                 StopCoroutine(StopSlam());
                 isKnockedOut.Value = true;
-                gm.StartSpectating();
+                if (isPlayer) gm.StartSpectating();
             }
             else
             {
@@ -288,6 +293,7 @@ public class Pigeon : NetworkBehaviour
 
     protected void PigeonAttack(AttackProperties atkProp, Quaternion theAngle)
     {
+        atkProp.flock = flock.Value;
 
         slash.attackProperties.Value = atkProp;
         slash.Activate(new Vector3(atkProp.posX, atkProp.posY), theAngle, isSlaming.Value);
@@ -325,18 +331,20 @@ public class Pigeon : NetworkBehaviour
             {
                 if (GameDataHolder.multiplayerName == "") pigeonName.Value = "Chadgeon";
                 else pigeonName.Value = GameDataHolder.multiplayerName;
-            }
 
-            StartCoroutine(JumpAnimation());
-            if (!pigeonAI)
-            {
+                flock.Value = GameDataHolder.flock;
                 healthBarGameobject.SetActive(false);
                 displayText.gameObject.SetActive(false);
                 hpBar.gameObject.SetActive(false);
             }
 
+            StartCoroutine(JumpAnimation());
             StartCoroutine(Regen());
         }
+
+
+
+
 
         body.freezeRotation = true;
         currentHP.Value = maxHp.Value;
@@ -415,6 +423,35 @@ public class Pigeon : NetworkBehaviour
         {
             displayText.text = pigeonName.Value + " LVL:" + level.Value;
         }
+
+        if (flock.Value != 0)
+        {
+            flockDisplayText.gameObject.SetActive(true);
+            switch (flock.Value)
+            {
+                case 1:
+                    flockDisplayText.text = "Enjoyers";
+                    flockDisplayText.color = Color.cyan;
+                    break;
+                case 2:
+                    flockDisplayText.text = "Psychos";
+                    flockDisplayText.color = Color.red;
+                    break;
+                case 3:
+                    flockDisplayText.text = "Minions";
+                    flockDisplayText.color = Color.yellow;
+                    break;
+                case 4:
+                    flockDisplayText.text = "Looksmaxers";
+                    flockDisplayText.color = Color.green;
+                    break;
+            }
+        }
+        else
+        {
+            flockDisplayText.gameObject.SetActive(false);
+        }
+
 
         if (isKnockedOut.Value)
         {
@@ -548,7 +585,7 @@ public class Pigeon : NetworkBehaviour
         {
             StopCoroutine(StopSlam());
             isKnockedOut.Value = true;
-            gm.StartSpectating();
+            if (isPlayer) gm.StartSpectating();
             yield return null;
         }
         else
@@ -562,8 +599,8 @@ public class Pigeon : NetworkBehaviour
         if (!IsOwner) return;
         isFlying.Value = true;
         Vector3 pos = gm.GetSpawnPos();
-        slamPos = Vector2.MoveTowards(transform.position, new Vector3(pos.x, pos.y, 0), 50f);
-        StartCoroutine(StopFlight());
+        slamPos = Vector2.MoveTowards(transform.position, new Vector3(pos.x, pos.y, 0), 80f);
+        //StartCoroutine(StopFlight());
         StartCoroutine(FlyAnimation());
     }
 
@@ -639,14 +676,10 @@ public class Pigeon : NetworkBehaviour
         yield return new WaitForSeconds(1);
         sprintOnCooldown = false;
     }
-    private IEnumerator StopFlight()
-    {
-        yield return new WaitForSeconds(10f);
-        StopFlying();
-    }
 
     protected void StopFlying()
     {
+        body.velocity = Vector2.zero;
         isFlying.Value = false;
         if (pigeonUpgrades.ContainsKey(Upgrades.slam)) canSlam = true;
         currentHP.Value = maxHp.Value;

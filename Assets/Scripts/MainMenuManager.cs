@@ -1,7 +1,6 @@
-using Unity.Netcode;
 using UnityEngine;
 
-public class MainMenuManager : NetworkBehaviour
+public class MainMenuManager : MonoBehaviour
 {
     [Header("Menus")]
     [SerializeField] private GameObject mainMenu;
@@ -15,7 +14,9 @@ public class MainMenuManager : NetworkBehaviour
     public void OpenLobbyList()
     {
         mainMenu.SetActive(false);
+
         lobbyListMenu.SetActive(true);
+        MultiplayerManager.Instance.RefreshLobbyList();
     }
 
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport.Relay;
@@ -17,11 +18,10 @@ public class MultiplayerManager : MonoBehaviour
     public static MultiplayerManager Instance { get; private set; }
     public const string KEY_GAME_MODE = "GameMode";
 
-    private string playerName = "Chadgeon";
     private string playerSkin = "Chadgeon";
 
     private float lobbyPollTimer;
-    private float refreshLobbyListTimer = 5f;
+    private float startTimer = 3;
     private Lobby joinedLobby;
 
     public event EventHandler OnLeftLobby;
@@ -31,8 +31,14 @@ public class MultiplayerManager : MonoBehaviour
     public event EventHandler<LobbyEventArgs> OnKickedFromLobby;
     public event EventHandler<LobbyEventArgs> OnLobbyGameModeChanged;
 
-    public const string KEY_PLAYER_FLOCK = "No Flock";
-
+    public const string KEY_PLAYER_FLOCK = "Flock";
+    public const string KEY_PLAYER_NAME = "PlayerName";
+    public const string KEY_PLAYER_SKIN = "PlayerSkin";
+    public const string KEY_START_GAME = "Start";
+    public const string KEY_BOT_AMT = "BotCount";
+    public const string KEY_MAP_NAME = "MapName";
+    public const string KEY_FLOCK_AMT = "FlockAmount";
+    private bool hasJoinedRelay = false;
     public class LobbyEventArgs : EventArgs
     {
         public Lobby lobby;
@@ -73,6 +79,8 @@ public class MultiplayerManager : MonoBehaviour
         try
         {
             await UnityServices.InitializeAsync();
+            if (AuthenticationService.Instance.IsSignedIn) return;
+
             AuthenticationService.Instance.SignedIn += () =>
             {
                 Debug.Log("signed in " + AuthenticationService.Instance.PlayerId);
@@ -105,7 +113,10 @@ public class MultiplayerManager : MonoBehaviour
             Player = player,
             IsPrivate = isPrivate,
             Data = new Dictionary<string, DataObject> {
-                { KEY_GAME_MODE, new DataObject(DataObject.VisibilityOptions.Public, gameMode.ToString()) }
+                {KEY_GAME_MODE, new DataObject(DataObject.VisibilityOptions.Public, gameMode.ToString()) },
+                {KEY_START_GAME, new DataObject(DataObject.VisibilityOptions.Member, "0")},
+                {KEY_BOT_AMT, new DataObject(DataObject.VisibilityOptions.Member, "0")},
+                {KEY_FLOCK_AMT, new DataObject(DataObject.VisibilityOptions.Member, "0")},
             }
         };
 
@@ -132,16 +143,21 @@ public class MultiplayerManager : MonoBehaviour
             }
         }
     }
-    private async void JoinLobbyByCode(string lobbyCode)
+    public async void JoinLobbyByCode(string lobbyCode)
     {
         try
         {
-            JoinLobbyByCodeOptions options = new JoinLobbyByCodeOptions
-            {
-                Player = GetPlayer()
-            };
+            Player player = GetPlayer();
 
-            await Lobbies.Instance.JoinLobbyByCodeAsync(lobbyCode, options);
+
+            joinedLobby = await LobbyService.Instance.JoinLobbyByCodeAsync(lobbyCode, new JoinLobbyByCodeOptions
+            {
+                Player = player
+            });
+
+
+            OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = joinedLobby });
+
         }
         catch (RelayServiceException e)
         {
@@ -155,23 +171,11 @@ public class MultiplayerManager : MonoBehaviour
         {
             Data = new Dictionary<string, PlayerDataObject>
                     {
-                        {"PlayerName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerName) },
+                        {"PlayerName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, GameDataHolder.multiplayerName) },
                         {"PlayerSkin", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerSkin) },
+                        {"Flock", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerSkin) },
                     }
         };
-    }
-    private async void ListLobbies()
-    {
-        try
-        {
-            //Check Code Monke video 14:00 for filtering lobbies
-            QueryResponse response = await Lobbies.Instance.QueryLobbiesAsync();
-
-        }
-        catch (RelayServiceException e)
-        {
-            Debug.LogException(e);
-        }
     }
     public async void UpdateLobbyGameMode(GameMode gameMode)
     {
@@ -217,6 +221,38 @@ public class MultiplayerManager : MonoBehaviour
                     OnKickedFromLobby?.Invoke(this, new LobbyEventArgs { lobby = joinedLobby });
 
                     joinedLobby = null;
+
+                    return;
+                }
+
+                if (joinedLobby.Data[KEY_START_GAME].Value != "0")
+                {
+                    if (!IsLobbyHost())
+                    {
+                        //loby host already joined relay
+                        JoinRelay(joinedLobby.Data[KEY_START_GAME].Value);
+                        joinedLobby = null;
+                    }
+                    else
+                    {
+                        startTimer -= 1f;
+                        if (startTimer < 0f)
+                        {
+                            switch (GameDataHolder.map)
+                            {
+                                case 0:
+                                    NetworkManager.Singleton.SceneManager.LoadScene("KTown", LoadSceneMode.Single);
+                                    break;
+                                case 1:
+                                    NetworkManager.Singleton.SceneManager.LoadScene("Yu Gardens", LoadSceneMode.Single);
+                                    break;
+                                case 2:
+                                    NetworkManager.Singleton.SceneManager.LoadScene("Central Park", LoadSceneMode.Single);
+                                    break;
+                            }
+                            joinedLobby = null;
+                        }
+                    }
                 }
             }
         }
@@ -236,18 +272,35 @@ public class MultiplayerManager : MonoBehaviour
         }
         return false;
     }
-    public async void UpdatePlayerName(string newPlayerName)
+    public async void UpdatePlayerFlock(string newFlock)
     {
         try
         {
-            playerName = newPlayerName;
-
+            switch (newFlock)
+            {
+                case "0":
+                    GameDataHolder.flock = 0;
+                    break;
+                case "1":
+                    GameDataHolder.flock = 1;
+                    break;
+                case "2":
+                    GameDataHolder.flock = 2;
+                    break;
+                case "3":
+                    GameDataHolder.flock = 3;
+                    break;
+                case "4":
+                    GameDataHolder.flock = 4;
+                    break;
+            }
             await LobbyService.Instance.UpdatePlayerAsync(joinedLobby.Id, AuthenticationService.Instance.PlayerId, new UpdatePlayerOptions
             {
                 Data = new Dictionary<string, PlayerDataObject>
                     {
-                        {"PlayerName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerName) },
+                        {"PlayerName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, GameDataHolder.multiplayerName) },
                         {"PlayerSkin", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerSkin) },
+                        {"Flock", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, newFlock) },
                     }
             });
         }
@@ -258,13 +311,20 @@ public class MultiplayerManager : MonoBehaviour
     }
     public async void LeaveLobby()
     {
-        try
+        if (joinedLobby != null)
         {
-            await LobbyService.Instance.RemovePlayerAsync(joinedLobby.Id, AuthenticationService.Instance.PlayerId);
-        }
-        catch (LobbyServiceException e)
-        {
-            Debug.Log(e);
+            try
+            {
+                await LobbyService.Instance.RemovePlayerAsync(joinedLobby.Id, AuthenticationService.Instance.PlayerId);
+
+                joinedLobby = null;
+
+                OnLeftLobby?.Invoke(this, EventArgs.Empty);
+            }
+            catch (LobbyServiceException e)
+            {
+                Debug.Log(e);
+            }
         }
     }
     public async void KickPlayer(string playerId)
@@ -274,6 +334,7 @@ public class MultiplayerManager : MonoBehaviour
             try
             {
                 await LobbyService.Instance.RemovePlayerAsync(joinedLobby.Id, playerId);
+
             }
             catch (LobbyServiceException e)
             {
@@ -309,12 +370,23 @@ public class MultiplayerManager : MonoBehaviour
 
             QueryResponse lobbyListQueryResponse = await Lobbies.Instance.QueryLobbiesAsync();
 
-            //OnLobbyListChanged?.Invoke(this, new OnLobbyListChangedEventArgs { lobbyList = lobbyListQueryResponse.Results });
+            OnLobbyListChanged?.Invoke(this, new OnLobbyListChangedEventArgs { lobbyList = lobbyListQueryResponse.Results });
         }
         catch (LobbyServiceException e)
         {
             Debug.Log(e);
         }
+    }
+    public async void JoinLobby(Lobby lobby)
+    {
+        Player player = GetPlayer();
+
+        joinedLobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobby.Id, new JoinLobbyByIdOptions
+        {
+            Player = player
+        });
+
+        OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = lobby });
     }
     public async void UpdatePlayerFlock(PlayerCharacter playerFlock)
     {
@@ -345,43 +417,68 @@ public class MultiplayerManager : MonoBehaviour
             }
         }
     }
+    public Lobby GetJoinedLobby()
+    {
+        return joinedLobby;
+    }
+    public async void StartGame(int BofDiff, int botToSpawn)
+    {
+        if (IsLobbyHost())
+        {
+            try
+            {
+                Debug.Log("Start Game");
+                GameDataHolder.botDifficulty = BofDiff;
+                GameDataHolder.botsToSpawn = botToSpawn;
 
-
+                string relayCode = await CreateRelay();
+                Lobby lobby = await Lobbies.Instance.UpdateLobbyAsync(joinedLobby.Id, new UpdateLobbyOptions
+                {
+                    Data = new Dictionary<string, DataObject>
+                    {
+                        {KEY_START_GAME, new DataObject(DataObject.VisibilityOptions.Member, relayCode)}
+                    }
+                });
+                joinedLobby = lobby;
+            }
+            catch (LobbyServiceException e)
+            {
+                Debug.Log(e);
+            }
+        }
+    }
 
     #endregion
 
     #region Relay
-    public async void CreateRelay()
+    public async Task<string> CreateRelay()
     {
         try
         {
             Allocation allocation = await RelayService.Instance.CreateAllocationAsync(12);
 
             string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
-            GameDataHolder.joinCode = joinCode;
 
 
 
             RelayServerData relayServerData = new RelayServerData(allocation, "dtls");
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
             NetworkManager.Singleton.StartHost();
-            NetworkManager.Singleton.SceneManager.LoadScene("LobbyMenu", LoadSceneMode.Single);
-
+            return joinCode;
         }
         catch (RelayServiceException e)
         {
             Debug.LogException(e);
+            return null;
         }
     }
     public async void JoinRelay(string joinCode)
     {
         try
         {
+
             JoinAllocation joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCode);
             GameDataHolder.joinCode = joinCode;
-
-
-
             RelayServerData relayServerData = new RelayServerData(joinAllocation, "dtls");
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
             NetworkManager.Singleton.StartClient();
@@ -392,6 +489,7 @@ public class MultiplayerManager : MonoBehaviour
         }
     }
     #endregion
+
 
 
 }
