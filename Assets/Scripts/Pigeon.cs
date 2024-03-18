@@ -645,10 +645,9 @@ public class Pigeon : NetworkBehaviour
         while (true)
         {
             yield return new WaitForSeconds(1);
-            HealServer(regen * maxHp.Value);
             if (!inBorder && !isKnockedOut.Value)
             {
-                currentHP.Value -= 50;
+                currentHP.Value -= 5;
 
                 if (currentHP.Value <= 0)
                 {
@@ -658,6 +657,10 @@ public class Pigeon : NetworkBehaviour
                     isKnockedOut.Value = true;
                     gm.StartSpectating();
                 }
+            }
+            else
+            {
+                HealServer(regen * maxHp.Value);
             }
         }
     }

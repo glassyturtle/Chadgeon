@@ -244,6 +244,40 @@ public class GameManager : NetworkBehaviour
             player.GetComponent<NetworkObject>().SpawnAsPlayerObject(client, true);
         }
 
+
+
+
+
+
+        for (int i = 0; i < 5; i++)
+        {
+            Vector3 spawnPos = GetSpawnPos();
+            GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+            PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+            ai.SetAI(0);
+            pigeon.GetComponent<NetworkObject>().Spawn();
+        }
+        for (int i = 0; i < 5; i++)
+        {
+            Vector3 spawnPos = GetSpawnPos();
+            GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+            PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+            ai.SetAI(1);
+            pigeon.GetComponent<NetworkObject>().Spawn();
+        }
+        for (int i = 0; i < 5; i++)
+        {
+            Vector3 spawnPos = GetSpawnPos();
+            GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+            PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+            ai.SetAI(2);
+            pigeon.GetComponent<NetworkObject>().Spawn();
+        }
+
+
+
+
+
         for (int i = 0; i < GameDataHolder.botsToSpawn; i++)
         {
             Vector3 spawnPos = GetSpawnPos();
