@@ -99,6 +99,7 @@ public class Pigeon : NetworkBehaviour
             serializer.SerializeValue(ref isEnchanted);
             serializer.SerializeValue(ref posX);
             serializer.SerializeValue(ref posY);
+            serializer.SerializeValue(ref flock);
             serializer.SerializeValue(ref attackingUp);
             serializer.SerializeValue(ref isAssassin);
         }
@@ -116,11 +117,11 @@ public class Pigeon : NetworkBehaviour
             serializer.SerializeValue(ref damageDealt);
         }
     }
-
-    public void OnPigeonHit(AttackProperties atkProp)
+    [ClientRpc]
+    public void OnPigeonHitCLientRPC(AttackProperties atkProp)
     {
         //Does not do anything if on same team or if they are not the owner
-        if ((atkProp.flock == flock.Value && flock.Value != 0) || !IsOwner) return;
+        if (!IsOwner || (atkProp.flock == flock.Value && flock.Value != 0)) return;
 
         //Stops calculating if successufly dodged
         if (!atkProp.isEnchanted && pigeonUpgrades.ContainsKey(Upgrades.evasive) && Random.Range(0, 100) <= 25) return;
@@ -224,8 +225,6 @@ public class Pigeon : NetworkBehaviour
         {
             Debug.Log("Start Error");
         }
-
-
     }
 
     [ClientRpc]
@@ -294,8 +293,8 @@ public class Pigeon : NetworkBehaviour
     protected void PigeonAttack(AttackProperties atkProp, Quaternion theAngle)
     {
         atkProp.flock = flock.Value;
-
         slash.attackProperties.Value = atkProp;
+
         slash.Activate(new Vector3(atkProp.posX, atkProp.posY), theAngle, isSlaming.Value);
 
         if (currentPigeonAttackSprite.Value == 0) currentPigeonAttackSprite.Value = 1;
@@ -598,8 +597,8 @@ public class Pigeon : NetworkBehaviour
     {
         if (!IsOwner) return;
         isFlying.Value = true;
-        Vector3 pos = gm.GetSpawnPos();
-        slamPos = Vector2.MoveTowards(transform.position, new Vector3(pos.x, pos.y, 0), 80f);
+
+        slamPos = gm.GetSpawnPos();
         //StartCoroutine(StopFlight());
         StartCoroutine(FlyAnimation());
     }
@@ -684,9 +683,12 @@ public class Pigeon : NetworkBehaviour
     {
         body.velocity = Vector2.zero;
         isFlying.Value = false;
+        transform.position = slamPos;
         if (pigeonUpgrades.ContainsKey(Upgrades.slam)) canSlam = true;
         currentHP.Value = maxHp.Value;
+        stamina = maxStamina;
         isKnockedOut.Value = false;
+
     }
 
 }

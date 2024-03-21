@@ -5601,7 +5601,7 @@ RectTransform:
   - {fileID: 2083481884}
   - {fileID: 1611388185}
   m_Father: {fileID: 0}
-  m_RootOrder: 3
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -6586,7 +6586,7 @@ Transform:
   - {fileID: 177369860}
   - {fileID: 814131890}
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &559460771
 GameObject:
@@ -22184,7 +22184,7 @@ Transform:
   m_Children:
   - {fileID: 1803034209}
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1115364140
 GameObject:
@@ -124629,7 +124629,7 @@ MonoBehaviour:
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 1
-  m_FillAmount: 0.737
+  m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
@@ -138630,9 +138630,9 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 0}
+    - target: {fileID: 595659457806603185, guid: be0946a24c2cc5f4e8498ae050c1adaf, type: 3}
       propertyPath: GlobalObjectIdHash
-      value: 3554247043
+      value: 1500761604
       objectReference: {fileID: 0}
     - target: {fileID: 701529434802807149, guid: be0946a24c2cc5f4e8498ae050c1adaf, type: 3}
       propertyPath: m_AnchorMax.y
@@ -138889,7 +138889,7 @@ PrefabInstance:
     - target: {fileID: 8481649009665914961, guid: be0946a24c2cc5f4e8498ae050c1adaf, type: 3}
       propertyPath: staminaCooldownBar
       value: 
-      objectReference: {fileID: 413721555}
+      objectReference: {fileID: 112159920}
     - target: {fileID: 8481649009665914961, guid: be0946a24c2cc5f4e8498ae050c1adaf, type: 3}
       propertyPath: leaderBoardTransform
       value: 

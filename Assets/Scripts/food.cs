@@ -29,6 +29,8 @@ public class food : NetworkBehaviour
             if (hitPigeon.IsOwner)
             {
                 hitPigeon.GainXP(10);
+                hitPigeon.stamina++;
+                if (hitPigeon.stamina >= hitPigeon.maxStamina) hitPigeon.stamina = hitPigeon.maxStamina;
                 hitPigeon.HealServer(hitPigeon.maxHp.Value / 4);
                 DestroyFoodObject(this);
             }

@@ -16,18 +16,18 @@ public class HitScript : NetworkBehaviour
     {
         if (isVisible.Value)
         {
-            sr.enabled = true;
             area.enabled = true;
+            sr.enabled = true;
         }
         else
         {
             sr.enabled = false;
             area.enabled = false;
+
         }
     }
     public void Activate(Vector3 pos, Quaternion angle, bool isSlaming)
     {
-
         if (isSlaming)
         {
             transform.localScale = new Vector3(6, 6, 1);
@@ -72,10 +72,33 @@ public class HitScript : NetworkBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (!IsOwner) return;
+
         Pigeon hitPigeon = collision.GetComponent<Pigeon>();
 
-        if (!hitPigeon || !hitPigeon.IsOwner || attackProperties.Value.pigeonID == hitPigeon.NetworkObjectId) return;
+        if (!hitPigeon || attackProperties.Value.pigeonID == hitPigeon.NetworkObjectId) return;
 
-        hitPigeon.OnPigeonHit(attackProperties.Value);
+        HitPigeonServerRPC(hitPigeon.NetworkObjectId, attackProperties.Value);
     }
+
+    [ServerRpc]
+    private void HitPigeonServerRPC(ulong targetID, Pigeon.AttackProperties atkProp)
+    {
+        try
+        {
+            Debug.Log(targetID);
+            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects[targetID])
+            {
+                NetworkObject ob = NetworkManager.Singleton.SpawnManager.SpawnedObjects[targetID];
+                if (!ob) return;
+                ob.GetComponent<Pigeon>().OnPigeonHitCLientRPC(atkProp);
+            }
+        }
+        catch
+        {
+            Debug.Log("Start Error");
+        }
+    }
+
+
 }

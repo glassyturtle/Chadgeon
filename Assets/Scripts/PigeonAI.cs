@@ -441,6 +441,10 @@ public class PigeonAI : Pigeon
                             StartSlam(targetFood.transform.position);
                             locationToPathfindTo = targetFood.transform.position;
                         }
+                        else if (gm.isSuddenDeath.Value == true)
+                        {
+                            locationToPathfindTo = gm.transform.position;
+                        }
                         else if (targetPigeon)
                         {
                             if (distanceToPigeon >= 5 && stamina == maxStamina) AIStartSprint();

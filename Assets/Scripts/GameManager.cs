@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 public class GameManager : NetworkBehaviour
 {
-
+    public static GameManager instance;
     public List<Pigeon.Upgrades> allPigeonUpgrades;
 
     public NetworkVariable<bool> isSuddenDeath = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
@@ -76,6 +76,9 @@ public class GameManager : NetworkBehaviour
     {
         if (gameover) return;
         int currentAlivePigeons = GetSurvivingPigeonsCount();
+
+
+
         if (currentAlivePigeons <= 1)
         {
             gameover = true;
@@ -85,7 +88,7 @@ public class GameManager : NetworkBehaviour
     }
     private void Awake()
     {
-
+        instance = this;
         endScreenMainMenuButton.onClick.AddListener(() =>
         {
             NetworkManager.Singleton.Shutdown();
@@ -247,8 +250,8 @@ public class GameManager : NetworkBehaviour
 
 
 
-
-
+        //Testing AI stuff
+        /*
         for (int i = 0; i < 5; i++)
         {
             Vector3 spawnPos = GetSpawnPos();
@@ -273,7 +276,7 @@ public class GameManager : NetworkBehaviour
             ai.SetAI(2);
             pigeon.GetComponent<NetworkObject>().Spawn();
         }
-
+        */
 
 
 

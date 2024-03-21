@@ -455,7 +455,7 @@ public class MultiplayerManager : MonoBehaviour
     {
         try
         {
-            Allocation allocation = await RelayService.Instance.CreateAllocationAsync(12);
+            Allocation allocation = await RelayService.Instance.CreateAllocationAsync(69);
 
             string joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
 

@@ -105,6 +105,7 @@ public class PlayerScript : Pigeon
                     hasKnockBack = false,
                     posX = pos.x,
                     posY = pos.y,
+
                 };
                 if (pigeonUpgrades.TryGetValue(Upgrades.critcalDamage, out bool _)) atkProp.hasCriticalDamage = true;
                 if (pigeonUpgrades.TryGetValue(Upgrades.brawler, out _)) atkProp.hasKnockBack = true;
