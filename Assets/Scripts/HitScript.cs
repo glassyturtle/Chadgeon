@@ -86,7 +86,6 @@ public class HitScript : NetworkBehaviour
     {
         try
         {
-            Debug.Log(targetID);
             if (NetworkManager.Singleton.SpawnManager.SpawnedObjects[targetID])
             {
                 NetworkObject ob = NetworkManager.Singleton.SpawnManager.SpawnedObjects[targetID];
