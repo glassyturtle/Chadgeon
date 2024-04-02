@@ -741,7 +741,7 @@ MonoBehaviour:
   displayText: {fileID: 952702311422200724}
   flockDisplayText: {fileID: 5113344498286365920}
   body: {fileID: 4961322488758605414}
-  speed: 800
+  speed: 900
   damage: 10
   audioSource: {fileID: 4961322488758605400}
   hitClips:
@@ -826,9 +826,9 @@ AudioSource:
   Priority: 128
   DopplerLevel: 1
   MinDistance: 1
-  MaxDistance: 500
+  MaxDistance: 20
   Pan2D: 0
-  rolloffMode: 0
+  rolloffMode: 1
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0
@@ -861,7 +861,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.64
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0

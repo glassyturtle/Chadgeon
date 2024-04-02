@@ -416,7 +416,7 @@ public class PigeonAI : Pigeon
                 }
 
 
-                if (targetPigeon && targetPigeon.currentHP.Value - damage * 2 <= 0 && currentHP.Value >= GetNearestPigeonDamage() * 3)
+                if (targetPigeon && targetPigeon.currentHP.Value - damage * 3 <= 0 && currentHP.Value >= GetNearestPigeonDamage() * 2)
                 {
                     //Goes to the nearby pigeon if stronger than the other pigeon
                     if (distanceToPigeon >= 5 && stamina == maxStamina) AIStartSprint();

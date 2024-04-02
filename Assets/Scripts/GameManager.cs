@@ -52,6 +52,7 @@ public class GameManager : NetworkBehaviour
     bool pauseMenuOpen = false;
     private Pigeon.Upgrades[] upgradesThatCanBeSelected = new Pigeon.Upgrades[3];
     private int currentSpectate = 0;
+    bool uiOpen = true;
     private bool hasOpenedChurch = false;
 
     public override void OnNetworkSpawn()
@@ -338,19 +339,18 @@ public class GameManager : NetworkBehaviour
         float spawnY = pos.position.y;
 
 
-        float minRange = 2f;
         float spawnRange = 2f;
 
         if (Random.Range(0, 100) <= 50)
         {
             if (Random.Range(0, 100) <= 50)
             {
-                spawnX += Random.Range(minRange, spawnRange);
+                spawnX += Random.Range(0, spawnRange);
                 spawnY += Random.Range(-spawnRange, spawnRange);
             }
             else
             {
-                spawnX += Random.Range(-minRange, -spawnRange);
+                spawnX += Random.Range(-0, -spawnRange);
                 spawnY += Random.Range(-spawnRange, spawnRange);
             }
         }
@@ -359,12 +359,12 @@ public class GameManager : NetworkBehaviour
             if (Random.Range(0, 100) <= 50)
             {
                 spawnX += Random.Range(-spawnRange, spawnRange);
-                spawnY += Random.Range(minRange, spawnRange);
+                spawnY += Random.Range(0, spawnRange);
             }
             else
             {
                 spawnX += Random.Range(-spawnRange, spawnRange);
-                spawnY += Random.Range(-minRange, -spawnRange);
+                spawnY += Random.Range(-0, -spawnRange);
             }
         }
         return new Vector3(spawnX, spawnY);
@@ -418,6 +418,20 @@ public class GameManager : NetworkBehaviour
 
             }
         }
+        if (Input.GetKeyDown(KeyCode.U))
+        {
+            if (uiOpen == true)
+            {
+                uiOpen = false;
+                gameUI.SetActive(false);
+            }
+            else
+            {
+                uiOpen = true;
+                gameUI.SetActive(true);
+
+            }
+        }
 
         if (Input.GetKey(KeyCode.Tab))
         {
@@ -455,8 +469,8 @@ public class GameManager : NetworkBehaviour
         }
         if (IsServer && isSuddenDeath.Value)
         {
-            if (borderSize.Value > 0.05f)
-                borderSize.Value -= Time.deltaTime / 500;
+            if (borderSize.Value > 0.01f)
+                borderSize.Value -= Time.deltaTime / 400;
         }
 
         if (IsOwnedByServer && isSuddenDeath.Value)

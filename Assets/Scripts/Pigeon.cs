@@ -185,7 +185,7 @@ public class Pigeon : NetworkBehaviour
         {
             hasDied = hasBeenKO,
             damageDealt = totalDamageTaking,
-            xpOnKill = 100 + (level.Value * 30),
+            xpOnKill = 100 + (level.Value * 40),
         };
 
         OnDealtDamageServerRpc(ddProp, atkProp.pigeonID);

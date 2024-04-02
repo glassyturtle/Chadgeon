@@ -28,7 +28,7 @@ public class food : NetworkBehaviour
             hitPigeon.PlayEatSound();
             if (hitPigeon.IsOwner)
             {
-                hitPigeon.GainXP(10);
+                hitPigeon.GainXP(12);
                 hitPigeon.stamina++;
                 if (hitPigeon.stamina >= hitPigeon.maxStamina) hitPigeon.stamina = hitPigeon.maxStamina;
                 hitPigeon.HealServer(hitPigeon.maxHp.Value / 4);

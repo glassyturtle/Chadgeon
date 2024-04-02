@@ -1054,7 +1054,7 @@ MonoBehaviour:
   displayText: {fileID: 4904798152981736968}
   flockDisplayText: {fileID: 846253798805543004}
   body: {fileID: 6932019995288195655}
-  speed: 800
+  speed: 900
   damage: 10
   audioSource: {fileID: -4340977660188722233}
   hitClips:
@@ -1084,7 +1084,6 @@ MonoBehaviour:
   targetPigeon: {fileID: 0}
   targetFood: {fileID: 0}
   nextWaypointDistance: 3
-  test: 0
 --- !u!82 &-4340977660188722233
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1094,7 +1093,7 @@ AudioSource:
   m_GameObject: {fileID: 8403198379236519254}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: -3653795977969500628, guid: 32d2e39bcc813294b8c754f30e945082, type: 2}
   m_audioClip: {fileID: 0}
   m_PlayOnAwake: 0
   m_Volume: 1
@@ -1106,9 +1105,9 @@ AudioSource:
   Priority: 128
   DopplerLevel: 1
   MinDistance: 1
-  MaxDistance: 500
+  MaxDistance: 20
   Pan2D: 0
-  rolloffMode: 0
+  rolloffMode: 1
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0
