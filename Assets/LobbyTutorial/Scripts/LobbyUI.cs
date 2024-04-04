@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using Unity.Services.Authentication;
@@ -23,6 +24,7 @@ public class LobbyUI : MonoBehaviour
     [SerializeField] private GameObject addBotsMenu;
     [SerializeField] private GameObject manageFlocksMenu;
     [SerializeField] private GameObject changeFlockMenu;
+    [SerializeField] private List<GameObject> hostButtons;
     [SerializeField] private TextMeshProUGUI lobbyNameText;
     [SerializeField] private TextMeshProUGUI lobbyMapText;
     [SerializeField] private TextMeshProUGUI neutralBotAmtText;
@@ -67,8 +69,9 @@ public class LobbyUI : MonoBehaviour
     private void Start()
     {
         MultiplayerManager.Instance.OnJoinedLobby += UpdateLobby_Event;
+        MultiplayerManager.Instance.OnJoinedLobby += ResetLobbyDefaultValues;
         MultiplayerManager.Instance.OnJoinedLobbyUpdate += UpdateLobby_Event;
-        MultiplayerManager.Instance.OnLobbyGameModeChanged += UpdateLobby_Event;
+        MultiplayerManager.Instance.OnLobbySettingsChanged += UpdateLobby_Event;
         MultiplayerManager.Instance.OnLeftLobby += LobbyManager_OnLeftLobby;
         MultiplayerManager.Instance.OnKickedFromLobby += LobbyManager_OnLeftLobby;
 
@@ -94,6 +97,7 @@ public class LobbyUI : MonoBehaviour
         }
         GameDataHolder.map = selectedMap;
         lobbyMapText.text = mapNames[selectedMap];
+        UpdateLobbySettingsAfterDelay();
     }
     public void ChangeDifficulty(bool left)
     {
@@ -114,6 +118,7 @@ public class LobbyUI : MonoBehaviour
             }
         }
         botDifficultyText.text = botDifficultyNames[botDifficulty];
+        UpdateLobbySettingsAfterDelay();
     }
 
     public void ChangeNeutralBotAmount(bool left)
@@ -131,6 +136,7 @@ public class LobbyUI : MonoBehaviour
             neutralBotAmount += 1;
         }
         neutralBotAmtText.text = neutralBotAmount.ToString();
+        UpdateLobbySettingsAfterDelay();
     }
     public void ChangeSelectedFactionBots(bool left)
     {
@@ -181,6 +187,7 @@ public class LobbyUI : MonoBehaviour
                 GameDataHolder.botsFlock4 = newAmt;
                 break;
         }
+
         selectedFlockBotsText.text = newAmt.ToString();
     }
     public void SelectFlockToEdit(int flock)
@@ -236,15 +243,18 @@ public class LobbyUI : MonoBehaviour
         ClearLobby();
         Hide();
     }
-    public void AddBot()
-    {
 
-    }
     private void UpdateLobby_Event(object sender, MultiplayerManager.LobbyEventArgs e)
     {
         UpdateLobby();
     }
-
+    private void ResetLobbyDefaultValues(object sender, MultiplayerManager.LobbyEventArgs e)
+    {
+        selectedMap = 0;
+        neutralBotAmount = 0;
+        botDifficulty = 1;
+        selectedFlock = 0;
+    }
     private void UpdateLobby()
     {
         UpdateLobby(MultiplayerManager.Instance.GetJoinedLobby());
@@ -269,11 +279,31 @@ public class LobbyUI : MonoBehaviour
         }
 
         //changeGameModeButton.gameObject.SetActive(MultiplayerManager.Instance.IsLobbyHost());
-
+        if (MultiplayerManager.Instance.IsLobbyHost())
+        {
+            //Enable Host Buttons
+            foreach (GameObject obj in hostButtons)
+            {
+                obj.SetActive(true);
+            }
+        }
+        else
+        {
+            //Disable Buttons
+            foreach (GameObject obj in hostButtons)
+            {
+                obj.SetActive(false);
+            }
+            lobbyMapText.text = lobby.Data[MultiplayerManager.KEY_MAP_NAME].Value;
+            neutralBotAmtText.text = lobby.Data[MultiplayerManager.KEY_BOT_AMT].Value;
+            botDifficultyText.text = lobby.Data[MultiplayerManager.KEY_DIFFICULTY].Value;
+        }
         lobbyNameText.text = lobby.Name;
         playerCountText.text = lobby.Players.Count + "/" + lobby.MaxPlayers + " Player Pigeons";
         joinCodeText.text = lobby.LobbyCode;
-        //gameModeText.text = lobby.Data[MultiplayerManager.KEY_GAME_MODE].Value;
+
+
+
 
         Show();
     }
@@ -292,6 +322,16 @@ public class LobbyUI : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    private void UpdateLobbySettingsAfterDelay()
+    {
+        StopAllCoroutines();
+        StartCoroutine(DelayUpdate());
+    }
+    IEnumerator DelayUpdate()
+    {
+        yield return new WaitForSeconds(3f);
+        MultiplayerManager.Instance.UpdateLobbySettings(mapNames[GameDataHolder.map], neutralBotAmount.ToString(), botDifficultyNames[botDifficulty]);
+    }
     private void Show()
     {
         gameObject.SetActive(true);

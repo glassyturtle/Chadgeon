@@ -29,7 +29,7 @@ public class MultiplayerManager : MonoBehaviour
     public event EventHandler<LobbyEventArgs> OnJoinedLobby;
     public event EventHandler<LobbyEventArgs> OnJoinedLobbyUpdate;
     public event EventHandler<LobbyEventArgs> OnKickedFromLobby;
-    public event EventHandler<LobbyEventArgs> OnLobbyGameModeChanged;
+    public event EventHandler<LobbyEventArgs> OnLobbySettingsChanged;
 
     public const string KEY_PLAYER_FLOCK = "Flock";
     public const string KEY_PLAYER_NAME = "PlayerName";
@@ -38,6 +38,9 @@ public class MultiplayerManager : MonoBehaviour
     public const string KEY_BOT_AMT = "BotCount";
     public const string KEY_MAP_NAME = "MapName";
     public const string KEY_FLOCK_AMT = "FlockAmount";
+    public const string KEY_DIFFICULTY = "Difficulty";
+
+
     private bool hasJoinedRelay = false;
     public class LobbyEventArgs : EventArgs
     {
@@ -113,10 +116,10 @@ public class MultiplayerManager : MonoBehaviour
             Player = player,
             IsPrivate = isPrivate,
             Data = new Dictionary<string, DataObject> {
-                {KEY_GAME_MODE, new DataObject(DataObject.VisibilityOptions.Public, gameMode.ToString()) },
                 {KEY_START_GAME, new DataObject(DataObject.VisibilityOptions.Member, "0")},
                 {KEY_BOT_AMT, new DataObject(DataObject.VisibilityOptions.Member, "0")},
-                {KEY_FLOCK_AMT, new DataObject(DataObject.VisibilityOptions.Member, "0")},
+                {KEY_DIFFICULTY, new DataObject(DataObject.VisibilityOptions.Member, "Chad")},
+                {KEY_MAP_NAME, new DataObject(DataObject.VisibilityOptions.Member, "Kaiserslautern")},
             }
         };
 
@@ -177,22 +180,23 @@ public class MultiplayerManager : MonoBehaviour
                     }
         };
     }
-    public async void UpdateLobbyGameMode(GameMode gameMode)
+    public async void UpdateLobbySettings(string mapName, string botAmt, string botDiff)
     {
         try
         {
-            Debug.Log("UpdateLobbyGameMode " + gameMode);
-
             Lobby lobby = await Lobbies.Instance.UpdateLobbyAsync(joinedLobby.Id, new UpdateLobbyOptions
             {
                 Data = new Dictionary<string, DataObject> {
-                    { KEY_GAME_MODE, new DataObject(DataObject.VisibilityOptions.Public, gameMode.ToString()) }
+                    {KEY_START_GAME, new DataObject(DataObject.VisibilityOptions.Member, "0")},
+                    {KEY_BOT_AMT, new DataObject(DataObject.VisibilityOptions.Member, botAmt)},
+                    {KEY_DIFFICULTY, new DataObject(DataObject.VisibilityOptions.Member, botDiff)},
+                    {KEY_MAP_NAME, new DataObject(DataObject.VisibilityOptions.Member, mapName)},
                 }
             });
 
             joinedLobby = lobby;
 
-            OnLobbyGameModeChanged?.Invoke(this, new LobbyEventArgs { lobby = joinedLobby });
+            OnLobbySettingsChanged?.Invoke(this, new LobbyEventArgs { lobby = joinedLobby });
         }
         catch (LobbyServiceException e)
         {
