@@ -57,6 +57,7 @@ public class GameManager : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+
         if (IsServer)
             NetworkManager.Singleton.SceneManager.OnLoadEventCompleted += SceneManager_OnLoadEventCompleted;
     }
@@ -241,96 +242,77 @@ public class GameManager : NetworkBehaviour
 
     private void SceneManager_OnLoadEventCompleted(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
     {
-        foreach (ulong client in NetworkManager.Singleton.ConnectedClientsIds)
+        StartCoroutine(WaitForClients());
+    }
+    IEnumerator WaitForClients()
+    {
+        while (true)
         {
-            Vector3 spawnPos = GetSpawnPos();
-            GameObject player = Instantiate(playerPrefab, spawnPos, transform.rotation);
-            player.GetComponent<NetworkObject>().SpawnAsPlayerObject(client, true);
+            if (GameDataHolder.playerCount == NetworkManager.Singleton.ConnectedClients.Count)
+            {
+                yield return new WaitForSeconds(1);
+                foreach (ulong client in NetworkManager.Singleton.ConnectedClientsIds)
+                {
+                    Vector3 spawnPos = GetSpawnPos();
+                    GameObject player = Instantiate(playerPrefab, spawnPos, transform.rotation);
+                    player.GetComponent<NetworkObject>().SpawnAsPlayerObject(client, true);
+                }
+                for (int i = 0; i < GameDataHolder.botsToSpawn; i++)
+                {
+                    Vector3 spawnPos = GetSpawnPos();
+                    GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+                    PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+                    ai.SetAI(GameDataHolder.botDifficulty);
+                    pigeon.GetComponent<NetworkObject>().Spawn();
+                }
+                for (int i = 0; i < GameDataHolder.botsFlock1; i++)
+                {
+                    Vector3 spawnPos = GetSpawnPos();
+                    GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+                    PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+                    ai.flock.Value = 1;
+                    ai.SetAI(GameDataHolder.botDifficulty);
+                    pigeon.GetComponent<NetworkObject>().Spawn();
+                }
+                for (int i = 0; i < GameDataHolder.botsFlock2; i++)
+                {
+                    Vector3 spawnPos = GetSpawnPos();
+                    GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+                    PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+                    ai.flock.Value = 2;
+                    ai.SetAI(GameDataHolder.botDifficulty);
+                    pigeon.GetComponent<NetworkObject>().Spawn();
+                }
+                for (int i = 0; i < GameDataHolder.botsFlock3; i++)
+                {
+                    Vector3 spawnPos = GetSpawnPos();
+                    GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+                    PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+                    ai.flock.Value = 3;
+                    ai.SetAI(GameDataHolder.botDifficulty);
+                    pigeon.GetComponent<NetworkObject>().Spawn();
+                }
+                for (int i = 0; i < GameDataHolder.botsFlock4; i++)
+                {
+                    Vector3 spawnPos = GetSpawnPos();
+                    GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+                    PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+                    ai.flock.Value = 4;
+                    ai.SetAI(GameDataHolder.botDifficulty);
+                    pigeon.GetComponent<NetworkObject>().Spawn();
+                }
+
+
+
+                currentSecound.Value = secondsTillSuddenDeath;
+                StartCoroutine(DepreciateIceCream());
+                yield break;
+            }
+
+
+            yield return null;
+
         }
-
-
-
-
-        //Testing AI stuff
-        /*
-        for (int i = 0; i < 5; i++)
-        {
-            Vector3 spawnPos = GetSpawnPos();
-            GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
-            PigeonAI ai = pigeon.GetComponent<PigeonAI>();
-            ai.SetAI(0);
-            pigeon.GetComponent<NetworkObject>().Spawn();
-        }
-        for (int i = 0; i < 5; i++)
-        {
-            Vector3 spawnPos = GetSpawnPos();
-            GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
-            PigeonAI ai = pigeon.GetComponent<PigeonAI>();
-            ai.SetAI(1);
-            pigeon.GetComponent<NetworkObject>().Spawn();
-        }
-        for (int i = 0; i < 5; i++)
-        {
-            Vector3 spawnPos = GetSpawnPos();
-            GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
-            PigeonAI ai = pigeon.GetComponent<PigeonAI>();
-            ai.SetAI(2);
-            pigeon.GetComponent<NetworkObject>().Spawn();
-        }
-        */
-
-
-
-
-        for (int i = 0; i < GameDataHolder.botsToSpawn; i++)
-        {
-            Vector3 spawnPos = GetSpawnPos();
-            GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
-            PigeonAI ai = pigeon.GetComponent<PigeonAI>();
-            ai.SetAI(GameDataHolder.botDifficulty);
-            pigeon.GetComponent<NetworkObject>().Spawn();
-        }
-        for (int i = 0; i < GameDataHolder.botsFlock1; i++)
-        {
-            Vector3 spawnPos = GetSpawnPos();
-            GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
-            PigeonAI ai = pigeon.GetComponent<PigeonAI>();
-            ai.flock.Value = 1;
-            ai.SetAI(GameDataHolder.botDifficulty);
-            pigeon.GetComponent<NetworkObject>().Spawn();
-        }
-        for (int i = 0; i < GameDataHolder.botsFlock2; i++)
-        {
-            Vector3 spawnPos = GetSpawnPos();
-            GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
-            PigeonAI ai = pigeon.GetComponent<PigeonAI>();
-            ai.flock.Value = 2;
-            ai.SetAI(GameDataHolder.botDifficulty);
-            pigeon.GetComponent<NetworkObject>().Spawn();
-        }
-        for (int i = 0; i < GameDataHolder.botsFlock3; i++)
-        {
-            Vector3 spawnPos = GetSpawnPos();
-            GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
-            PigeonAI ai = pigeon.GetComponent<PigeonAI>();
-            ai.flock.Value = 3;
-            ai.SetAI(GameDataHolder.botDifficulty);
-            pigeon.GetComponent<NetworkObject>().Spawn();
-        }
-        for (int i = 0; i < GameDataHolder.botsFlock4; i++)
-        {
-            Vector3 spawnPos = GetSpawnPos();
-            GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
-            PigeonAI ai = pigeon.GetComponent<PigeonAI>();
-            ai.flock.Value = 4;
-            ai.SetAI(GameDataHolder.botDifficulty);
-            pigeon.GetComponent<NetworkObject>().Spawn();
-        }
-
-
-
-        currentSecound.Value = secondsTillSuddenDeath;
-        StartCoroutine(DepreciateIceCream());
     }
     public Vector3 GetSpawnPos()
     {

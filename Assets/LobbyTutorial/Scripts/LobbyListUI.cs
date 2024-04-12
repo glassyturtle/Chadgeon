@@ -12,8 +12,10 @@ public class LobbyListUI : MonoBehaviour
     public static LobbyListUI Instance { get; private set; }
 
 
-    [SerializeField] private GameObject mainMenu;
+    [SerializeField] private GameObject playMenu;
     [SerializeField] private GameObject joinGameMenu;
+    [SerializeField] private GameObject couldNotJoinTitle;
+    [SerializeField] private GameObject connectingTitle;
     [SerializeField] private Transform lobbySingleTemplate;
     [SerializeField] private Transform container;
     [SerializeField] private Button refreshButton;
@@ -29,10 +31,6 @@ public class LobbyListUI : MonoBehaviour
         refreshButton.onClick.AddListener(RefreshButtonClick);
         createLobbyButton.onClick.AddListener(CreateLobbyButtonClick);
     }
-    public void ChangeMultiplayerName(string name)
-    {
-        GameDataHolder.multiplayerName = name;
-    }
 
     private void Start()
     {
@@ -44,7 +42,7 @@ public class LobbyListUI : MonoBehaviour
     }
     public void CloseLobbyList()
     {
-        mainMenu.SetActive(true);
+        playMenu.SetActive(true);
         Hide();
     }
     private void LobbyManager_OnKickedFromLobby(object sender, MultiplayerManager.LobbyEventArgs e)
@@ -54,6 +52,9 @@ public class LobbyListUI : MonoBehaviour
     public void JoinLobbyWithCode()
     {
         MultiplayerManager.Instance.JoinLobbyByCode(codeInput.text);
+        connectingTitle.SetActive(true);
+        couldNotJoinTitle.SetActive(false);
+
     }
     public void CloseJoinMenu()
     {
@@ -61,7 +62,10 @@ public class LobbyListUI : MonoBehaviour
     }
     public void OpenJoinMenu()
     {
+        codeInput.text = "";
         joinGameMenu.SetActive(true);
+        couldNotJoinTitle.SetActive(false);
+        connectingTitle.SetActive(false);
     }
 
     private void LobbyManager_OnLeftLobby(object sender, EventArgs e)

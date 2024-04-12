@@ -347,7 +347,7 @@ public class Pigeon : NetworkBehaviour
 
         body.freezeRotation = true;
         currentHP.Value = maxHp.Value;
-        gm = FindObjectOfType<GameManager>();
+        gm = GameManager.instance;
         gm.allpigeons.Add(this);
     }
     protected void CheckDirection(Vector2 direction)

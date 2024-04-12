@@ -5,7 +5,6 @@ using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport.Relay;
 using Unity.Services.Authentication;
-using Unity.Services.Core;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using Unity.Services.Relay;
@@ -39,6 +38,10 @@ public class MultiplayerManager : MonoBehaviour
     public const string KEY_MAP_NAME = "MapName";
     public const string KEY_FLOCK_AMT = "FlockAmount";
     public const string KEY_DIFFICULTY = "Difficulty";
+
+    [SerializeField] private GameObject couldNotJoinTitle;
+    [SerializeField] private GameObject connectingTitle;
+    [SerializeField] private GameObject startingQPTitle;
 
 
     private bool hasJoinedRelay = false;
@@ -77,25 +80,7 @@ public class MultiplayerManager : MonoBehaviour
     {
         Instance = this;
     }
-    private async void Start()
-    {
-        try
-        {
-            await UnityServices.InitializeAsync();
-            if (AuthenticationService.Instance.IsSignedIn) return;
 
-            AuthenticationService.Instance.SignedIn += () =>
-            {
-                Debug.Log("signed in " + AuthenticationService.Instance.PlayerId);
-            };
-            await AuthenticationService.Instance.SignInAnonymouslyAsync();
-
-        }
-        catch (RelayServiceException e)
-        {
-            Debug.LogException(e);
-        }
-    }
     private void Update()
     {
         HandleLobbyHeartbeat();
@@ -110,6 +95,7 @@ public class MultiplayerManager : MonoBehaviour
     public async void CreateLobby(string lobbyName, int maxPlayers, bool isPrivate, GameMode gameMode)
     {
         Player player = GetPlayer();
+        Debug.Log(isPrivate);
 
         CreateLobbyOptions options = new CreateLobbyOptions
         {
@@ -162,9 +148,11 @@ public class MultiplayerManager : MonoBehaviour
             OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = joinedLobby });
 
         }
-        catch (RelayServiceException e)
+        catch (Exception)
         {
-            Debug.LogException(e);
+            connectingTitle.SetActive(false);
+            couldNotJoinTitle.SetActive(true);
+            Debug.Log("Could Not Connect to game");
         }
     }
 
@@ -215,8 +203,6 @@ public class MultiplayerManager : MonoBehaviour
 
                 joinedLobby = await LobbyService.Instance.GetLobbyAsync(joinedLobby.Id);
 
-                OnJoinedLobbyUpdate?.Invoke(this, new LobbyEventArgs { lobby = joinedLobby });
-
                 if (!IsPlayerInLobby())
                 {
                     // Player was kicked out of this lobby
@@ -227,6 +213,10 @@ public class MultiplayerManager : MonoBehaviour
                     joinedLobby = null;
 
                     return;
+                }
+                else
+                {
+                    OnJoinedLobbyUpdate?.Invoke(this, new LobbyEventArgs { lobby = joinedLobby });
                 }
 
                 if (joinedLobby.Data[KEY_START_GAME].Value != "0")
@@ -239,23 +229,7 @@ public class MultiplayerManager : MonoBehaviour
                     }
                     else
                     {
-                        startTimer -= 1f;
-                        if (startTimer < 0f)
-                        {
-                            switch (GameDataHolder.map)
-                            {
-                                case 0:
-                                    NetworkManager.Singleton.SceneManager.LoadScene("KTown", LoadSceneMode.Single);
-                                    break;
-                                case 1:
-                                    NetworkManager.Singleton.SceneManager.LoadScene("Yu Gardens", LoadSceneMode.Single);
-                                    break;
-                                case 2:
-                                    NetworkManager.Singleton.SceneManager.LoadScene("Central Park", LoadSceneMode.Single);
-                                    break;
-                            }
-                            joinedLobby = null;
-                        }
+
                     }
                 }
             }
@@ -435,6 +409,8 @@ public class MultiplayerManager : MonoBehaviour
                 GameDataHolder.botDifficulty = BofDiff;
                 GameDataHolder.botsToSpawn = botToSpawn;
 
+
+
                 string relayCode = await CreateRelay();
                 Lobby lobby = await Lobbies.Instance.UpdateLobbyAsync(joinedLobby.Id, new UpdateLobbyOptions
                 {
@@ -443,12 +419,50 @@ public class MultiplayerManager : MonoBehaviour
                         {KEY_START_GAME, new DataObject(DataObject.VisibilityOptions.Member, relayCode)}
                     }
                 });
-                joinedLobby = lobby;
+
+                switch (GameDataHolder.map)
+                {
+                    case 0:
+                        NetworkManager.Singleton.SceneManager.LoadScene("KTown", LoadSceneMode.Single);
+                        break;
+                    case 1:
+                        NetworkManager.Singleton.SceneManager.LoadScene("Yu Gardens", LoadSceneMode.Single);
+                        break;
+                    case 2:
+                        NetworkManager.Singleton.SceneManager.LoadScene("Central Park", LoadSceneMode.Single);
+                        break;
+                }
+                GameDataHolder.playerCount = lobby.Players.Count;
+                joinedLobby = null;
             }
             catch (LobbyServiceException e)
             {
                 Debug.Log(e);
             }
+        }
+    }
+    public async void QuickJoinLobby()
+    {
+        try
+        {
+            Player player = GetPlayer();
+
+            startingQPTitle.SetActive(true);
+            QuickJoinLobbyOptions options = new QuickJoinLobbyOptions
+            {
+                Player = player
+            };
+
+            Lobby lobby = await LobbyService.Instance.QuickJoinLobbyAsync(options);
+            joinedLobby = lobby;
+            startingQPTitle.SetActive(false);
+
+            OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = lobby });
+        }
+        catch (Exception)
+        {
+            startingQPTitle.SetActive(false);
+            CreateLobby(GameDataHolder.multiplayerName + "'s game", 20, false, GameMode.FreeForAll);
         }
     }
 

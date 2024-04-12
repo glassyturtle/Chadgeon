@@ -263,7 +263,6 @@ public class LobbyUI : MonoBehaviour
     private void UpdateLobby(Lobby lobby)
     {
         ClearLobby();
-
         foreach (Player player in lobby.Players)
         {
             Transform playerSingleTransform = Instantiate(playerSingleTemplate, container);
@@ -274,7 +273,8 @@ public class LobbyUI : MonoBehaviour
                 MultiplayerManager.Instance.IsLobbyHost() &&
                 player.Id != AuthenticationService.Instance.PlayerId // Don't allow kick self
             );
-            lobbyPlayerSingleUI.UpdatePlayer(player);
+            Debug.Log(player.Id + " " + Time.time);
+
             lobbyPlayerSingleUI.UpdatePlayer(player);
         }
 

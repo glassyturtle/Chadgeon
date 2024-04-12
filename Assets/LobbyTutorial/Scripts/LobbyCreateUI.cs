@@ -11,6 +11,7 @@ public class LobbyCreateUI : MonoBehaviour
 
     [SerializeField] private Button createButton;
     [SerializeField] private TMP_InputField lobbyNameField;
+    [SerializeField] private TMP_Text sampleNameText;
 
     private string lobbyName = "Chadgeon's Game";
     private bool isPrivate = true;
@@ -20,11 +21,10 @@ public class LobbyCreateUI : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-
         createButton.onClick.AddListener(() =>
         {
             if (lobbyNameField.text != "") lobbyName = lobbyNameField.text;
-            else lobbyName = "Chadgeon's Game";
+
             MultiplayerManager.Instance.CreateLobby(
                 lobbyName,
                 maxPlayers,
@@ -38,7 +38,7 @@ public class LobbyCreateUI : MonoBehaviour
     }
     public void IsPrivateBoxTicked(bool value)
     {
-        isPrivate = !value;
+        isPrivate = value;
     }
     private void Hide()
     {
@@ -52,8 +52,9 @@ public class LobbyCreateUI : MonoBehaviour
     public void Show()
     {
         gameObject.SetActive(true);
-
-        lobbyName = "MyLobby";
+        lobbyNameField.text = "";
+        lobbyName = GameDataHolder.multiplayerName + "'s game";
+        sampleNameText.text = lobbyName + "...";
         isPrivate = false;
         maxPlayers = 69;
         gameMode = MultiplayerManager.GameMode.FreeForAll;
