@@ -17,10 +17,7 @@ public class MultiplayerManager : MonoBehaviour
     public static MultiplayerManager Instance { get; private set; }
     public const string KEY_GAME_MODE = "GameMode";
 
-    private string playerSkin = "Chadgeon";
-
     private float lobbyPollTimer;
-    private float startTimer = 3;
     private Lobby joinedLobby;
 
     public event EventHandler OnLeftLobby;
@@ -38,13 +35,13 @@ public class MultiplayerManager : MonoBehaviour
     public const string KEY_MAP_NAME = "MapName";
     public const string KEY_FLOCK_AMT = "FlockAmount";
     public const string KEY_DIFFICULTY = "Difficulty";
+    public const string KEY_PLAYER_SKINBODY = "PlayerBody";
+    public const string KEY_PLAYER_SKINHEAD = "PlayerHead";
 
     [SerializeField] private GameObject couldNotJoinTitle;
     [SerializeField] private GameObject connectingTitle;
     [SerializeField] private GameObject startingQPTitle;
 
-
-    private bool hasJoinedRelay = false;
     public class LobbyEventArgs : EventArgs
     {
         public Lobby lobby;
@@ -103,7 +100,7 @@ public class MultiplayerManager : MonoBehaviour
             IsPrivate = isPrivate,
             Data = new Dictionary<string, DataObject> {
                 {KEY_START_GAME, new DataObject(DataObject.VisibilityOptions.Member, "0")},
-                {KEY_BOT_AMT, new DataObject(DataObject.VisibilityOptions.Member, "0")},
+                {KEY_BOT_AMT, new DataObject(DataObject.VisibilityOptions.Member, "5")},
                 {KEY_DIFFICULTY, new DataObject(DataObject.VisibilityOptions.Member, "Chad")},
                 {KEY_MAP_NAME, new DataObject(DataObject.VisibilityOptions.Member, "Kaiserslautern")},
             }
@@ -163,8 +160,10 @@ public class MultiplayerManager : MonoBehaviour
             Data = new Dictionary<string, PlayerDataObject>
                     {
                         {"PlayerName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, GameDataHolder.multiplayerName) },
-                        {"PlayerSkin", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerSkin) },
-                        {"Flock", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerSkin) },
+                        {"PlayerSkin", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinBase.ToString()) },
+                        {"PlayerBody", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinBody.ToString()) },
+                        {"PlayerHead", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinHead.ToString()) },
+                        {"Flock", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, "0") },
                     }
         };
     }
@@ -203,6 +202,21 @@ public class MultiplayerManager : MonoBehaviour
 
                 joinedLobby = await LobbyService.Instance.GetLobbyAsync(joinedLobby.Id);
 
+                if (joinedLobby.Data[KEY_START_GAME].Value != "0")
+                {
+                    if (!IsLobbyHost())
+                    {
+                        //loby host already joined relay
+                        JoinRelay(joinedLobby.Data[KEY_START_GAME].Value);
+                        joinedLobby = null;
+                    }
+                    else
+                    {
+                        joinedLobby = null;
+                        return;
+                    }
+                }
+
                 if (!IsPlayerInLobby())
                 {
                     // Player was kicked out of this lobby
@@ -219,22 +233,11 @@ public class MultiplayerManager : MonoBehaviour
                     OnJoinedLobbyUpdate?.Invoke(this, new LobbyEventArgs { lobby = joinedLobby });
                 }
 
-                if (joinedLobby.Data[KEY_START_GAME].Value != "0")
-                {
-                    if (!IsLobbyHost())
-                    {
-                        //loby host already joined relay
-                        JoinRelay(joinedLobby.Data[KEY_START_GAME].Value);
-                        joinedLobby = null;
-                    }
-                    else
-                    {
 
-                    }
-                }
             }
         }
     }
+
     private bool IsPlayerInLobby()
     {
         if (joinedLobby != null && joinedLobby.Players != null)
@@ -277,7 +280,9 @@ public class MultiplayerManager : MonoBehaviour
                 Data = new Dictionary<string, PlayerDataObject>
                     {
                         {"PlayerName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, GameDataHolder.multiplayerName) },
-                        {"PlayerSkin", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerSkin) },
+                                                {"PlayerSkin", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinBase.ToString()) },
+                        {"PlayerBody", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinBody.ToString()) },
+                        {"PlayerHead", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinHead.ToString()) },
                         {"Flock", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, newFlock) },
                     }
             });

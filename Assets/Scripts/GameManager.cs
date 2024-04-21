@@ -1,7 +1,7 @@
-using Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Cinemachine;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -18,7 +18,7 @@ public class GameManager : NetworkBehaviour
     public Pigeon player;
     public List<Pigeon> allpigeons = new List<Pigeon>();
     public GameObject pigeonPrefab;
-    public CinemachineVirtualCamera mainCamera;
+    public CinemachineCamera mainCamera;
 
 
     [SerializeField] AudioSource audioSource, clickSound;
@@ -28,19 +28,17 @@ public class GameManager : NetworkBehaviour
     [SerializeField] Button endScreenMainMenuButton;
     [SerializeField] Transform borderTransform;
 
-    [SerializeField] GameObject endScreen, playerUI, gameUI, upgradeScreen, pauseMenu, slamCooldownUI, spectateScreen, leaderboard, sprintUI, churchDoor;
+    [SerializeField] GameObject endScreen, playerUI, gameUI, upgradeScreen, pauseMenu, slamCooldownUI, spectateScreen, minimapUI, sprintUI, churchDoor;
     [SerializeField] TMP_Text endGameDescriptionText, spectatingText, upgradeDescText, slamCoolDownText;
-    [SerializeField] GameObject endingLeaderboardTextPrefab, upgradeDescUI;
-    [SerializeField] RectTransform leaderBoardTransform;
+    [SerializeField] GameObject upgradeDescUI;
     [SerializeField] private GameObject[] upgradeDisplays;
     [SerializeField] private UpgradeDescriber[] upgradeDescibers;
     [SerializeField] private List<Transform> spawnLocations;
 
-    [SerializeField] GameObject FoodPrefab, nestPrefab, pooPrefab, upgradeHolder;
+    [SerializeField] GameObject FoodPrefab, upgradeHolder, loadingPigeonsText, suddenDeathText, iceCreamUI;
     [SerializeField] TextMeshProUGUI hpText, timeleftText;
     [SerializeField] TextMeshProUGUI levelText;
     [SerializeField] TextMeshProUGUI chageonName;
-    [SerializeField] Slider volumeSlider;
     [SerializeField] GameObject playerPrefab;
     [SerializeField] Image[] upgradeButtonImages;
     [SerializeField] TextMeshProUGUI[] upgradeButtonText;
@@ -61,32 +59,62 @@ public class GameManager : NetworkBehaviour
         if (IsServer)
             NetworkManager.Singleton.SceneManager.OnLoadEventCompleted += SceneManager_OnLoadEventCompleted;
     }
-    public void ChangeVolume()
-    {
-        AudioListener.volume = volumeSlider.value;
-    }
-    public int GetSurvivingPigeonsCount()
-    {
-        int survivors = 0;
-        foreach (Pigeon pigeon in allpigeons)
-        {
-            if (!pigeon.isKnockedOut.Value) survivors++;
-        }
-        return survivors;
-    }
+
+
     public void CheckWinGame()
     {
         if (gameover) return;
-        int currentAlivePigeons = GetSurvivingPigeonsCount();
+
+        int survivors = 0;
+        List<int> survivingFactions = new();
+        Pigeon survivingPigeon = null;
+        foreach (Pigeon pigeon in allpigeons)
+        {
+            if (!pigeon.isKnockedOut.Value)
+            {
+                survivors++;
+                survivingPigeon = pigeon;
+                if (!survivingFactions.Contains(pigeon.flock.Value))
+                {
+                    survivingFactions.Add(pigeon.flock.Value);
+                }
+
+            }
+        }
+
+        string victoryText = "";
+        if (survivingFactions.Count == 1 && survivingFactions[0] != 0)
+        {
+            switch (survivingPigeon.flock.Value)
+            {
+                case 1:
+                    victoryText = "The Enjoyers have defeated all of thier rivals and have won the game";
 
 
+                    break;
+                case 2:
+                    victoryText = "The Psychos have defeated all of thier rivals and have won the game";
+                    break;
+                case 3:
+                    victoryText = "The Minions have defeated all of thier rivals and have won the game";
+                    break;
+                case 4:
+                    victoryText = "The Looksmaxers have defeated all of thier rivals and have won the game";
+                    break;
+            }
+            gameover = true;
+            ShowWinScreenClientRpc(victoryText);
+        }
 
-        if (currentAlivePigeons <= 1)
+        if (survivors <= 1)
         {
             gameover = true;
             //Someone Won the Game display credits
-            ShowWinScreenClientRpc();
+            victoryText = survivingPigeon.pigeonName.Value + " has defeated all of his rivals and ascended to gigachad pigeon status";
+            ShowWinScreenClientRpc(victoryText);
         }
+
+
     }
     private void Awake()
     {
@@ -99,23 +127,14 @@ public class GameManager : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void ShowWinScreenClientRpc()
+    public void ShowWinScreenClientRpc(string victorytext)
     {
 
-        gameUI.SetActive(false);
-
-        foreach (Pigeon pigeon in allpigeons)
-        {
-            GameObject ob = Instantiate(endingLeaderboardTextPrefab, leaderBoardTransform);
-            ob.GetComponent<TMP_Text>().text = pigeon.pigeonName.Value + " - LVL:" + pigeon.level.Value.ToString();
-
-            if (!pigeon.isKnockedOut.Value)
-            {
-                endGameDescriptionText.text = pigeon.pigeonName.Value + " has defeated all of his rivals and ascended to sigma pigeon status";
-            }
-        }
-
+        playerUI.SetActive(false);
+        endGameDescriptionText.text = victorytext;
         endScreen.SetActive(true);
+        SaveDataManager.chadCoins += 30;
+        SaveDataManager.SaveGameData();
     }
     public void AddUpgradeToDisply(int upgrade)
     {
@@ -203,10 +222,17 @@ public class GameManager : NetworkBehaviour
     }
     public void SpectateNext()
     {
-        currentSpectate++;
-        if (currentSpectate > allpigeons.Count - 1)
+        while (true)
         {
-            currentSpectate = 0;
+            currentSpectate++;
+            if (currentSpectate > allpigeons.Count - 1)
+            {
+                currentSpectate = 0;
+            }
+            if (allpigeons[currentSpectate].isKnockedOut.Value == false)
+            {
+                break;
+            }
         }
         Pigeon pigeon = allpigeons[currentSpectate];
         mainCamera.Follow = pigeon.transform;
@@ -214,16 +240,23 @@ public class GameManager : NetworkBehaviour
     }
     public void SpectatePreviouse()
     {
-        currentSpectate--;
-        if (currentSpectate < 0)
+
+        while (true)
         {
-            currentSpectate = allpigeons.Count - 1;
+            currentSpectate--;
+            if (currentSpectate < 0)
+            {
+                currentSpectate = allpigeons.Count - 1;
+            }
+            if (allpigeons[currentSpectate].isKnockedOut.Value == false)
+            {
+                break;
+            }
         }
         Pigeon pigeon = allpigeons[currentSpectate];
         mainCamera.Follow = pigeon.transform;
         spectatingText.text = "Spectating " + pigeon.pigeonName.Value;
     }
-
     public void DestroyFoodObject(food foodie)
     {
         DestroyFoodObjectServerRpc(foodie.NetworkObject);
@@ -257,6 +290,40 @@ public class GameManager : NetworkBehaviour
                     GameObject player = Instantiate(playerPrefab, spawnPos, transform.rotation);
                     player.GetComponent<NetworkObject>().SpawnAsPlayerObject(client, true);
                 }
+
+
+                //TestBots
+                for (int i = 0; i < 10; i++)
+                {
+                    Vector3 spawnPos = GetSpawnPos();
+                    GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+                    PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+                    ai.SetAI(2);
+                    pigeon.GetComponent<NetworkObject>().Spawn();
+                }
+                for (int i = 0; i < 10; i++)
+                {
+                    Vector3 spawnPos = GetSpawnPos();
+                    GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+                    PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+                    ai.SetAI(1);
+                    pigeon.GetComponent<NetworkObject>().Spawn();
+                }
+                for (int i = 0; i < 10; i++)
+                {
+                    Vector3 spawnPos = GetSpawnPos();
+                    GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+                    PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+                    ai.SetAI(0);
+                    pigeon.GetComponent<NetworkObject>().Spawn();
+                }
+
+
+
+
+
+
+
                 for (int i = 0; i < GameDataHolder.botsToSpawn; i++)
                 {
                     Vector3 spawnPos = GetSpawnPos();
@@ -417,14 +484,14 @@ public class GameManager : NetworkBehaviour
 
         if (Input.GetKey(KeyCode.Tab))
         {
-            leaderboard.SetActive(true);
+            minimapUI.SetActive(true);
         }
         else
         {
-            leaderboard.SetActive(false);
+            minimapUI.SetActive(false);
         }
 
-        if (player.isSprinting.Value == true)
+        if (player.isSprinting == true)
         {
             sprintUI.SetActive(true);
             sprintBar.fillAmount = player.stamina / player.maxStamina;
@@ -483,25 +550,37 @@ public class GameManager : NetworkBehaviour
     }
     IEnumerator DepreciateIceCream()
     {
+        yield return new WaitForSeconds(0.1f);
+        loadingPigeonsText.SetActive(false);
+        playerUI.SetActive(true);
+        HideLoadingPigeonsTextClientRpc();
+
         while (true)
         {
             yield return new WaitForSeconds(1);
             currentSecound.Value--;
             if (currentSecound.Value <= 0)
             {
+                suddenDeathText.SetActive(true);
+                LeanTween.alpha(iceCreamUI, 0, 1);
                 ActivateSuddenDeathUIClientRpc();
                 isSuddenDeath.Value = true;
                 yield break;
-
             }
             yield return null;
         }
     }
-
+    [ClientRpc]
+    private void HideLoadingPigeonsTextClientRpc()
+    {
+        loadingPigeonsText.SetActive(false);
+        playerUI.SetActive(true);
+    }
     [ClientRpc]
     private void ActivateSuddenDeathUIClientRpc()
     {
-        //suddenDeathText.SetActive(true);
+        suddenDeathText.SetActive(true);
+        LeanTween.alpha(iceCreamUI, 0, 1);
     }
 
     [ClientRpc]

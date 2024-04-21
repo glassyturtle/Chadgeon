@@ -10,6 +10,7 @@ public class LobbyPlayerSingleUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI playerNameText;
     [SerializeField] private TextMeshProUGUI playerFlockText;
     [SerializeField] private Button kickPlayerButton;
+    [SerializeField] Image pigeonBaseImage, pigeonBodyImage, pigeonHeadImage;
 
 
     private Player player;
@@ -52,6 +53,32 @@ public class LobbyPlayerSingleUI : MonoBehaviour
                 playerFlockText.color = Color.green;
                 break;
         }
+
+        //Changes skin icon
+        int skinID = int.Parse(player.Data[MultiplayerManager.KEY_PLAYER_SKIN].Value);
+        if (skinID != -1) pigeonBaseImage.sprite = CustomizationManager.Instance.GetSprite(CustomizationManager.SpriteType.baseSkin, skinID, 0);
+        else
+        {
+            pigeonBaseImage.sprite = null;
+            pigeonBaseImage.gameObject.SetActive(false);
+        }
+
+        skinID = int.Parse(player.Data[MultiplayerManager.KEY_PLAYER_SKINBODY].Value);
+        if (skinID != -1) pigeonBodyImage.sprite = CustomizationManager.Instance.GetSprite(CustomizationManager.SpriteType.body, skinID, 0);
+        else
+        {
+            pigeonBodyImage.sprite = null;
+            pigeonBodyImage.gameObject.SetActive(false);
+        }
+
+        skinID = int.Parse(player.Data[MultiplayerManager.KEY_PLAYER_SKINHEAD].Value);
+        if (skinID != -1) pigeonHeadImage.sprite = CustomizationManager.Instance.GetSprite(CustomizationManager.SpriteType.head, skinID, 0);
+        else
+        {
+            pigeonHeadImage.sprite = null;
+            pigeonHeadImage.gameObject.SetActive(false);
+        }
+
         MultiplayerManager.PlayerCharacter playerCharacter =
             System.Enum.Parse<MultiplayerManager.PlayerCharacter>(player.Data[MultiplayerManager.KEY_PLAYER_SKIN].Value);
         //characterImage.sprite = LobbyAssets.Instance.GetSprite(playerCharacter);

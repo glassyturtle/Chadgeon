@@ -20,6 +20,7 @@ public class CustomizationManager : MonoBehaviour
     }
     public Sprite GetSprite(SpriteType type, int skinID, int spriteIndex)
     {
+        if (skinID == -1) return null;
         switch (type)
         {
             case SpriteType.head:

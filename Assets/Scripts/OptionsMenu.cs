@@ -2,14 +2,28 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Audio;
+using UnityEngine.UI;
 
 public class OptionsMenu : MonoBehaviour
 {
     [SerializeField] AudioMixer audioMixer;
     [SerializeField] GameObject applicationMenu, soundMenu;
     [SerializeField] TMP_Dropdown resDropdown;
+    [SerializeField] Slider sfxSlider, musicSlider, masterVolumeSlider;
 
     Resolution[] resolutions;
+
+
+    private void Awake()
+    {
+        audioMixer.SetFloat("SFXVolume", SaveDataManager.soundEffectVolume);
+        audioMixer.SetFloat("MusicVolume", SaveDataManager.musicVolume);
+        audioMixer.SetFloat("MasterVolume", SaveDataManager.playerVolume);
+        sfxSlider.value = SaveDataManager.soundEffectVolume;
+        musicSlider.value = SaveDataManager.musicVolume;
+        masterVolumeSlider.value = SaveDataManager.playerVolume;
+        gameObject.SetActive(false);
+    }
 
     private void Start()
     {
@@ -20,7 +34,7 @@ public class OptionsMenu : MonoBehaviour
         int currentRes = 0;
         for (int i = 0; i < resolutions.Length; i++)
         {
-            string option = resolutions[i].width + " x " + resolutions[i].height + " @ " + resolutions[i].refreshRate + "hz";
+            string option = resolutions[i].width + " x " + resolutions[i].height + " @ " + resolutions[i].refreshRateRatio + "hz";
             options.Add(option);
             if (resolutions[i].width == Screen.width && resolutions[i].height == Screen.height)
             {
@@ -45,6 +59,7 @@ public class OptionsMenu : MonoBehaviour
     public void CloseOptionMenu()
     {
         gameObject.SetActive(false);
+        SaveDataManager.SaveGameData();
     }
     public void OpenAppMenu()
     {
@@ -64,15 +79,20 @@ public class OptionsMenu : MonoBehaviour
     public void SetSFXVolume(float volume)
     {
         audioMixer.SetFloat("SFXVolume", volume);
+        SaveDataManager.soundEffectVolume = volume;
     }
     public void SetMusicVolume(float volume)
     {
         audioMixer.SetFloat("MusicVolume", volume);
+        SaveDataManager.musicVolume = volume;
+
 
     }
     public void SetMasterVolume(float volume)
     {
         audioMixer.SetFloat("MasterVolume", volume);
+        SaveDataManager.playerVolume = volume;
+
 
     }
     public void SetFullScreen(bool isFullScreen)

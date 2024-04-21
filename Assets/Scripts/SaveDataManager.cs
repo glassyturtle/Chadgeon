@@ -8,9 +8,9 @@ public static class SaveDataManager
 
 
     //Player Prefs
-    public static float playerVolume = 1f;
-    public static float musicVolume = 0.75f;
-    public static float soundEffectVolume = 1f;
+    public static float playerVolume = 0;
+    public static float musicVolume = -15;
+    public static float soundEffectVolume = 0;
     public static string playerName = "Chadgeon";
 
     //Player Skin
@@ -24,12 +24,12 @@ public static class SaveDataManager
     {
         classic = 0,
         chadgeon = 1,
-        americanPigeon = 2,
-        minion = 3,
-        naziMinion = 4,
-        forest = 5,
-        iceCream = 6,
-        whitedeath = 7,
+        americanPigeon = 7,
+        minion = 5,
+        naziMinion = 6,
+        forest = 3,
+        iceCream = 4,
+        whitedeath = 2,
         ryanGosling = 8,
     }
 

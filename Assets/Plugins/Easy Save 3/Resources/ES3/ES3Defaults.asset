@@ -33,7 +33,7 @@ MonoBehaviour:
     - Assembly-CSharp
     - Assembly-CSharp-firstpass
     - AstarPathfindingProject
-    - Cinemachine
+    - unity-websocket-sharp
     showAdvancedSettings: 0
   addMgrToSceneAutomatically: 0
   autoUpdateReferences: 1

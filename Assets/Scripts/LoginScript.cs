@@ -52,7 +52,7 @@ public class LoginScript : MonoBehaviour
 
             connectingText.text = "Starting Game...";
 
-            SceneManager.LoadSceneAsync("MainMenu");
+            await SceneManager.LoadSceneAsync("MainMenu");
         }
         catch (Exception e)
         {

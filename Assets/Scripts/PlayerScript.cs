@@ -1,12 +1,15 @@
+using Unity.Netcode;
 using UnityEngine;
 
 public class PlayerScript : Pigeon
 {
+    [SerializeField] private GameObject playerMinimapIcon;
     private void Start()
     {
         OnPigeonSpawn();
         if (!IsOwner) return;
         gm.player = this;
+        playerMinimapIcon.SetActive(true);
         gm.mainCamera.Follow = transform;
     }
     private void HandleMovement()
@@ -14,13 +17,17 @@ public class PlayerScript : Pigeon
         Vector2 inputVector = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")).normalized;
         HandleMovement(inputVector);
     }
-
+    [ServerRpc]
+    private void MoveServerRpc(float speed, Vector2 direction)
+    {
+        body.AddForce(speed * direction);
+    }
     private void HandleMovement(Vector2 inputVector)
     {
         if (isFlying.Value)
         {
             Vector2 direction = (slamPos - transform.position).normalized;
-            body.AddForce(6 * speed * speedMod * Time.fixedDeltaTime * direction);
+            MoveServerRpc(6 * speed * speedMod * Time.fixedDeltaTime, direction);
             if ((transform.position - slamPos).sqrMagnitude <= 0.05f)
             {
                 StopFlying();
@@ -38,19 +45,19 @@ public class PlayerScript : Pigeon
                     return;
                 }
                 sprintOnCooldown = true;
-                isSprinting.Value = true;
-                body.AddForce(speed * 2 * Time.fixedDeltaTime * speedMod * inputVector);
+                isSprinting = true;
+                MoveServerRpc(speed * 2 * Time.fixedDeltaTime * speedMod, inputVector);
+
                 stamina -= Time.fixedDeltaTime;
             }
             else
             {
-                if (isSprinting.Value == true)
+                if (isSprinting == true)
                 {
-                    isSprinting.Value = false;
+                    isSprinting = false;
                     StartCoroutine(StartSprintCooldown());
                 }
-
-                body.AddForce(speed * Time.fixedDeltaTime * speedMod * inputVector);
+                MoveServerRpc(speed * Time.fixedDeltaTime * speedMod, inputVector);
                 if (stamina < maxStamina && !sprintOnCooldown)
                 {
                     stamina += Time.fixedDeltaTime * staminaRecoveryRate * 0.5f;
@@ -64,7 +71,8 @@ public class PlayerScript : Pigeon
         {
             Vector2 direction = (slamPos - transform.position).normalized;
             if (!canSwitchAttackSprites.Value) CheckDirection(direction);
-            body.AddForce(4 * speed * Time.fixedDeltaTime * speedMod * direction);
+            MoveServerRpc(4 * speed * Time.fixedDeltaTime * speedMod, direction);
+
             if ((transform.position - slamPos).sqrMagnitude <= 0.1f)
             {
                 EndSlam();
@@ -78,8 +86,7 @@ public class PlayerScript : Pigeon
         if (!IsOwner) return;
         if (!isKnockedOut.Value && !isSlaming.Value)
         {
-
-            if (Input.GetMouseButton(0) && !isSprinting.Value && hitColldown <= 0)
+            if (Input.GetMouseButton(0) && !isSprinting && hitColldown <= 0)
             {
                 hitColldown = 0.3f;
 

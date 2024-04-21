@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: BodyEvilMinion
   m_EditorClassIdentifier: 
   sprites:
-  - {fileID: -681855797, guid: bda2b8a7e125578439ca4bfb14907922, type: 3}
-  - {fileID: 998156471, guid: bda2b8a7e125578439ca4bfb14907922, type: 3}
-  - {fileID: 1316272545, guid: bda2b8a7e125578439ca4bfb14907922, type: 3}
-  - {fileID: 266509096, guid: bda2b8a7e125578439ca4bfb14907922, type: 3}
-  - {fileID: 627438481, guid: bda2b8a7e125578439ca4bfb14907922, type: 3}
-  - {fileID: 469690450, guid: bda2b8a7e125578439ca4bfb14907922, type: 3}
-  - {fileID: -1694704905, guid: bda2b8a7e125578439ca4bfb14907922, type: 3}
+  - {fileID: -681855797, guid: 4f8d16c8c615269498695fafc378d3ed, type: 3}
+  - {fileID: 998156471, guid: 4f8d16c8c615269498695fafc378d3ed, type: 3}
+  - {fileID: 1316272545, guid: 4f8d16c8c615269498695fafc378d3ed, type: 3}
+  - {fileID: 266509096, guid: 4f8d16c8c615269498695fafc378d3ed, type: 3}
+  - {fileID: 627438481, guid: 4f8d16c8c615269498695fafc378d3ed, type: 3}
+  - {fileID: 469690450, guid: 4f8d16c8c615269498695fafc378d3ed, type: 3}
+  - {fileID: -1694704905, guid: 4f8d16c8c615269498695fafc378d3ed, type: 3}
