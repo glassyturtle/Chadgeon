@@ -83,10 +83,10 @@ public class PlayerScript : Pigeon
     private void Update()
     {
         SyncPigeonAttributes();
-        if (!IsOwner) return;
+        if (!IsOwner || GameManager.instance.currentSecond.Value == -1) return;
         if (!isKnockedOut.Value && !isSlaming)
         {
-            if (Input.GetMouseButton(0) && !isSprinting && hitColldown <= 0)
+            if (Input.GetMouseButton(0) && !isSprinting && hitColldown <= 0 && !isSlaming)
             {
                 hitColldown = 0.3f;
 
@@ -139,7 +139,7 @@ public class PlayerScript : Pigeon
     }
     private void FixedUpdate()
     {
-        if (!IsOwner) return;
+        if (!IsOwner || GameManager.instance.currentSecond.Value == -1) return;
         HandleMovement();
     }
     private void OnTriggerEnter2D(Collider2D collision)

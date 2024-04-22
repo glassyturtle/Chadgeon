@@ -53,6 +53,7 @@ public class PigeonAI : Pigeon
     }
     private void Update()
     {
+        if (GameManager.instance.currentSecond.Value == -1) return;
         FindNearbyPigeon();
         FindNearbyFood();
         SyncPigeonAttributes();
@@ -60,7 +61,7 @@ public class PigeonAI : Pigeon
 
     private void FixedUpdate()
     {
-        if (!IsOwner) return;
+        if (!IsOwner || GameManager.instance.currentSecond.Value == -1) return;
 
         Vector2 direction;
 

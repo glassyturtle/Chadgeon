@@ -9,13 +9,12 @@ public class Pigeon : NetworkBehaviour
     public NetworkVariable<int> maxHp = new(20, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> currentHP = new(20, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> level = new(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-    private NetworkVariable<bool> isPointingLeft = new(true, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-    private NetworkVariable<int> currentPigeonState = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    [SerializeField] private NetworkVariable<bool> isPointingLeft = new(true, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    [SerializeField] private NetworkVariable<int> currentPigeonState = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
 
     public bool isFlying;
     public bool isSlaming;
-    private bool isSpriteNotHopping;
     public int xp;
     public int xpTillLevelUp;
     public int flock;
@@ -56,9 +55,8 @@ public class Pigeon : NetworkBehaviour
 
 
     private float regen = 0.02f;
-    protected bool canSwitchAttackSprites;
+    protected bool canSwitchAttackSprites = true;
     private int currentPigeonAttackSprite;
-    private int currentFlySprite;
 
     //Skins
     [SerializeField] private int skinBase;
@@ -304,13 +302,22 @@ public class Pigeon : NetworkBehaviour
 
         slash.Activate(new Vector3(atkProp.posX, atkProp.posY), theAngle, isSlaming);
 
-        if (currentPigeonAttackSprite == 0) currentPigeonAttackSprite = 1;
-        else currentPigeonAttackSprite = 0;
-
-        if (currentPigeonAttackSprite == 0) atkProp.attackingUp = true;
-
         if (canSwitchAttackSprites)
         {
+            if (currentPigeonAttackSprite == 0)
+            {
+                currentPigeonState.Value = 3;
+                currentPigeonAttackSprite = 1;
+            }
+            else
+            {
+                currentPigeonState.Value = 2;
+                currentPigeonAttackSprite = 0;
+
+            }
+
+            if (currentPigeonAttackSprite == 0) atkProp.attackingUp = true;
+
             canSwitchAttackSprites = false;
             if (atkProp.posX > transform.position.x)
             {
@@ -324,6 +331,47 @@ public class Pigeon : NetworkBehaviour
             StartCoroutine(DelayBeforeSpriteChange());
         }
 
+    }
+    [ServerRpc]
+    private void UpdateSeverPigeonsServerRpc(GameManager.PigeonInitializeProperties pigeonData)
+    {
+        GameManager.instance.pigeonStartData.Add(pigeonData);
+    }
+    public void UpatePigeonInitialValues(GameManager.PigeonInitializeProperties data)
+    {
+        flock = data.flock;
+        skinBase = data.skinBase;
+        skinHead = data.skinHead;
+        skinBody = data.skinBody;
+        pigeonName = data.pigeonName;
+
+        if (flock != 0)
+        {
+            flockDisplayText.gameObject.SetActive(true);
+            switch (flock)
+            {
+                case 1:
+                    flockDisplayText.text = "Enjoyers";
+                    flockDisplayText.color = Color.cyan;
+                    break;
+                case 2:
+                    flockDisplayText.text = "Psychos";
+                    flockDisplayText.color = Color.red;
+                    break;
+                case 3:
+                    flockDisplayText.text = "Minions";
+                    flockDisplayText.color = Color.yellow;
+                    break;
+                case 4:
+                    flockDisplayText.text = "Looksmaxers";
+                    flockDisplayText.color = Color.green;
+                    break;
+            }
+        }
+        else
+        {
+            flockDisplayText.gameObject.SetActive(false);
+        }
     }
     protected void OnPigeonSpawn()
     {
@@ -346,13 +394,47 @@ public class Pigeon : NetworkBehaviour
             }
             currentHP.Value = maxHp.Value;
 
+            if (flock != 0)
+            {
+                flockDisplayText.gameObject.SetActive(true);
+                switch (flock)
+                {
+                    case 1:
+                        flockDisplayText.text = "Enjoyers";
+                        flockDisplayText.color = Color.cyan;
+                        break;
+                    case 2:
+                        flockDisplayText.text = "Psychos";
+                        flockDisplayText.color = Color.red;
+                        break;
+                    case 3:
+                        flockDisplayText.text = "Minions";
+                        flockDisplayText.color = Color.yellow;
+                        break;
+                    case 4:
+                        flockDisplayText.text = "Looksmaxers";
+                        flockDisplayText.color = Color.green;
+                        break;
+                }
+            }
+            else
+            {
+                flockDisplayText.gameObject.SetActive(false);
+            }
+
+            UpdateSeverPigeonsServerRpc(new GameManager.PigeonInitializeProperties
+            {
+                flock = flock,
+                skinBase = skinBase,
+                skinHead = skinHead,
+                skinBody = skinBody,
+                pigeonID = NetworkObjectId,
+                pigeonName = pigeonName
+            });
+
             StartCoroutine(JumpAnimation());
             StartCoroutine(Regen());
         }
-
-
-
-
 
         body.freezeRotation = true;
         gm = GameManager.instance;
@@ -376,6 +458,8 @@ public class Pigeon : NetworkBehaviour
         canSlam = false;
         isSlaming = true;
         canSwitchAttackSprites = false;
+        currentPigeonState.Value = 4;
+
         if (desiredSlamPos.x > transform.position.x)
         {
             isPointingLeft.Value = true;
@@ -421,38 +505,6 @@ public class Pigeon : NetworkBehaviour
         if (isPlayer)
         {
             StartCoroutine(gm.StartSlamCoolDown());
-        }
-    }
-    [ClientRpc]
-    public void UpdatePigeonClientRpc(int flockUpdate)
-    {
-        flock = flockUpdate;
-        if (flock != 0)
-        {
-            flockDisplayText.gameObject.SetActive(true);
-            switch (flock)
-            {
-                case 1:
-                    flockDisplayText.text = "Enjoyers";
-                    flockDisplayText.color = Color.cyan;
-                    break;
-                case 2:
-                    flockDisplayText.text = "Psychos";
-                    flockDisplayText.color = Color.red;
-                    break;
-                case 3:
-                    flockDisplayText.text = "Minions";
-                    flockDisplayText.color = Color.yellow;
-                    break;
-                case 4:
-                    flockDisplayText.text = "Looksmaxers";
-                    flockDisplayText.color = Color.green;
-                    break;
-            }
-        }
-        else
-        {
-            flockDisplayText.gameObject.SetActive(false);
         }
     }
     private void IsFlyingSpriteAdjustments()
@@ -531,53 +583,6 @@ public class Pigeon : NetworkBehaviour
         {
             displayText.text = pigeonName + " LVL:" + level.Value;
         }
-
-
-        //Owner only logic after this
-        if (!IsOwner) return;
-
-        if (isKnockedOut.Value)
-        {
-            if (isFlying)
-            {
-
-                if (currentFlySprite == 0)
-                {
-                    currentPigeonState.Value = 5;
-                }
-                else
-                {
-                    currentPigeonState.Value = 6;
-                }
-
-                sr.flipY = false;
-                bodysr.flipY = false;
-                headsr.flipY = false;
-                gameObject.layer = 10;
-            }
-        }
-        else if (isSlaming)
-        {
-            currentPigeonState.Value = 4;
-        }
-        else
-        {
-            if (!canSwitchAttackSprites)
-            {
-                currentPigeonState.Value = currentPigeonAttackSprite + 2;
-            }
-            else
-            {
-                if (isSpriteNotHopping)
-                {
-                    currentPigeonState.Value = 0;
-                }
-                else
-                {
-                    currentPigeonState.Value = 1;
-                }
-            }
-        }
     }
 
     [ServerRpc]
@@ -592,22 +597,22 @@ public class Pigeon : NetworkBehaviour
         {
             if ((Input.GetAxis("Horizontal") != 0 || Input.GetAxis("Vertical") != 0) && isHoping)
             {
-                isSpriteNotHopping = false;
+                currentPigeonState.Value = 1;
             }
             else
             {
-                isSpriteNotHopping = true;
+                currentPigeonState.Value = 0;
             }
         }
         else
         {
             if ((Mathf.Abs(body.velocity.x) > 0.1f || Mathf.Abs(body.velocity.y) > 0.1f) && isHoping)
             {
-                isSpriteNotHopping = false;
+                currentPigeonState.Value = 1;
             }
             else
             {
-                isSpriteNotHopping = true;
+                currentPigeonState.Value = 0;
             }
         }
     }
@@ -661,7 +666,9 @@ public class Pigeon : NetworkBehaviour
     }
     private IEnumerator Respawn()
     {
+
         yield return new WaitForSeconds(3);
+
         if (gm.isSuddenDeath.Value)
         {
             StopCoroutine(StopSlam());
@@ -672,7 +679,6 @@ public class Pigeon : NetworkBehaviour
         else
         {
             StartFly();
-
         }
     }
     private void StartFly()
@@ -684,19 +690,18 @@ public class Pigeon : NetworkBehaviour
         //StartCoroutine(StopFlight());
         StartCoroutine(FlyAnimation());
     }
-
     private IEnumerator JumpAnimation()
     {
         while (true)
         {
-            if (!canSwitchAttackSprites)
+            if (!canSwitchAttackSprites || isFlying || isKnockedOut.Value)
             {
                 yield return new WaitForSeconds(0.15f);
                 continue;
             }
             UpdateNotHopping(false);
             yield return new WaitForSeconds(0.2f);
-            if (!canSwitchAttackSprites)
+            if (!canSwitchAttackSprites || isFlying || isKnockedOut.Value)
             {
                 yield return new WaitForSeconds(0.15f);
                 continue;
@@ -709,13 +714,14 @@ public class Pigeon : NetworkBehaviour
     {
         while (true)
         {
-            currentFlySprite = 0;
+            if (!isFlying) break;
+            currentPigeonState.Value = 5;
             yield return new WaitForSeconds(0.3f);
-            currentFlySprite = 1;
+            if (!isFlying) break;
+            currentPigeonState.Value = 6;
             yield return new WaitForSeconds(0.3f);
         }
     }
-
     private IEnumerator DelayBeforeSpriteChange()
     {
         yield return new WaitForSeconds(0.15f);

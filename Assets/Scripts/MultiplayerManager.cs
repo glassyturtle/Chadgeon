@@ -92,7 +92,6 @@ public class MultiplayerManager : MonoBehaviour
     public async void CreateLobby(string lobbyName, int maxPlayers, bool isPrivate, GameMode gameMode)
     {
         Player player = GetPlayer();
-        Debug.Log(isPrivate);
 
         CreateLobbyOptions options = new CreateLobbyOptions
         {
