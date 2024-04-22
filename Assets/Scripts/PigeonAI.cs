@@ -30,15 +30,15 @@ public class PigeonAI : Pigeon
         {
             case 0:
                 behaviorAI = SimpBehavior;
-                pigeonName.Value = "Simp";
+                pigeonName = "Simp";
                 break;
             case 1:
                 behaviorAI = ChadBehavior;
-                pigeonName.Value = "Chad";
+                pigeonName = "Chad";
                 break;
             case 2:
                 behaviorAI = SigmaBehavior;
-                pigeonName.Value = "Sigma";
+                pigeonName = "Sigma";
                 break;
         }
     }
@@ -66,7 +66,7 @@ public class PigeonAI : Pigeon
 
         isPathfinding = false;
 
-        if (isFlying.Value)
+        if (isFlying)
         {
             direction = (slamPos - transform.position).normalized;
             body.AddForce(6 * speed * speedMod * Time.fixedDeltaTime * direction);
@@ -80,7 +80,7 @@ public class PigeonAI : Pigeon
 
         if (!isKnockedOut.Value)
         {
-            if (!isSlaming.Value)
+            if (!isSlaming)
             {
                 isPathfinding = true;
                 float distanceToPigeon = Mathf.Infinity;
@@ -90,7 +90,7 @@ public class PigeonAI : Pigeon
 
                 behaviorAI?.Invoke(distanceToPigeon, distanceToFood);
             }
-            else if (isSlaming.Value)
+            else if (isSlaming)
             {
                 direction = (slamPos - transform.position).normalized;
                 CheckDirection(direction);
@@ -179,7 +179,7 @@ public class PigeonAI : Pigeon
         for (int i = 0; i < allPigeons.Length; i++)
         {
             float currentDist = Vector2.SqrMagnitude(allPigeons[i].transform.position - transform.position);
-            if (allPigeons[i] != this && currentDist < distToCloset && !allPigeons[i].isKnockedOut.Value && !allPigeons[i].isFlying.Value && (allPigeons[i].flock.Value == 0 || allPigeons[i].flock.Value != flock.Value))
+            if (allPigeons[i] != this && currentDist < distToCloset && !allPigeons[i].isKnockedOut.Value && !allPigeons[i].isFlying && (allPigeons[i].flock == 0 || allPigeons[i].flock != flock))
             {
                 closestPigeon = allPigeons[i];
                 distToCloset = currentDist;

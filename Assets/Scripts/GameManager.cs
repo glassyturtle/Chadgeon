@@ -74,9 +74,9 @@ public class GameManager : NetworkBehaviour
             {
                 survivors++;
                 survivingPigeon = pigeon;
-                if (!survivingFactions.Contains(pigeon.flock.Value))
+                if (!survivingFactions.Contains(pigeon.flock))
                 {
-                    survivingFactions.Add(pigeon.flock.Value);
+                    survivingFactions.Add(pigeon.flock);
                 }
 
             }
@@ -85,7 +85,7 @@ public class GameManager : NetworkBehaviour
         string victoryText = "";
         if (survivingFactions.Count == 1 && survivingFactions[0] != 0)
         {
-            switch (survivingPigeon.flock.Value)
+            switch (survivingPigeon.flock)
             {
                 case 1:
                     victoryText = "The Enjoyers have defeated all of thier rivals and have won the game";
@@ -110,7 +110,7 @@ public class GameManager : NetworkBehaviour
         {
             gameover = true;
             //Someone Won the Game display credits
-            victoryText = survivingPigeon.pigeonName.Value + " has defeated all of his rivals and ascended to gigachad pigeon status";
+            victoryText = survivingPigeon.pigeonName + " has defeated all of his rivals and ascended to gigachad pigeon status";
             ShowWinScreenClientRpc(victoryText);
         }
 
@@ -161,7 +161,7 @@ public class GameManager : NetworkBehaviour
                 currentSpectate = i;
                 playerUI.SetActive(false);
                 spectateScreen.SetActive(true);
-                spectatingText.text = "Spectating " + pigeon.pigeonName.Value;
+                spectatingText.text = "Spectating " + pigeon.pigeonName;
                 mainCamera.Follow = pigeon.transform;
                 break;
             }
@@ -236,7 +236,7 @@ public class GameManager : NetworkBehaviour
         }
         Pigeon pigeon = allpigeons[currentSpectate];
         mainCamera.Follow = pigeon.transform;
-        spectatingText.text = "Spectating " + pigeon.pigeonName.Value;
+        spectatingText.text = "Spectating " + pigeon.pigeonName;
     }
     public void SpectatePreviouse()
     {
@@ -255,7 +255,7 @@ public class GameManager : NetworkBehaviour
         }
         Pigeon pigeon = allpigeons[currentSpectate];
         mainCamera.Follow = pigeon.transform;
-        spectatingText.text = "Spectating " + pigeon.pigeonName.Value;
+        spectatingText.text = "Spectating " + pigeon.pigeonName;
     }
     public void DestroyFoodObject(food foodie)
     {
@@ -337,7 +337,7 @@ public class GameManager : NetworkBehaviour
                     Vector3 spawnPos = GetSpawnPos();
                     GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
                     PigeonAI ai = pigeon.GetComponent<PigeonAI>();
-                    ai.flock.Value = 1;
+                    ai.flock = 1;
                     ai.SetAI(GameDataHolder.botDifficulty);
                     pigeon.GetComponent<NetworkObject>().Spawn();
                 }
@@ -346,7 +346,7 @@ public class GameManager : NetworkBehaviour
                     Vector3 spawnPos = GetSpawnPos();
                     GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
                     PigeonAI ai = pigeon.GetComponent<PigeonAI>();
-                    ai.flock.Value = 2;
+                    ai.flock = 2;
                     ai.SetAI(GameDataHolder.botDifficulty);
                     pigeon.GetComponent<NetworkObject>().Spawn();
                 }
@@ -355,7 +355,7 @@ public class GameManager : NetworkBehaviour
                     Vector3 spawnPos = GetSpawnPos();
                     GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
                     PigeonAI ai = pigeon.GetComponent<PigeonAI>();
-                    ai.flock.Value = 3;
+                    ai.flock = 3;
                     ai.SetAI(GameDataHolder.botDifficulty);
                     pigeon.GetComponent<NetworkObject>().Spawn();
                 }
@@ -364,7 +364,7 @@ public class GameManager : NetworkBehaviour
                     Vector3 spawnPos = GetSpawnPos();
                     GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
                     PigeonAI ai = pigeon.GetComponent<PigeonAI>();
-                    ai.flock.Value = 4;
+                    ai.flock = 4;
                     ai.SetAI(GameDataHolder.botDifficulty);
                     pigeon.GetComponent<NetworkObject>().Spawn();
                 }
@@ -504,7 +504,7 @@ public class GameManager : NetworkBehaviour
 
         healthBar.fillAmount = (float)player.currentHP.Value / player.maxHp.Value;
         hpText.text = (float)player.currentHP.Value + "/" + player.maxHp.Value;
-        xpBar.fillAmount = (float)player.xp.Value / player.xpTillLevelUp.Value;
+        xpBar.fillAmount = (float)player.xp / player.xpTillLevelUp;
         levelText.text = player.level.Value.ToString();
 
         if (IsServer && canSpawnFood && !isSuddenDeath.Value)

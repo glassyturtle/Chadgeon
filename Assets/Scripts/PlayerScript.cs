@@ -24,7 +24,7 @@ public class PlayerScript : Pigeon
     }
     private void HandleMovement(Vector2 inputVector)
     {
-        if (isFlying.Value)
+        if (isFlying)
         {
             Vector2 direction = (slamPos - transform.position).normalized;
             MoveServerRpc(6 * speed * speedMod * Time.fixedDeltaTime, direction);
@@ -34,7 +34,7 @@ public class PlayerScript : Pigeon
             }
             return;
         }
-        else if (!isKnockedOut.Value && !isSlaming.Value)
+        else if (!isKnockedOut.Value && !isSlaming)
         {
             //Store user input as a movement vector
             if (Input.GetKey(KeyCode.LeftShift) && stamina > 0)
@@ -65,12 +65,12 @@ public class PlayerScript : Pigeon
                 }
             }
 
-            if (canSwitchAttackSprites.Value) CheckDirection(inputVector);
+            if (canSwitchAttackSprites) CheckDirection(inputVector);
         }
-        else if (isSlaming.Value)
+        else if (isSlaming)
         {
             Vector2 direction = (slamPos - transform.position).normalized;
-            if (!canSwitchAttackSprites.Value) CheckDirection(direction);
+            if (!canSwitchAttackSprites) CheckDirection(direction);
             MoveServerRpc(4 * speed * Time.fixedDeltaTime * speedMod, direction);
 
             if ((transform.position - slamPos).sqrMagnitude <= 0.1f)
@@ -84,7 +84,7 @@ public class PlayerScript : Pigeon
     {
         SyncPigeonAttributes();
         if (!IsOwner) return;
-        if (!isKnockedOut.Value && !isSlaming.Value)
+        if (!isKnockedOut.Value && !isSlaming)
         {
             if (Input.GetMouseButton(0) && !isSprinting && hitColldown <= 0)
             {
