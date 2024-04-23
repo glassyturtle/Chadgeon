@@ -11,7 +11,7 @@ public class LobbyPlayerSingleUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI playerFlockText;
     [SerializeField] private Button kickPlayerButton;
     [SerializeField] Image pigeonBaseImage, pigeonBodyImage, pigeonHeadImage;
-
+    [SerializeField] RankScript rs;
 
     private Player player;
 
@@ -53,7 +53,7 @@ public class LobbyPlayerSingleUI : MonoBehaviour
                 playerFlockText.color = Color.green;
                 break;
         }
-
+        rs.UpdateRank(int.Parse(player.Data[MultiplayerManager.KEY_PLAYER_RANK].Value));
         //Changes skin icon
         int skinID = int.Parse(player.Data[MultiplayerManager.KEY_PLAYER_SKIN].Value);
         if (skinID != -1) pigeonBaseImage.sprite = CustomizationManager.Instance.GetSprite(CustomizationManager.SpriteType.baseSkin, skinID, 0);

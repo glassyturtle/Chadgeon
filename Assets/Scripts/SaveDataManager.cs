@@ -18,6 +18,14 @@ public static class SaveDataManager
     public static int selectedSkinBody = -1;
     public static int selectedSkinHead = -1;
 
+    //Stats
+    public static int totalPigeonsKo = 0;
+    public static int playerPigeonsKo = 0;
+    public static int totalTimesKnockedOut = 0;
+    public static int totalConesCollected = 0;
+    public static int totalPigeonXPEarned = 0;
+    public static int upgradesAquired = 0;
+    public static int gamesPlayed = 0;
 
 
     public enum Skins
@@ -56,8 +64,18 @@ public static class SaveDataManager
             selectedSkinBase = (int)ES3.Load("skinBase", path);
             selectedSkinBody = (int)ES3.Load("skinBody", path);
             selectedSkinHead = (int)ES3.Load("skinHead", path);
+
+            //Loading Stats
+            totalPigeonsKo = ES3.Load("totalPigeonsKo", path, 0);
+            playerPigeonsKo = ES3.Load("playerPigeonsKo", path, 0);
+            totalTimesKnockedOut = ES3.Load("totalTimesKnockedOut", path, 0);
+            totalConesCollected = ES3.Load("totalConesCollected", path, 0);
+            totalPigeonXPEarned = ES3.Load("totalPigeonXPEarned", path, 0);
+            upgradesAquired = ES3.Load("upgradesAquired", path, 0);
+            gamesPlayed = ES3.Load("gamesPlayed", path, 0);
         }
         GameDataHolder.multiplayerName = playerName;
+
     }
     public static void SaveGameData()
     {
@@ -81,5 +99,12 @@ public static class SaveDataManager
         ES3.Save("skinBody", selectedSkinBody, path);
         ES3.Save("skinHead", selectedSkinHead, path);
 
+        ES3.Save("totalPigeonsKo", totalPigeonsKo, path);
+        ES3.Save("playerPigeonsKo", playerPigeonsKo, path);
+        ES3.Save("totalTimesKnockedOut", totalTimesKnockedOut, path);
+        ES3.Save("totalConesCollected", totalConesCollected, path);
+        ES3.Save("totalPigeonXPEarned", totalPigeonXPEarned, path);
+        ES3.Save("upgradesAquired", upgradesAquired, path);
+        ES3.Save("gamesPlayed", gamesPlayed, path);
     }
 }

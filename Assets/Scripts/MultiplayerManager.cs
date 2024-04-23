@@ -29,6 +29,7 @@ public class MultiplayerManager : MonoBehaviour
 
     public const string KEY_PLAYER_FLOCK = "Flock";
     public const string KEY_PLAYER_NAME = "PlayerName";
+    public const string KEY_PLAYER_RANK = "PlayerRank";
     public const string KEY_PLAYER_SKIN = "PlayerSkin";
     public const string KEY_START_GAME = "Start";
     public const string KEY_BOT_AMT = "BotCount";
@@ -161,6 +162,7 @@ public class MultiplayerManager : MonoBehaviour
                         {"PlayerName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, GameDataHolder.multiplayerName) },
                         {"PlayerSkin", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinBase.ToString()) },
                         {"PlayerBody", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinBody.ToString()) },
+                        {"PlayerRank", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, Mathf.FloorToInt(SaveDataManager.totalPigeonXPEarned / 1000).ToString()) },
                         {"PlayerHead", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinHead.ToString()) },
                         {"Flock", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, "0") },
                     }
@@ -281,6 +283,7 @@ public class MultiplayerManager : MonoBehaviour
                         {"PlayerName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, GameDataHolder.multiplayerName) },
                                                 {"PlayerSkin", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinBase.ToString()) },
                         {"PlayerBody", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinBody.ToString()) },
+                        {"PlayerRank", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, Mathf.FloorToInt(SaveDataManager.totalPigeonXPEarned / 1000).ToString()) },
                         {"PlayerHead", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinHead.ToString()) },
                         {"Flock", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, newFlock) },
                     }

@@ -12,4 +12,14 @@ public static class GameDataHolder
     public static int botsFlock3 = 0;
     public static int botsFlock4 = 0;
     public static int playerCount;
+
+    //Stats Earned In Game
+    public static int kills = 0;
+    public static int conesCollected = 0;
+
+    public static void ResetStats()
+    {
+        kills = 0;
+        conesCollected = 0;
+    }
 }

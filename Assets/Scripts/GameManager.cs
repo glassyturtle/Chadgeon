@@ -269,27 +269,37 @@ public class GameManager : NetworkBehaviour
                     break;
             }
             gameover = true;
-            ShowWinScreenClientRpc(victoryText);
+            ShowWinScreenClientRpc(victoryText, survivingPigeon.flock, survivingPigeon.NetworkObjectId);
         }
-
         if (survivors <= 1)
         {
             gameover = true;
             //Someone Won the Game display credits
             victoryText = survivingPigeon.pigeonName + " has defeated all of his rivals and ascended to gigachad pigeon status";
-            ShowWinScreenClientRpc(victoryText);
+            ShowWinScreenClientRpc(victoryText, -1, survivingPigeon.NetworkObjectId);
         }
 
 
     }
     [ClientRpc]
-    public void ShowWinScreenClientRpc(string victorytext)
+    public void ShowWinScreenClientRpc(string victorytext, int teamThatWon, ulong pigeonThatWon)
     {
         playerUI.SetActive(false);
         endGameDescriptionText.text = victorytext;
         endScreen.SetActive(true);
-        SaveDataManager.chadCoins += 30;
-        SaveDataManager.SaveGameData();
+
+
+
+        if (teamThatWon == player.flock || pigeonThatWon == player.NetworkObjectId)
+        {
+            endScreen.GetComponent<EndScreenScript>().UpdateChadCoinWinStuff(true);
+        }
+        else
+        {
+            endScreen.GetComponent<EndScreenScript>().UpdateChadCoinWinStuff(false);
+        }
+
+
     }
     public void AddUpgradeToDisply(int upgrade)
     {

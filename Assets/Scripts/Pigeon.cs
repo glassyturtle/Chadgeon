@@ -39,7 +39,7 @@ public class Pigeon : NetworkBehaviour
     [SerializeField] private GameObject healthBarGameobject;
     [SerializeField] private Transform hpBar;
     [SerializeField] private SpriteRenderer sr, bodysr, headsr;
-    [SerializeField] private bool isPlayer = false;
+    public bool isPlayer = false;
     [SerializeField] private PigeonAI pigeonAI;
     [SerializeField] private HitScript slash;
 
@@ -112,12 +112,14 @@ public class Pigeon : NetworkBehaviour
         public bool hasDied;
         public int xpOnKill;
         public int damageDealt;
+        public bool wasPlayer;
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
             serializer.SerializeValue(ref hasDied);
             serializer.SerializeValue(ref xpOnKill);
             serializer.SerializeValue(ref damageDealt);
+            serializer.SerializeValue(ref wasPlayer);
         }
     }
     [ServerRpc]
@@ -166,6 +168,7 @@ public class Pigeon : NetworkBehaviour
 
         if (currentHP.Value <= 0 && !isKnockedOut.Value)
         {
+            if (isPlayer) SaveDataManager.totalTimesKnockedOut++;
             if (gm.isSuddenDeath.Value)
             {
 
@@ -195,6 +198,7 @@ public class Pigeon : NetworkBehaviour
             hasDied = hasBeenKO,
             damageDealt = totalDamageTaking,
             xpOnKill = 10 + (level.Value * 5),
+            wasPlayer = isPlayer,
         };
 
         OnDealtDamageServerRpc(ddProp, atkProp.pigeonID);
@@ -203,6 +207,22 @@ public class Pigeon : NetworkBehaviour
     public void GainXP(int amnt)
     {
         if (isKnockedOut.Value) return;
+        if (isPlayer) SaveDataManager.totalPigeonXPEarned += amnt;
+        xp += amnt;
+        if (xp >= xpTillLevelUp)
+        {
+            LevelUP();
+        }
+    }
+    public void GainXP(int amnt, bool isCone)
+    {
+        if (isCone == true && isPlayer)
+        {
+            GameDataHolder.conesCollected++;
+            SaveDataManager.totalConesCollected++;
+        }
+        if (isKnockedOut.Value) return;
+        if (isPlayer) SaveDataManager.totalPigeonXPEarned += amnt;
         xp += amnt;
         if (xp >= xpTillLevelUp)
         {
@@ -244,6 +264,12 @@ public class Pigeon : NetworkBehaviour
 
         if (ddProp.hasDied)
         {
+            if (isPlayer)
+            {
+                GameDataHolder.kills++;
+                if (ddProp.wasPlayer) SaveDataManager.playerPigeonsKo++;
+            }
+
             GainXP(ddProp.xpOnKill);
         }
 
@@ -637,6 +663,7 @@ public class Pigeon : NetworkBehaviour
 
         if (0 == level.Value % 5)
         {
+            if (isPlayer) SaveDataManager.upgradesAquired++;
             if (pigeonAI && IsHost && IsOwner)
             {
                 AddRandomUpgrade();
