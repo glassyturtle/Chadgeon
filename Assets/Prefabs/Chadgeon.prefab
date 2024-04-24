@@ -702,7 +702,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 206980980
+  GlobalObjectIdHash: 3705281256
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -769,6 +769,9 @@ MonoBehaviour:
   isPlayer: 1
   pigeonAI: {fileID: 0}
   slash: {fileID: 3028708896171240069}
+  hasAbilityM2: 0
+  hasAbilityE: 0
+  hasAbilityQ: 0
   skinBase: 0
   skinBody: -1
   skinHead: -1
@@ -952,8 +955,8 @@ MonoBehaviour:
   SyncRotAngleX: 0
   SyncRotAngleY: 0
   SyncRotAngleZ: 0
-  SyncScaleX: 0
-  SyncScaleY: 0
+  SyncScaleX: 1
+  SyncScaleY: 1
   SyncScaleZ: 0
   PositionThreshold: 0.001
   RotAngleThreshold: 0.01

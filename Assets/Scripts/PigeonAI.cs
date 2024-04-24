@@ -95,7 +95,7 @@ public class PigeonAI : Pigeon
             {
                 direction = (slamPos - transform.position).normalized;
                 CheckDirection(direction);
-                body.AddForce(speed * 4 * Time.deltaTime * speedMod * direction);
+                body.AddForce(speed * 6 * Time.deltaTime * speedMod * direction);
                 if ((transform.position - slamPos).sqrMagnitude <= 2.5f)
                 {
                     EndSlam();

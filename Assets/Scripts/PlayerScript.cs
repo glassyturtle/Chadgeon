@@ -73,7 +73,7 @@ public class PlayerScript : Pigeon
             if (!canSwitchAttackSprites) CheckDirection(direction);
             MoveServerRpc(4 * speed * Time.fixedDeltaTime * speedMod, direction);
 
-            if ((transform.position - slamPos).sqrMagnitude <= 0.1f)
+            if ((transform.position - slamPos).sqrMagnitude <= 2.5f)
             {
                 EndSlam();
             }
@@ -122,7 +122,7 @@ public class PlayerScript : Pigeon
 
                 PigeonAttack(atkProp, theAngle);
             }
-            else if (Input.GetKeyDown(KeyCode.Space) && canSlam)
+            else if (Input.GetKeyDown(KeyCode.Mouse1) && canSlam)
             {
                 StartSlam(Camera.main.ScreenToWorldPoint(Input.mousePosition));
             }

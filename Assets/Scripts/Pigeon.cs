@@ -58,6 +58,10 @@ public class Pigeon : NetworkBehaviour
     protected bool canSwitchAttackSprites = true;
     private int currentPigeonAttackSprite;
 
+    public bool hasAbilityM2 = false;
+    public bool hasAbilityE = false;
+    public bool hasAbilityQ = false;
+
     //Skins
     [SerializeField] private int skinBase;
     [SerializeField] private int skinBody;
@@ -77,6 +81,17 @@ public class Pigeon : NetworkBehaviour
         swiftness = 8,
         enchanted = 9,
         assassin = 10,
+        mewing = 11,
+        wholeGains = 12,
+        razorFeathers = 13,
+        hiddinTalon = 14,
+        turtle = 15,
+        bleed = 16,
+        pigeonPoo = 17,
+        inspire = 18,
+        psionic = 19,
+        bandOfBrothers = 20,
+        peckingOrder = 21,
     }
     public struct AttackProperties : INetworkSerializable
     {
@@ -223,7 +238,7 @@ public class Pigeon : NetworkBehaviour
         }
         if (isKnockedOut.Value) return;
         if (isPlayer) SaveDataManager.totalPigeonXPEarned += amnt;
-        xp += amnt;
+        xp += amnt * 100;
         if (xp >= xpTillLevelUp)
         {
             LevelUP();
@@ -289,7 +304,28 @@ public class Pigeon : NetworkBehaviour
     }
     public void AddUpgrade(Upgrades upgrade)
     {
-        if (!IsOwner) return;
+        bool hasAbilitySlotUnlocked = false;
+        switch (upgrade)
+        {
+            case Upgrades.slam:
+                if (hasAbilityM2) hasAbilitySlotUnlocked = true; break;
+            case Upgrades.hiddinTalon:
+                if (hasAbilityQ) hasAbilitySlotUnlocked = true; break;
+            case Upgrades.mewing:
+                if (hasAbilityQ) hasAbilitySlotUnlocked = true; break;
+            case Upgrades.wholeGains:
+                if (hasAbilityE) hasAbilitySlotUnlocked = true; break;
+            case Upgrades.turtle:
+                if (hasAbilityE) hasAbilitySlotUnlocked = true; break;
+            case Upgrades.pigeonPoo:
+                if (hasAbilityE) hasAbilitySlotUnlocked = true; break;
+            case Upgrades.peckingOrder:
+                if (hasAbilityE) hasAbilitySlotUnlocked = true; break;
+            case Upgrades.razorFeathers:
+                if (hasAbilityM2) hasAbilitySlotUnlocked = true; break;
+        }
+
+        if (!IsOwner || pigeonUpgrades.ContainsKey(upgrade) || hasAbilitySlotUnlocked) return;
         pigeonUpgrades.Add(upgrade, true);
         if (!pigeonAI) gm.AddUpgradeToDisply((int)upgrade);
         switch (upgrade)
@@ -316,9 +352,30 @@ public class Pigeon : NetworkBehaviour
                 currentHP.Value += level.Value * 2;
                 break;
             case Upgrades.slam:
-                if (isPlayer) gm.ShowSlamCoolDown();
+                if (isPlayer) gm.ActivateAbility(Upgrades.slam);
                 canSlam = true;
-                break;
+                hasAbilityM2 = true; break;
+            case Upgrades.hiddinTalon:
+                gm.ActivateAbility(Upgrades.hiddinTalon);
+                hasAbilityQ = true; break;
+            case Upgrades.mewing:
+                gm.ActivateAbility(Upgrades.mewing);
+                hasAbilityQ = true; break;
+            case Upgrades.wholeGains:
+                gm.ActivateAbility(Upgrades.wholeGains);
+                hasAbilityE = true; break;
+            case Upgrades.peckingOrder:
+                gm.ActivateAbility(Upgrades.peckingOrder);
+                hasAbilityE = true; break;
+            case Upgrades.turtle:
+                gm.ActivateAbility(Upgrades.turtle);
+                hasAbilityE = true; break;
+            case Upgrades.pigeonPoo:
+                gm.ActivateAbility(Upgrades.pigeonPoo);
+                hasAbilityE = true; break;
+            case Upgrades.razorFeathers:
+                gm.ActivateAbility(Upgrades.razorFeathers);
+                hasAbilityM2 = true; break;
         }
     }
     protected void PigeonAttack(AttackProperties atkProp, Quaternion theAngle)
@@ -494,7 +551,7 @@ public class Pigeon : NetworkBehaviour
         {
             isPointingLeft.Value = false;
         }
-        slamPos = Vector2.MoveTowards(transform.position, desiredSlamPos, 5f);
+        slamPos = Vector2.MoveTowards(transform.position, desiredSlamPos, 6f);
         StartCoroutine(StopSlam());
         return true;
     }
@@ -502,6 +559,9 @@ public class Pigeon : NetworkBehaviour
     {
         if (!isSlaming) return;
         canSwitchAttackSprites = true;
+
+        Vector2 pos = transform.position;
+        pos = Vector2.MoveTowards(pos, slamPos, 0.1f);
 
         Vector3 targ = slamPos;
         targ.z = 0f;
@@ -518,8 +578,8 @@ public class Pigeon : NetworkBehaviour
             hasCriticalDamage = false,
             hasKnockBack = false,
             attackingUp = false,
-            posX = slamPos.x,
-            posY = slamPos.y,
+            posX = pos.x,
+            posY = pos.y,
         };
         if (pigeonUpgrades.TryGetValue(Upgrades.critcalDamage, out bool _)) atkProp.hasCriticalDamage = true;
         if (pigeonUpgrades.TryGetValue(Upgrades.brawler, out bool _)) atkProp.hasKnockBack = true;
@@ -530,7 +590,7 @@ public class Pigeon : NetworkBehaviour
         isSlaming = false;
         if (isPlayer)
         {
-            StartCoroutine(gm.StartSlamCoolDown());
+            gm.StartCooldown(Upgrades.slam, 3);
         }
     }
     private void IsFlyingSpriteAdjustments()
@@ -680,7 +740,33 @@ public class Pigeon : NetworkBehaviour
         for (int i = 0; i < 1000; i++)
         {
             Upgrades upgrade = gm.allPigeonUpgrades[Random.Range(0, gm.allPigeonUpgrades.Count)];
-            if (pigeonUpgrades.TryGetValue(upgrade, out bool _))
+
+            bool hasAbilitySlotUnlocked = false;
+            switch (upgrade)
+            {
+                case Upgrades.slam:
+                    if (hasAbilityM2) hasAbilitySlotUnlocked = true; break;
+                case Upgrades.hiddinTalon:
+                    if (hasAbilityQ) hasAbilitySlotUnlocked = true; break;
+                case Upgrades.mewing:
+                    if (hasAbilityQ) hasAbilitySlotUnlocked = true; break;
+                case Upgrades.wholeGains:
+                    if (hasAbilityE) hasAbilitySlotUnlocked = true; break;
+                case Upgrades.turtle:
+                    if (hasAbilityE) hasAbilitySlotUnlocked = true; break;
+                case Upgrades.pigeonPoo:
+                    if (hasAbilityE) hasAbilitySlotUnlocked = true; break;
+                case Upgrades.peckingOrder:
+                    if (hasAbilityE) hasAbilitySlotUnlocked = true; break;
+                case Upgrades.razorFeathers:
+                    if (hasAbilityM2) hasAbilitySlotUnlocked = true; break;
+            }
+
+
+            if (pigeonUpgrades.TryGetValue(upgrade, out bool _) ||
+                (flock == 0 && (upgrade == Upgrades.bandOfBrothers || upgrade == Upgrades.inspire)) ||
+                (upgrade == Upgrades.hiddinTalon && !pigeonUpgrades.TryGetValue(Upgrades.assassin, out bool _)) ||
+                hasAbilitySlotUnlocked)
             {
                 continue;
             }

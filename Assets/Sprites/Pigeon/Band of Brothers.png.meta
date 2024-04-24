@@ -1,13 +1,10 @@
 fileFormatVersion: 2
-guid: af864eeb3435d804c98896afe31796c5
+guid: ba64f6c1905e9d94ebebfae65c8cd62b
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -3161518468055444756
-    second: mewingupgrade2_0
-  - first:
-      213: -7450095276073971285
-    second: mewingupgrade2_1
+      213: 1857558152772082915
+    second: Band of Brothers_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -99,51 +96,35 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Server
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
-    sprites:
-    - serializedVersion: 2
-      name: mewingupgrade2_0
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 0
-        width: 15
-        height: 13
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: ce2d7b824b70024d0800000000000000
-      internalID: -3161518468055444756
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: mewingupgrade2_1
-      rect:
-        serializedVersion: 2
-        x: 9
-        y: 10
-        width: 6
-        height: 5
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: ba19bc691d1fb9890800000000000000
-      internalID: -7450095276073971285
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
+    sprites: []
     outline: []
     physicsShape: []
     bones: []
@@ -154,9 +135,7 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable:
-      mewingupgrade2_0: -3161518468055444756
-      mewingupgrade2_1: -7450095276073971285
+    nameFileIdTable: {}
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

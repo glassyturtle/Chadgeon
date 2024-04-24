@@ -38,7 +38,7 @@ public class MainMenuManager : MonoBehaviour
         Instance = this;
         chadCoinsText.text = SaveDataManager.chadCoins.ToString();
         nameInput.text = SaveDataManager.playerName.ToString();
-
+        GameDataHolder.ResetStats();
         RefreshShopButtons();
     }
     public void OpenPurchaseSkinNotification(int selectedSkinCost, string skinName, int skinID)

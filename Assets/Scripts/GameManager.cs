@@ -6,6 +6,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using static Pigeon;
 
 public class GameManager : NetworkBehaviour
 {
@@ -28,13 +29,13 @@ public class GameManager : NetworkBehaviour
     [SerializeField] Button endScreenMainMenuButton;
     [SerializeField] Transform borderTransform;
 
-    [SerializeField] GameObject endScreen, playerUI, gameUI, upgradeScreen, pauseMenu, slamCooldownUI, spectateScreen, minimapUI, sprintUI, churchDoor;
-    [SerializeField] TMP_Text endGameDescriptionText, spectatingText, upgradeDescText, slamCoolDownText;
+    [SerializeField] GameObject endScreen, playerUI, gameUI, upgradeScreen, pauseMenu, spectateScreen, minimapUI, sprintUI, churchDoor;
+    [SerializeField] TMP_Text endGameDescriptionText, spectatingText, upgradeDescText, upgradeNameText;
     [SerializeField] GameObject upgradeDescUI;
     [SerializeField] private GameObject[] upgradeDisplays;
     [SerializeField] private UpgradeDescriber[] upgradeDescibers;
     [SerializeField] private List<Transform> spawnLocations;
-
+    [SerializeField] AbilityCooldownIconScript[] cooldownIcons;
     [SerializeField] GameObject FoodPrefab, upgradeHolder, loadingPigeonsText, suddenDeathText, iceCreamUI, hostDCUI;
     [SerializeField] TextMeshProUGUI hpText, timeleftText;
     [SerializeField] TextMeshProUGUI levelText;
@@ -73,9 +74,6 @@ public class GameManager : NetworkBehaviour
             serializer.SerializeValue(ref pigeonName);
         }
     }
-
-
-
 
     private void Awake()
     {
@@ -309,10 +307,17 @@ public class GameManager : NetworkBehaviour
     public void ShowUpgradeDes(int desc)
     {
         upgradeDescUI.SetActive(true);
+        if (!upgradeScreen.gameObject.activeSelf)
+        {
+            upgradeNameText.gameObject.SetActive(true);
+            upgradeNameText.text = upgradeNames[desc];
+        }
         upgradeDescText.text = upgradeDesc[desc];
     }
     public void CloseUpgradeDes()
     {
+        upgradeNameText.gameObject.SetActive(false);
+
         upgradeDescText.text = "";
         upgradeDescUI.SetActive(false);
     }
@@ -351,7 +356,31 @@ public class GameManager : NetworkBehaviour
             for (int x = 0; x < 1000; x++)
             {
                 upgrade = allPigeonUpgrades[Random.Range(0, allPigeonUpgrades.Count)];
-                if (!upgradesUsed.ContainsKey(upgrade) && !player.pigeonUpgrades.ContainsKey(upgrade)) break;
+
+
+                bool hasAbilitySlotUnlocked = false;
+                switch (upgrade)
+                {
+                    case Upgrades.slam:
+                        if (player.hasAbilityM2) hasAbilitySlotUnlocked = true; break;
+                    case Upgrades.hiddinTalon:
+                        if (player.hasAbilityQ) hasAbilitySlotUnlocked = true; break;
+                    case Upgrades.mewing:
+                        if (player.hasAbilityQ) hasAbilitySlotUnlocked = true; break;
+                    case Upgrades.wholeGains:
+                        if (player.hasAbilityE) hasAbilitySlotUnlocked = true; break;
+                    case Upgrades.turtle:
+                        if (player.hasAbilityE) hasAbilitySlotUnlocked = true; break;
+                    case Upgrades.pigeonPoo:
+                        if (player.hasAbilityE) hasAbilitySlotUnlocked = true; break;
+                    case Upgrades.peckingOrder:
+                        if (player.hasAbilityE) hasAbilitySlotUnlocked = true; break;
+                    case Upgrades.razorFeathers:
+                        if (player.hasAbilityM2) hasAbilitySlotUnlocked = true; break;
+                }
+
+                if (upgrade == Upgrades.hiddinTalon && !player.pigeonUpgrades.ContainsKey(Upgrades.assassin) || player.flock == 0 && (upgrade == Upgrades.bandOfBrothers || upgrade == Upgrades.inspire)) continue;
+                if (!upgradesUsed.ContainsKey(upgrade) && !player.pigeonUpgrades.ContainsKey(upgrade) && !hasAbilitySlotUnlocked) break;
             }
             upgradesUsed.Add(upgrade, 1);
             upgradesThatCanBeSelected[i] = upgrade;
@@ -359,7 +388,6 @@ public class GameManager : NetworkBehaviour
             upgradeButtonImages[i].sprite = upgradeButtonSprites[(int)upgrade];
             upgradeButtonText[i].text = upgradeNames[(int)upgrade];
         }
-
     }
     public void SelectUpgrade(int selected)
     {
@@ -368,22 +396,65 @@ public class GameManager : NetworkBehaviour
         upgradeDescUI.SetActive(false);
         player.AddUpgrade(upgradesThatCanBeSelected[selected]);
     }
-    public IEnumerator StartSlamCoolDown()
+    public void StartCooldown(Pigeon.Upgrades ability, int seconds)
     {
-
-        slamCoolDownText.text = 3.ToString();
-        yield return new WaitForSeconds(1);
-        slamCoolDownText.text = 2.ToString();
-        yield return new WaitForSeconds(1);
-        slamCoolDownText.text = 1.ToString();
-
-        yield return new WaitForSeconds(1);
-        slamCoolDownText.text = "";
-
+        switch (ability)
+        {
+            case Upgrades.mewing:
+                cooldownIcons[0].StartCooldown(seconds);
+                break;
+            case Upgrades.hiddinTalon:
+                cooldownIcons[1].StartCooldown(seconds);
+                break;
+            case Upgrades.turtle:
+                cooldownIcons[2].StartCooldown(seconds);
+                break;
+            case Upgrades.pigeonPoo:
+                cooldownIcons[3].StartCooldown(seconds);
+                break;
+            case Upgrades.peckingOrder:
+                cooldownIcons[4].StartCooldown(seconds);
+                break;
+            case Upgrades.wholeGains:
+                cooldownIcons[5].StartCooldown(seconds);
+                break;
+            case Upgrades.razorFeathers:
+                cooldownIcons[6].StartCooldown(seconds);
+                break;
+            case Upgrades.slam:
+                cooldownIcons[7].StartCooldown(seconds);
+                break;
+        }
     }
-    public void ShowSlamCoolDown()
+    public void ActivateAbility(Pigeon.Upgrades ability)
     {
-        slamCooldownUI.SetActive(true);
+        switch (ability)
+        {
+            case Upgrades.mewing:
+                cooldownIcons[0].Show();
+                break;
+            case Upgrades.hiddinTalon:
+                cooldownIcons[1].Show();
+                break;
+            case Upgrades.turtle:
+                cooldownIcons[2].Show();
+                break;
+            case Upgrades.pigeonPoo:
+                cooldownIcons[3].Show();
+                break;
+            case Upgrades.peckingOrder:
+                cooldownIcons[4].Show();
+                break;
+            case Upgrades.wholeGains:
+                cooldownIcons[5].Show();
+                break;
+            case Upgrades.razorFeathers:
+                cooldownIcons[6].Show();
+                break;
+            case Upgrades.slam:
+                cooldownIcons[7].Show();
+                break;
+        }
     }
     public void SpectateNext()
     {
@@ -541,7 +612,7 @@ public class GameManager : NetworkBehaviour
             }
         }
 
-        if (Input.GetKey(KeyCode.Tab))
+        if (Input.GetKey(KeyCode.Space))
         {
             minimapUI.SetActive(true);
         }
