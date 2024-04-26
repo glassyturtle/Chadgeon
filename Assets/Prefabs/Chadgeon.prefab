@@ -731,25 +731,24 @@ MonoBehaviour:
     m_InternalValue: 50
   level:
     m_InternalValue: 1
-  isPointingLeft:
-    m_InternalValue: 1
-  currentPigeonState:
-    m_InternalValue: 0
   isFlying: 0
-  isSlaming: 0
+  isSprinting: 0
   xp: 0
   xpTillLevelUp: 30
   flock: 0
   pigeonName: 
-  isSprinting: 0
   stamina: 20
   maxStamina: 20
-  gm: {fileID: 0}
+  isPlayer: 1
+  speed: 900
+  damage: 10
+  hasAbilityM2: 0
+  hasAbilityE: 0
+  hasAbilityQ: 0
+  chargedFeathers: 3
   displayText: {fileID: 952702311422200724}
   flockDisplayText: {fileID: 5113344498286365920}
   body: {fileID: 4961322488758605414}
-  speed: 900
-  damage: 10
   audioSource: {fileID: 4961322488758605400}
   hitClips:
   - {fileID: 8300000, guid: 8456891df5bcacb498e81dd93bb6c068, type: 3}
@@ -761,17 +760,15 @@ MonoBehaviour:
   - {fileID: 8300000, guid: ad7d51fcc8d0ac344951b12d883dad03, type: 3}
   - {fileID: 8300000, guid: 7b1a87af6f7e6d44fa3fffff8bba38c3, type: 3}
   bloodEffect: {fileID: 2805690518022475648, guid: bca28693c6471834da518754b8cb8da0, type: 3}
+  feather: {fileID: 2948878833959847816, guid: 1fe5001a9e43bc94fb24fc9157e5af7d, type: 3}
   healthBarGameobject: {fileID: 954891483114827397}
   hpBar: {fileID: 2263179221779128706}
   sr: {fileID: 4961322488758605411}
   bodysr: {fileID: 1909018084017566288}
   headsr: {fileID: 3636130265602490048}
-  isPlayer: 1
   pigeonAI: {fileID: 0}
   slash: {fileID: 3028708896171240069}
-  hasAbilityM2: 0
-  hasAbilityE: 0
-  hasAbilityQ: 0
+  wholeGains: {fileID: 4071180946374529513, guid: a5a6c1e2a96acaf4cb2413ab79643b2b, type: 3}
   skinBase: 0
   skinBody: -1
   skinHead: -1

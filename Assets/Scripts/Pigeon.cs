@@ -5,69 +5,85 @@ using UnityEngine;
 
 public class Pigeon : NetworkBehaviour
 {
+
+    //Network variables
     public NetworkVariable<bool> isKnockedOut = new(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> maxHp = new(20, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> currentHP = new(20, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> level = new(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-    [SerializeField] private NetworkVariable<bool> isPointingLeft = new(true, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-    [SerializeField] private NetworkVariable<int> currentPigeonState = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    private NetworkVariable<bool> isPointingLeft = new(true, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    private NetworkVariable<int> currentPigeonState = new(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
-
+    //pigeon states
     public bool isFlying;
-    public bool isSlaming;
+    public bool isSprinting;
+    protected bool isSlaming;
+    protected bool isMewing;
+    protected bool isMaxing;
+    protected bool isThrowing;
+    protected bool isAssassinating;
+    protected bool isBleeding;
+    protected bool isSlowed;
+    protected bool isTurtle;
+
+    //Pigeon Properties
     public int xp;
     public int xpTillLevelUp;
     public int flock;
     public string pigeonName;
-    public Dictionary<Upgrades, bool> pigeonUpgrades = new();
-    public bool isSprinting = false;
-    public float stamina = 5, maxStamina = 5;
-
-
-    [SerializeField] protected GameManager gm;
-    [SerializeField] protected TextMesh displayText;
-    [SerializeField] protected TextMesh flockDisplayText;
-    [SerializeField] protected Rigidbody2D body;
+    public float stamina;
+    public float maxStamina;
+    public bool isPlayer = false;
     [SerializeField] protected float speed;
     [SerializeField] protected int damage;
+    protected float speedMod = 1;
+    protected float staminaRecoveryRate = 1;
+    protected float hitColldown = 0.3f;
+    protected bool canSwitchAttackSprites = true;
+    protected bool inBorder = true;
+    private float knockbackMod = 1;
+    private float regen = 0.02f;
+    private int currentPigeonAttackSprite;
+
+    //Upgrades and abilities
+    public Dictionary<Upgrades, bool> pigeonUpgrades = new();
+    public bool hasAbilityM2 = false;
+    public bool hasAbilityE = false;
+    public bool hasAbilityQ = false;
+    protected float m2AbilityCooldown = 0;
+    protected float eAbilityCooldown = 0;
+    protected float qAbilityCooldown = 0;
+    protected bool sprintOnCooldown = false;
+    protected Vector3 abilityTargetPos;
+    public int chargedFeathers = 3; //Razor feathers
 
 
+    //UI
+    [SerializeField] protected TextMesh displayText;
+    [SerializeField] protected TextMesh flockDisplayText;
+
+    //Refrences
+    [SerializeField] protected Rigidbody2D body;
     [SerializeField] private AudioSource audioSource;
     [SerializeField] private AudioClip[] hitClips;
     [SerializeField] private AudioClip[] cruchSound;
     [SerializeField] private GameObject bloodEffect;
+    [SerializeField] private GameObject feather;
     [SerializeField] private GameObject healthBarGameobject;
     [SerializeField] private Transform hpBar;
-    [SerializeField] private SpriteRenderer sr, bodysr, headsr;
-    public bool isPlayer = false;
+    [SerializeField] private SpriteRenderer sr;
+    [SerializeField] private SpriteRenderer bodysr;
+    [SerializeField] private SpriteRenderer headsr;
     [SerializeField] private PigeonAI pigeonAI;
     [SerializeField] private HitScript slash;
-
-    protected int secTillSlam = 5;
-    protected bool canSlam = false;
-    protected Vector3 slamPos;
-    protected float speedMod = 1;
-    private float knockbackMod = 1;
-    protected float staminaRecoveryRate = 1;
-    protected bool inBorder = true;
-    protected bool sprintOnCooldown = false;
-    protected float hitColldown = 0.3f;
-
-
-    private float regen = 0.02f;
-    protected bool canSwitchAttackSprites = true;
-    private int currentPigeonAttackSprite;
-
-    public bool hasAbilityM2 = false;
-    public bool hasAbilityE = false;
-    public bool hasAbilityQ = false;
+    [SerializeField] private GameObject wholeGains;
 
     //Skins
     [SerializeField] private int skinBase;
     [SerializeField] private int skinBody;
     [SerializeField] private int skinHead;
 
-
+    #region Structs and Enums
     public enum Upgrades
     {
         regen = 0,
@@ -92,6 +108,7 @@ public class Pigeon : NetworkBehaviour
         psionic = 19,
         bandOfBrothers = 20,
         peckingOrder = 21,
+        overclock = 22,
     }
     public struct AttackProperties : INetworkSerializable
     {
@@ -137,11 +154,9 @@ public class Pigeon : NetworkBehaviour
             serializer.SerializeValue(ref wasPlayer);
         }
     }
-    [ServerRpc]
-    private void HandleKnockbackServerRpc(Vector2 force)
-    {
-        body.AddForce(force);
-    }
+    #endregion
+
+    //Client RPCs
     [ClientRpc]
     public void OnPigeonHitCLientRPC(AttackProperties atkProp)
     {
@@ -161,6 +176,8 @@ public class Pigeon : NetworkBehaviour
         if (atkProp.hasCriticalDamage && Random.Range(0, 100) <= 25) totalDamageTaking *= 2;
         if (atkProp.isAssassin && ((float)currentHP.Value / maxHp.Value) <= 0.33f) totalDamageTaking *= 2;
         if (!atkProp.isEnchanted && pigeonUpgrades.ContainsKey(Upgrades.tough)) totalDamageTaking = Mathf.RoundToInt(totalDamageTaking * 0.7f);
+        if (isMaxing) totalDamageTaking = Mathf.RoundToInt(totalDamageTaking * 0.5f);
+
         currentHP.Value -= totalDamageTaking;
 
         //Calculates Life Steal
@@ -184,7 +201,7 @@ public class Pigeon : NetworkBehaviour
         if (currentHP.Value <= 0 && !isKnockedOut.Value)
         {
             if (isPlayer) SaveDataManager.totalTimesKnockedOut++;
-            if (gm.isSuddenDeath.Value)
+            if (GameManager.instance.isSuddenDeath.Value)
             {
 
                 hasBeenKO = true;
@@ -193,7 +210,7 @@ public class Pigeon : NetworkBehaviour
                 isSlaming = false;
                 StopCoroutine(StopSlam());
                 isKnockedOut.Value = true;
-                if (isPlayer) gm.StartSpectating();
+                if (isPlayer) GameManager.instance.StartSpectating();
             }
             else
             {
@@ -219,6 +236,92 @@ public class Pigeon : NetworkBehaviour
         OnDealtDamageServerRpc(ddProp, atkProp.pigeonID);
 
     }
+    [ClientRpc]
+    public void ReciveDamageClientRpc(DealtDamageProperties ddProp, ulong pigeonID)
+
+
+    {
+        if (!IsOwner || pigeonID != NetworkObjectId) return;
+        if (pigeonUpgrades.ContainsKey(Upgrades.bloodLust)) HealServer(ddProp.damageDealt / 3);
+
+        GainXP(ddProp.damageDealt / 5);
+
+        if (ddProp.hasDied)
+        {
+            if (isPlayer)
+            {
+                GameDataHolder.kills++;
+                if (ddProp.wasPlayer) SaveDataManager.playerPigeonsKo++;
+            }
+
+            GainXP(ddProp.xpOnKill);
+        }
+
+        if (!audioSource.isPlaying)
+        {
+            audioSource.clip = hitClips[Random.Range(0, hitClips.Length)];
+            audioSource.Play();
+        }
+    }
+
+
+    //Server Rpcs
+    [ServerRpc]
+    private void OnDealtDamageServerRpc(DealtDamageProperties ddProp, ulong pigeonID)
+    {
+        try
+        {
+
+            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects[pigeonID])
+            {
+                NetworkObject ob = NetworkManager.Singleton.SpawnManager.SpawnedObjects[pigeonID];
+                if (!ob) return;
+                ob.GetComponent<Pigeon>().ReciveDamageClientRpc(ddProp, pigeonID);
+            }
+        }
+        catch
+        {
+            Debug.Log("Start Error");
+        }
+    }
+    [ServerRpc]
+    private void UpdateSeverPigeonsServerRpc(GameManager.PigeonInitializeProperties pigeonData)
+    {
+        GameManager.instance.pigeonStartData.Add(pigeonData);
+    }
+    [ServerRpc]
+    private void HandleKnockbackServerRpc(Vector2 force)
+    {
+        body.AddForce(force);
+    }
+    [ServerRpc]
+    private void SpawnBloodServerRpc()
+    {
+        GameObject blood = Instantiate(bloodEffect, new Vector3(transform.position.x, transform.position.y, -1), transform.rotation);
+        blood.GetComponent<NetworkObject>().Spawn();
+    }
+    [ServerRpc]
+    private void SpawnWholeGainsServerRpc(Vector2 pos)
+    {
+        GameObject gains = Instantiate(wholeGains, pos, transform.rotation);
+        gains.GetComponent<NetworkObject>().Spawn();
+    }
+    [ServerRpc]
+    private void StopMomentumServerRpc(Vector3 pos)
+    {
+        body.velocity = Vector2.zero;
+        transform.position = pos;
+    }
+    [ServerRpc]
+    private void SpawnFeatherServerRpc(AttackProperties atk, Quaternion angle)
+    {
+        GameObject featherOb = Instantiate(feather, new Vector3(transform.position.x, transform.position.y, -1), transform.rotation);
+        featherOb.GetComponent<NetworkObject>().Spawn();
+        featherOb.GetComponent<featherScript>().Activate(atk, angle);
+    }
+
+
+    //Public
     public void GainXP(int amnt)
     {
         if (isKnockedOut.Value) return;
@@ -250,49 +353,6 @@ public class Pigeon : NetworkBehaviour
         currentHP.Value += Mathf.RoundToInt(amt);
         if (currentHP.Value > maxHp.Value) currentHP.Value = maxHp.Value;
 
-    }
-    [ServerRpc]
-    private void OnDealtDamageServerRpc(DealtDamageProperties ddProp, ulong pigeonID)
-    {
-        try
-        {
-
-            if (NetworkManager.Singleton.SpawnManager.SpawnedObjects[pigeonID])
-            {
-                NetworkObject ob = NetworkManager.Singleton.SpawnManager.SpawnedObjects[pigeonID];
-                if (!ob) return;
-                ob.GetComponent<Pigeon>().ReciveDamageClientRpc(ddProp, pigeonID);
-            }
-        }
-        catch
-        {
-            Debug.Log("Start Error");
-        }
-    }
-    [ClientRpc]
-    public void ReciveDamageClientRpc(DealtDamageProperties ddProp, ulong pigeonID)
-    {
-        if (!IsOwner || pigeonID != NetworkObjectId) return;
-        if (pigeonUpgrades.ContainsKey(Upgrades.bloodLust)) HealServer(ddProp.damageDealt / 3);
-
-        GainXP(ddProp.damageDealt / 5);
-
-        if (ddProp.hasDied)
-        {
-            if (isPlayer)
-            {
-                GameDataHolder.kills++;
-                if (ddProp.wasPlayer) SaveDataManager.playerPigeonsKo++;
-            }
-
-            GainXP(ddProp.xpOnKill);
-        }
-
-        if (!audioSource.isPlaying)
-        {
-            audioSource.clip = hitClips[Random.Range(0, hitClips.Length)];
-            audioSource.Play();
-        }
     }
     public void PlayEatSound()
     {
@@ -327,7 +387,7 @@ public class Pigeon : NetworkBehaviour
 
         if (!IsOwner || pigeonUpgrades.ContainsKey(upgrade) || hasAbilitySlotUnlocked) return;
         pigeonUpgrades.Add(upgrade, true);
-        if (!pigeonAI) gm.AddUpgradeToDisply((int)upgrade);
+        if (!pigeonAI) GameManager.instance.AddUpgradeToDisply((int)upgrade);
         switch (upgrade)
         {
             case Upgrades.regen:
@@ -352,32 +412,70 @@ public class Pigeon : NetworkBehaviour
                 currentHP.Value += level.Value * 2;
                 break;
             case Upgrades.slam:
-                if (isPlayer) gm.ActivateAbility(Upgrades.slam);
-                canSlam = true;
+                if (isPlayer) GameManager.instance.ActivateAbility(Upgrades.slam);
                 hasAbilityM2 = true; break;
             case Upgrades.hiddinTalon:
-                gm.ActivateAbility(Upgrades.hiddinTalon);
+                GameManager.instance.ActivateAbility(Upgrades.hiddinTalon);
                 hasAbilityQ = true; break;
             case Upgrades.mewing:
-                gm.ActivateAbility(Upgrades.mewing);
+                GameManager.instance.ActivateAbility(Upgrades.mewing);
                 hasAbilityQ = true; break;
             case Upgrades.wholeGains:
-                gm.ActivateAbility(Upgrades.wholeGains);
+                GameManager.instance.ActivateAbility(Upgrades.wholeGains);
                 hasAbilityE = true; break;
             case Upgrades.peckingOrder:
-                gm.ActivateAbility(Upgrades.peckingOrder);
+                GameManager.instance.ActivateAbility(Upgrades.peckingOrder);
                 hasAbilityE = true; break;
             case Upgrades.turtle:
-                gm.ActivateAbility(Upgrades.turtle);
+                GameManager.instance.ActivateAbility(Upgrades.turtle);
                 hasAbilityE = true; break;
             case Upgrades.pigeonPoo:
-                gm.ActivateAbility(Upgrades.pigeonPoo);
+                GameManager.instance.ActivateAbility(Upgrades.pigeonPoo);
                 hasAbilityE = true; break;
             case Upgrades.razorFeathers:
-                gm.ActivateAbility(Upgrades.razorFeathers);
+                GameManager.instance.ActivateAbility(Upgrades.razorFeathers);
                 hasAbilityM2 = true; break;
         }
     }
+    public void UpatePigeonInitialValues(GameManager.PigeonInitializeProperties data)
+    {
+        flock = data.flock;
+        skinBase = data.skinBase;
+        skinHead = data.skinHead;
+        skinBody = data.skinBody;
+        pigeonName = data.pigeonName;
+
+        if (flock != 0)
+        {
+            flockDisplayText.gameObject.SetActive(true);
+            switch (flock)
+            {
+                case 1:
+                    flockDisplayText.text = "Enjoyers";
+                    flockDisplayText.color = Color.cyan;
+                    break;
+                case 2:
+                    flockDisplayText.text = "Psychos";
+                    flockDisplayText.color = Color.red;
+                    break;
+                case 3:
+                    flockDisplayText.text = "Minions";
+                    flockDisplayText.color = Color.yellow;
+                    break;
+                case 4:
+                    flockDisplayText.text = "Looksmaxers";
+                    flockDisplayText.color = Color.green;
+                    break;
+            }
+        }
+        else
+        {
+            flockDisplayText.gameObject.SetActive(false);
+        }
+    }
+
+
+    //Protected
     protected void PigeonAttack(AttackProperties atkProp, Quaternion theAngle)
     {
         atkProp.flock = flock;
@@ -415,46 +513,75 @@ public class Pigeon : NetworkBehaviour
         }
 
     }
-    [ServerRpc]
-    private void UpdateSeverPigeonsServerRpc(GameManager.PigeonInitializeProperties pigeonData)
+    protected void PigeonThrow(AttackProperties atkProp, Quaternion theAngle)
     {
-        GameManager.instance.pigeonStartData.Add(pigeonData);
-    }
-    public void UpatePigeonInitialValues(GameManager.PigeonInitializeProperties data)
-    {
-        flock = data.flock;
-        skinBase = data.skinBase;
-        skinHead = data.skinHead;
-        skinBody = data.skinBody;
-        pigeonName = data.pigeonName;
+        if (chargedFeathers <= 0) return;
+        atkProp.flock = flock;
 
-        if (flock != 0)
+
+        if (chargedFeathers >= 3)
         {
-            flockDisplayText.gameObject.SetActive(true);
-            switch (flock)
+            if (pigeonUpgrades.ContainsKey(Upgrades.overclock))
             {
-                case 1:
-                    flockDisplayText.text = "Enjoyers";
-                    flockDisplayText.color = Color.cyan;
-                    break;
-                case 2:
-                    flockDisplayText.text = "Psychos";
-                    flockDisplayText.color = Color.red;
-                    break;
-                case 3:
-                    flockDisplayText.text = "Minions";
-                    flockDisplayText.color = Color.yellow;
-                    break;
-                case 4:
-                    flockDisplayText.text = "Looksmaxers";
-                    flockDisplayText.color = Color.green;
-                    break;
+                GameManager.instance.StartCooldown(Upgrades.razorFeathers, 3);
+                m2AbilityCooldown = 3;
             }
+            else
+            {
+                GameManager.instance.StartCooldown(Upgrades.razorFeathers, 4);
+                m2AbilityCooldown = 4;
+            }
+        }
+        chargedFeathers--;
+
+
+
+        SpawnFeatherServerRpc(atkProp, theAngle);
+
+        if (canSwitchAttackSprites)
+        {
+            if (currentPigeonAttackSprite == 0)
+            {
+                currentPigeonState.Value = 3;
+                currentPigeonAttackSprite = 1;
+            }
+            else
+            {
+                currentPigeonState.Value = 2;
+                currentPigeonAttackSprite = 0;
+
+            }
+
+            if (currentPigeonAttackSprite == 0) atkProp.attackingUp = true;
+
+            canSwitchAttackSprites = false;
+            if (atkProp.posX > transform.position.x)
+            {
+                isPointingLeft.Value = true;
+            }
+            else
+            {
+                isPointingLeft.Value = false;
+            }
+            atkProp.isFacingLeft = isPointingLeft.Value;
+            StartCoroutine(DelayBeforeSpriteChange());
+        }
+    }
+    protected void SummonWholeGain(Vector2 pos)
+    {
+        if (eAbilityCooldown > 0) return;
+
+        if (pigeonUpgrades.ContainsKey(Upgrades.overclock))
+        {
+            GameManager.instance.StartCooldown(Upgrades.wholeGains, 22);
+            eAbilityCooldown = 3;
         }
         else
         {
-            flockDisplayText.gameObject.SetActive(false);
+            GameManager.instance.StartCooldown(Upgrades.wholeGains, 30);
+            eAbilityCooldown = 4;
         }
+        SpawnWholeGainsServerRpc(pos);
     }
     protected void OnPigeonSpawn()
     {
@@ -520,8 +647,7 @@ public class Pigeon : NetworkBehaviour
         }
 
         body.freezeRotation = true;
-        gm = GameManager.instance;
-        gm.allpigeons.Add(this);
+        GameManager.instance.allpigeons.Add(this);
     }
     protected void CheckDirection(Vector2 direction)
     {
@@ -537,8 +663,20 @@ public class Pigeon : NetworkBehaviour
     }
     protected bool StartSlam(Vector3 desiredSlamPos)
     {
-        if (!canSlam) return false;
-        canSlam = false;
+        if (m2AbilityCooldown > 0) return false;
+
+        //Starts slam Cooldown
+        if (pigeonUpgrades.ContainsKey(Upgrades.overclock))
+        {
+            GameManager.instance.StartCooldown(Upgrades.slam, 3);
+            m2AbilityCooldown = 3;
+        }
+        else
+        {
+            GameManager.instance.StartCooldown(Upgrades.slam, 4);
+            m2AbilityCooldown = 4;
+        }
+
         isSlaming = true;
         canSwitchAttackSprites = false;
         currentPigeonState.Value = 4;
@@ -551,9 +689,72 @@ public class Pigeon : NetworkBehaviour
         {
             isPointingLeft.Value = false;
         }
-        slamPos = Vector2.MoveTowards(transform.position, desiredSlamPos, 6f);
+        abilityTargetPos = Vector2.MoveTowards(transform.position, desiredSlamPos, 6f);
         StartCoroutine(StopSlam());
         return true;
+    }
+    protected bool StartMewing()
+    {
+        if (qAbilityCooldown > 0) return false;
+
+        //Starts mew Cooldown
+        if (pigeonUpgrades.ContainsKey(Upgrades.overclock))
+        {
+            GameManager.instance.StartCooldown(Upgrades.mewing, 90);
+            qAbilityCooldown = 90;
+        }
+        else
+        {
+            GameManager.instance.StartCooldown(Upgrades.mewing, 120);
+            qAbilityCooldown = 120;
+        }
+
+        StartCoroutine(StopMoggingTimeout());
+        return true;
+    }
+    protected bool Assassinate()
+    {
+        if (qAbilityCooldown > 0) return false;
+
+        //Starts mew Cooldown
+        if (pigeonUpgrades.ContainsKey(Upgrades.overclock))
+        {
+            GameManager.instance.StartCooldown(Upgrades.mewing, 67);
+            qAbilityCooldown = 90;
+        }
+        else
+        {
+            GameManager.instance.StartCooldown(Upgrades.mewing, 90);
+            qAbilityCooldown = 120;
+        }
+
+
+        isSlaming = true;
+        canSwitchAttackSprites = false;
+        currentPigeonState.Value = 4;
+
+
+        Vector3 desiredSlamPos = GetNearestPigeonTarget().transform.position;
+        if (desiredSlamPos.x > transform.position.x)
+        {
+            isPointingLeft.Value = true;
+        }
+        else
+        {
+            isPointingLeft.Value = false;
+        }
+
+        abilityTargetPos = desiredSlamPos;
+
+
+        return true;
+    }
+    protected void StopMogging()
+    {
+        isMaxing = false;
+        speedMod += .5f;
+
+        gameObject.transform.localScale = new Vector3(1, 1, 0);
     }
     protected void EndSlam()
     {
@@ -561,9 +762,9 @@ public class Pigeon : NetworkBehaviour
         canSwitchAttackSprites = true;
 
         Vector2 pos = transform.position;
-        pos = Vector2.MoveTowards(pos, slamPos, 0.1f);
+        pos = Vector2.MoveTowards(pos, abilityTargetPos, 0.1f);
 
-        Vector3 targ = slamPos;
+        Vector3 targ = abilityTargetPos;
         targ.z = 0f;
         targ.x -= transform.position.x;
         targ.y -= transform.position.y;
@@ -585,26 +786,20 @@ public class Pigeon : NetworkBehaviour
         if (pigeonUpgrades.TryGetValue(Upgrades.brawler, out bool _)) atkProp.hasKnockBack = true;
         PigeonAttack(atkProp, theAngle);
 
-        StartCoroutine(SlamCoolDown());
         StopCoroutine(StopSlam());
         isSlaming = false;
         if (isPlayer)
         {
-            gm.StartCooldown(Upgrades.slam, 3);
+            GameManager.instance.StartCooldown(Upgrades.slam, 3);
         }
-    }
-    private void IsFlyingSpriteAdjustments()
-    {
-        gameObject.layer = 10;
-        sr.sortingOrder = 100;
-        bodysr.sortingOrder = 101;
-        headsr.sortingOrder = 101;
-        sr.flipY = false;
-        bodysr.flipY = false;
-        headsr.flipY = false;
     }
     protected void SyncPigeonAttributes()
     {
+        //this is called on update for every pigeon
+
+        //Reduces cooldowns if the pigeon is the owner
+        CoolDownAbilities();
+
         sr.flipX = isPointingLeft.Value;
         bodysr.flipX = isPointingLeft.Value;
         headsr.flipX = isPointingLeft.Value;
@@ -670,12 +865,27 @@ public class Pigeon : NetworkBehaviour
             displayText.text = pigeonName + " LVL:" + level.Value;
         }
     }
-
-    [ServerRpc]
-    private void SpawnBloodServerRpc()
+    protected void StopFlying()
     {
-        GameObject blood = Instantiate(bloodEffect, new Vector3(transform.position.x, transform.position.y, -1), transform.rotation);
-        blood.GetComponent<NetworkObject>().Spawn();
+        StopMomentumServerRpc(abilityTargetPos);
+        isFlying = false;
+        currentHP.Value = maxHp.Value;
+        stamina = maxStamina;
+        isKnockedOut.Value = false;
+
+    }
+
+
+    //Private
+    private void IsFlyingSpriteAdjustments()
+    {
+        gameObject.layer = 10;
+        sr.sortingOrder = 100;
+        bodysr.sortingOrder = 101;
+        headsr.sortingOrder = 101;
+        sr.flipY = false;
+        bodysr.flipY = false;
+        headsr.flipY = false;
     }
     private void UpdateNotHopping(bool isHoping)
     {
@@ -731,7 +941,7 @@ public class Pigeon : NetworkBehaviour
             }
             else
             {
-                gm.ShowUpgrades();
+                GameManager.instance.ShowUpgrades();
             }
         }
     }
@@ -739,7 +949,7 @@ public class Pigeon : NetworkBehaviour
     {
         for (int i = 0; i < 1000; i++)
         {
-            Upgrades upgrade = gm.allPigeonUpgrades[Random.Range(0, gm.allPigeonUpgrades.Count)];
+            Upgrades upgrade = GameManager.instance.allPigeonUpgrades[Random.Range(0, GameManager.instance.allPigeonUpgrades.Count)];
 
             bool hasAbilitySlotUnlocked = false;
             switch (upgrade)
@@ -777,31 +987,111 @@ public class Pigeon : NetworkBehaviour
             }
         }
     }
+    private void StartFly()
+    {
+        if (!IsOwner) return;
+        isFlying = true;
+
+        abilityTargetPos = GameManager.instance.GetSpawnPos();
+        //StartCoroutine(StopFlight());
+        StartCoroutine(FlyAnimation());
+    }
+    private void CoolDownAbilities()
+    {
+        //Called on update to reduce the cooldown of the 3 unlocked abilities
+        if (!IsOwner) return;
+
+        //reduces cooldown for each ability type. 0 means its ready to be used again
+        if (hasAbilityM2)
+        {
+            if (m2AbilityCooldown > 0) m2AbilityCooldown -= Time.deltaTime;
+            else
+            {
+                if (chargedFeathers < 3)
+                {
+                    //Starts slam Cooldown
+                    chargedFeathers += 1;
+                    if (chargedFeathers >= 3) m2AbilityCooldown = 0;
+                    else
+                    {
+                        if (pigeonUpgrades.ContainsKey(Upgrades.overclock))
+                        {
+                            GameManager.instance.StartCooldown(Upgrades.razorFeathers, 3);
+                            m2AbilityCooldown = 3;
+                        }
+                        else
+                        {
+                            GameManager.instance.StartCooldown(Upgrades.razorFeathers, 4);
+                            m2AbilityCooldown = 4;
+                        }
+                    }
+
+                }
+                else m2AbilityCooldown = 0;
+
+            }
+        }
+
+        if (hasAbilityE)
+        {
+            if (eAbilityCooldown > 0) eAbilityCooldown -= Time.deltaTime;
+            else eAbilityCooldown = 0;
+        }
+
+        if (hasAbilityQ)
+        {
+            if (qAbilityCooldown > 0) qAbilityCooldown -= Time.deltaTime;
+            else qAbilityCooldown = 0;
+        }
+    }
+    private Pigeon GetNearestPigeonTarget()
+    {
+        Pigeon[] allPigeons = FindObjectsByType<Pigeon>(FindObjectsSortMode.None);
+        Pigeon closestPigeon = null;
+        float distToCloset = Mathf.Infinity;
+        for (int i = 0; i < allPigeons.Length; i++)
+        {
+            float currentDist = Vector2.SqrMagnitude(allPigeons[i].transform.position - transform.position);
+            if (allPigeons[i] != this && currentDist < distToCloset && !allPigeons[i].isKnockedOut.Value && !allPigeons[i].isFlying && (allPigeons[i].flock == 0 || allPigeons[i].flock != flock))
+            {
+                closestPigeon = allPigeons[i];
+                distToCloset = currentDist;
+            }
+        }
+
+        if (closestPigeon == null)
+        {
+            return null;
+        }
+        else
+        {
+            return closestPigeon;
+        }
+    }
+
+
+    //Enumerators
+    protected IEnumerator StartSprintCooldown()
+    {
+        yield return new WaitForSeconds(1);
+        sprintOnCooldown = false;
+    }
     private IEnumerator Respawn()
     {
 
         yield return new WaitForSeconds(3);
 
-        if (gm.isSuddenDeath.Value)
+        if (GameManager.instance.isSuddenDeath.Value)
         {
             StopCoroutine(StopSlam());
             isKnockedOut.Value = true;
-            if (isPlayer) gm.StartSpectating();
+            if (isPlayer) GameManager.instance.StartSpectating();
             yield return null;
         }
         else
         {
             StartFly();
         }
-    }
-    private void StartFly()
-    {
-        if (!IsOwner) return;
-        isFlying = true;
-
-        slamPos = gm.GetSpawnPos();
-        //StartCoroutine(StopFlight());
-        StartCoroutine(FlyAnimation());
     }
     private IEnumerator JumpAnimation()
     {
@@ -855,7 +1145,7 @@ public class Pigeon : NetworkBehaviour
                     isSlaming = false;
                     StopCoroutine(StopSlam());
                     isKnockedOut.Value = true;
-                    gm.StartSpectating();
+                    GameManager.instance.StartSpectating();
                 }
             }
             else
@@ -864,37 +1154,21 @@ public class Pigeon : NetworkBehaviour
             }
         }
     }
-    private IEnumerator SlamCoolDown()
-    {
-        yield return new WaitForSeconds(3);
-        canSlam = true;
-    }
     private IEnumerator StopSlam()
     {
         yield return new WaitForSeconds(0.5f);
         EndSlam();
     }
-    protected IEnumerator StartSprintCooldown()
+    private IEnumerator StopMoggingTimeout()
     {
-        yield return new WaitForSeconds(1);
-        sprintOnCooldown = false;
+        isMewing = true;
+        yield return new WaitForSeconds(3);
+        isMewing = false;
+        isMaxing = true;
+        speedMod -= .5f;
+        knockbackMod += 1f;
+        gameObject.transform.localScale = new Vector3(2, 2, 0);
+        yield return new WaitForSeconds(20f);
+        StopMogging();
     }
-
-    [ServerRpc]
-    private void StopMomentumServerRpc(Vector3 pos)
-    {
-        body.velocity = Vector2.zero;
-        transform.position = pos;
-    }
-    protected void StopFlying()
-    {
-        StopMomentumServerRpc(slamPos);
-        isFlying = false;
-        if (pigeonUpgrades.ContainsKey(Upgrades.slam)) canSlam = true;
-        currentHP.Value = maxHp.Value;
-        stamina = maxStamina;
-        isKnockedOut.Value = false;
-
-    }
-
 }

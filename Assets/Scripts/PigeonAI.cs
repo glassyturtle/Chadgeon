@@ -69,9 +69,9 @@ public class PigeonAI : Pigeon
 
         if (isFlying)
         {
-            direction = (slamPos - transform.position).normalized;
+            direction = (abilityTargetPos - transform.position).normalized;
             body.AddForce(6 * speed * speedMod * Time.fixedDeltaTime * direction);
-            if ((transform.position - slamPos).sqrMagnitude <= 0.05f)
+            if ((transform.position - abilityTargetPos).sqrMagnitude <= 0.05f)
             {
                 StopFlying();
             }
@@ -93,10 +93,10 @@ public class PigeonAI : Pigeon
             }
             else if (isSlaming)
             {
-                direction = (slamPos - transform.position).normalized;
+                direction = (abilityTargetPos - transform.position).normalized;
                 CheckDirection(direction);
                 body.AddForce(speed * 6 * Time.deltaTime * speedMod * direction);
-                if ((transform.position - slamPos).sqrMagnitude <= 2.5f)
+                if ((transform.position - abilityTargetPos).sqrMagnitude <= 2.5f)
                 {
                     EndSlam();
                 }

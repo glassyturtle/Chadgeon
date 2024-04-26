@@ -30,7 +30,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] Transform borderTransform;
 
     [SerializeField] GameObject endScreen, playerUI, gameUI, upgradeScreen, pauseMenu, spectateScreen, minimapUI, sprintUI, churchDoor;
-    [SerializeField] TMP_Text endGameDescriptionText, spectatingText, upgradeDescText, upgradeNameText;
+    [SerializeField] TMP_Text endGameDescriptionText, spectatingText, upgradeDescText, upgradeNameText, featherChargeCounter;
     [SerializeField] GameObject upgradeDescUI;
     [SerializeField] private GameObject[] upgradeDisplays;
     [SerializeField] private UpgradeDescriber[] upgradeDescibers;
@@ -631,6 +631,8 @@ public class GameManager : NetworkBehaviour
             staminaCooldownBar.fillAmount = player.stamina / player.maxStamina;
             sprintUI.SetActive(false);
         }
+
+        featherChargeCounter.text = player.chargedFeathers.ToString();
 
         healthBar.fillAmount = (float)player.currentHP.Value / player.maxHp.Value;
         hpText.text = (float)player.currentHP.Value + "/" + player.maxHp.Value;

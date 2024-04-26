@@ -51,7 +51,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1919535994
+  GlobalObjectIdHash: 2000891157
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -78,6 +78,8 @@ MonoBehaviour:
   sr: {fileID: 4153639046212656234}
   particle: {fileID: 2805690518022475648, guid: f55dce245561bd943a35d5a1ed884c1b, type: 3}
   area: {fileID: -3027860112558951321}
+  healModifier: 4
+  xpGained: 10
 --- !u!58 &-3027860112558951321
 CircleCollider2D:
   m_ObjectHideFlags: 0

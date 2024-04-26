@@ -7,6 +7,8 @@ public class food : NetworkBehaviour
     [SerializeField] SpriteRenderer sr;
     [SerializeField] GameObject particle;
     [SerializeField] CircleCollider2D area;
+    [SerializeField] private int healModifier;
+    [SerializeField] private int xpGained;
 
     private void Start()
     {
@@ -28,10 +30,10 @@ public class food : NetworkBehaviour
             hitPigeon.PlayEatSound();
             if (hitPigeon.IsOwner)
             {
-                hitPigeon.GainXP(10, true);
+                hitPigeon.GainXP(xpGained, true);
                 hitPigeon.stamina++;
                 if (hitPigeon.stamina >= hitPigeon.maxStamina) hitPigeon.stamina = hitPigeon.maxStamina;
-                hitPigeon.HealServer(hitPigeon.maxHp.Value / 4);
+                hitPigeon.HealServer(hitPigeon.maxHp.Value / healModifier);
                 DestroyFoodObject(this);
             }
         }
