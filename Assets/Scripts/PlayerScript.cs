@@ -22,23 +22,58 @@ public class PlayerScript : Pigeon
     {
         body.AddForce(speed * direction);
     }
+    [ServerRpc]
+    private void FlyToRespawnServerRpc(float speed, Vector3 respawnPoint)
+    {
+        if ((transform.position - respawnPoint).sqrMagnitude <= 0.02f)
+        {
+            transform.position = body.velocity = Vector2.zero;
+            transform.position = respawnPoint;
+        }
+        else
+        {
+            Vector2 direction = (respawnPoint - transform.position).normalized;
+            body.AddForce(speed * direction);
+        }
+    }
     private void HandleMovement(Vector2 inputVector)
     {
         if (isMewing) return;
         if (isFlying)
         {
-            Vector2 direction = (abilityTargetPos - transform.position).normalized;
-            MoveServerRpc(6 * speed * speedMod * Time.fixedDeltaTime, direction);
+            FlyToRespawnServerRpc(6 * speed * speedMod * Time.fixedDeltaTime, abilityTargetPos);
             if ((transform.position - abilityTargetPos).sqrMagnitude <= 0.05f)
             {
                 StopFlying();
             }
             return;
         }
-        else if (!isKnockedOut.Value && !isSlaming)
+        else if (isAssassinating)
+        {
+            Vector2 direction = (targetPigeon.transform.position - transform.position).normalized;
+            if (!canSwitchAttackSprites) CheckDirection(direction);
+            MoveServerRpc(4 * speed * Time.fixedDeltaTime * speedMod, direction);
+            //
+            if ((transform.position - targetPigeon.transform.position).sqrMagnitude <= 2.5f && !targetPigeon.isKnockedOut.Value)
+            {
+                LandAssassinate();
+            }
+        }
+        else if (isSlaming)
+        {
+            Vector2 direction = (abilityTargetPos - transform.position).normalized;
+            if (!canSwitchAttackSprites) CheckDirection(direction);
+            MoveServerRpc(4 * speed * Time.fixedDeltaTime * speedMod, direction);
+
+            if ((transform.position - abilityTargetPos).sqrMagnitude <= 2.5f)
+            {
+                EndSlam();
+            }
+        }
+        else if (!isKnockedOut.Value)
         {
             //Store user input as a movement vector
-            if (Input.GetKey(KeyCode.LeftShift) && stamina > 0)
+            if (Input.GetKey(KeyCode.LeftShift) && stamina > 0 && !inPoo)
             {
                 if (stamina <= 0)
                 {
@@ -58,7 +93,9 @@ public class PlayerScript : Pigeon
                     isSprinting = false;
                     StartCoroutine(StartSprintCooldown());
                 }
-                MoveServerRpc(speed * Time.fixedDeltaTime * speedMod, inputVector);
+                if (inPoo) MoveServerRpc((speed * Time.fixedDeltaTime * speedMod) * 0.2f, inputVector);
+                else MoveServerRpc(speed * Time.fixedDeltaTime * speedMod, inputVector);
+
                 if (stamina < maxStamina && !sprintOnCooldown)
                 {
                     stamina += Time.fixedDeltaTime * staminaRecoveryRate * 0.5f;
@@ -68,26 +105,15 @@ public class PlayerScript : Pigeon
 
             if (canSwitchAttackSprites) CheckDirection(inputVector);
         }
-        else if (isSlaming)
-        {
-            Vector2 direction = (abilityTargetPos - transform.position).normalized;
-            if (!canSwitchAttackSprites) CheckDirection(direction);
-            MoveServerRpc(4 * speed * Time.fixedDeltaTime * speedMod, direction);
-
-            if ((transform.position - abilityTargetPos).sqrMagnitude <= 2.5f)
-            {
-                EndSlam();
-            }
-        }
     }
 
     private void Update()
     {
         SyncPigeonAttributes();
         if (!IsOwner || GameManager.instance.currentSecond.Value == -1) return;
-        if (!isKnockedOut.Value && !isSlaming && !isMewing)
+        if (!isKnockedOut.Value && !isSlaming && !isAssassinating && !isMewing)
         {
-            if ((Input.GetMouseButton(0) || (Input.GetMouseButton(1)) && pigeonUpgrades.ContainsKey(Upgrades.razorFeathers)) && !isSprinting && hitColldown <= 0 && !isSlaming)
+            if ((Input.GetMouseButton(0) || (Input.GetMouseButton(1)) && pigeonUpgrades.ContainsKey(Upgrades.razorFeathers)) && !isSprinting && hitColldown <= 0)
             {
                 hitColldown = 0.3f;
 
@@ -102,27 +128,8 @@ public class PlayerScript : Pigeon
                 float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
                 Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
 
-
-                AttackProperties atkProp = new()
-                {
-                    pigeonID = NetworkObjectId,
-                    damage = damage,
-                    hasCriticalDamage = false,
-                    isEnchanted = false,
-                    isAssassin = false,
-                    hasKnockBack = false,
-                    posX = pos.x,
-                    posY = pos.y,
-
-                };
-                if (pigeonUpgrades.TryGetValue(Upgrades.critcalDamage, out bool _)) atkProp.hasCriticalDamage = true;
-                if (isMaxing) atkProp.damage *= 2;
-                if (pigeonUpgrades.TryGetValue(Upgrades.brawler, out _)) atkProp.hasKnockBack = true;
-                if (pigeonUpgrades.TryGetValue(Upgrades.assassin, out _)) atkProp.isAssassin = true;
-                if (pigeonUpgrades.TryGetValue(Upgrades.enchanted, out _)) atkProp.isEnchanted = true;
-
-                if (Input.GetMouseButton(1) && pigeonUpgrades.ContainsKey(Upgrades.razorFeathers) && chargedFeathers > 0) PigeonThrow(atkProp, theAngle);
-                else PigeonAttack(atkProp, theAngle);
+                if (Input.GetMouseButton(1) && pigeonUpgrades.ContainsKey(Upgrades.razorFeathers) && chargedFeathers > 0) PigeonThrow(GetBasicAttackValues(pos.x, pos.y), theAngle);
+                else PigeonAttack(GetBasicAttackValues(pos.x, pos.y), theAngle);
 
             }
             else if (Input.GetKeyDown(KeyCode.Mouse1) && pigeonUpgrades.ContainsKey(Upgrades.slam) && m2AbilityCooldown == 0)
@@ -141,9 +148,20 @@ public class PlayerScript : Pigeon
                     StopMogging();
                 }
             }
-            else if (Input.GetKeyDown(KeyCode.E) && pigeonUpgrades.ContainsKey(Upgrades.wholeGains))
+            else if (Input.GetKeyDown(KeyCode.Q) && pigeonUpgrades.ContainsKey(Upgrades.hiddinTalon))
             {
-                SummonWholeGain(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+                Assassinate();
+            }
+            else if (Input.GetKeyDown(KeyCode.E))
+            {
+                if (pigeonUpgrades.ContainsKey(Upgrades.wholeGains))
+                {
+                    SummonWholeGain(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+                }
+                else if (pigeonUpgrades.ContainsKey(Upgrades.pigeonPoo))
+                {
+                    SummonPigeonPoo(transform.position);
+                }
             }
 
             if (hitColldown > 0)
@@ -171,6 +189,10 @@ public class PlayerScript : Pigeon
         {
             inBorder = true;
         }
+        if (collision.CompareTag("Poo") && !pigeonUpgrades.ContainsKey(Upgrades.pigeonPoo))
+        {
+            inPoo = true;
+        }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
@@ -178,6 +200,10 @@ public class PlayerScript : Pigeon
         if (collision.CompareTag("Border"))
         {
             inBorder = false;
+        }
+        if (inPoo && collision.CompareTag("Poo") && !pigeonUpgrades.ContainsKey(Upgrades.pigeonPoo))
+        {
+            inPoo = false;
         }
     }
 

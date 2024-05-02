@@ -13,7 +13,6 @@ public class HostDCScript : MonoBehaviour
 
     private void NetworkManager_OnClientDisconnectCallback(ulong clientId)
     {
-        Debug.Log("yee" + clientId + "  " + NetworkManager.Singleton.LocalClientId);
         if (clientId == NetworkManager.Singleton.LocalClientId)
         {
             //server is sutting down

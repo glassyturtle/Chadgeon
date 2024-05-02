@@ -10,6 +10,8 @@ public class food : NetworkBehaviour
     [SerializeField] private int healModifier;
     [SerializeField] private int xpGained;
 
+
+
     private void Start()
     {
         area.enabled = true;

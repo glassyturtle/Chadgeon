@@ -15,10 +15,9 @@ using UnityEngine.SceneManagement;
 public class MultiplayerManager : MonoBehaviour
 {
     public static MultiplayerManager Instance { get; private set; }
-    public const string KEY_GAME_MODE = "GameMode";
 
     private float lobbyPollTimer;
-    private Lobby joinedLobby;
+    public Lobby joinedLobby { get; private set; }
 
     public event EventHandler OnLeftLobby;
 
@@ -38,6 +37,7 @@ public class MultiplayerManager : MonoBehaviour
     public const string KEY_DIFFICULTY = "Difficulty";
     public const string KEY_PLAYER_SKINBODY = "PlayerBody";
     public const string KEY_PLAYER_SKINHEAD = "PlayerHead";
+    public const string KEY_GAMEMODE = "GameMode";
 
     [SerializeField] private GameObject couldNotJoinTitle;
     [SerializeField] private GameObject connectingTitle;
@@ -54,13 +54,6 @@ public class MultiplayerManager : MonoBehaviour
         public List<Lobby> lobbyList;
     }
 
-
-
-    public enum GameMode
-    {
-        FlockDeathMatch,
-        FreeForAll
-    }
 
     public enum PlayerCharacter
     {
@@ -90,7 +83,7 @@ public class MultiplayerManager : MonoBehaviour
     private Lobby hostLobby;
     private float heartBeatTimer = 15;
 
-    public async void CreateLobby(string lobbyName, int maxPlayers, bool isPrivate, GameMode gameMode)
+    public async void CreateLobby(string lobbyName, int maxPlayers, bool isPrivate, string gameMode)
     {
         Player player = GetPlayer();
 
@@ -101,7 +94,8 @@ public class MultiplayerManager : MonoBehaviour
             Data = new Dictionary<string, DataObject> {
                 {KEY_START_GAME, new DataObject(DataObject.VisibilityOptions.Member, "0")},
                 {KEY_BOT_AMT, new DataObject(DataObject.VisibilityOptions.Member, "5")},
-                {KEY_DIFFICULTY, new DataObject(DataObject.VisibilityOptions.Member, "Chad")},
+                {KEY_DIFFICULTY, new DataObject(DataObject.VisibilityOptions.Public, "Chad")},
+                {KEY_GAMEMODE, new DataObject(DataObject.VisibilityOptions.Public, gameMode)},
                 {KEY_MAP_NAME, new DataObject(DataObject.VisibilityOptions.Member, "Kaiserslautern")},
             }
         };
@@ -177,7 +171,8 @@ public class MultiplayerManager : MonoBehaviour
                 Data = new Dictionary<string, DataObject> {
                     {KEY_START_GAME, new DataObject(DataObject.VisibilityOptions.Member, "0")},
                     {KEY_BOT_AMT, new DataObject(DataObject.VisibilityOptions.Member, botAmt)},
-                    {KEY_DIFFICULTY, new DataObject(DataObject.VisibilityOptions.Member, botDiff)},
+                    {KEY_DIFFICULTY, new DataObject(DataObject.VisibilityOptions.Public, botDiff)},
+                    {KEY_GAMEMODE, new DataObject(DataObject.VisibilityOptions.Public, joinedLobby.Data[KEY_GAMEMODE].Value)},
                     {KEY_MAP_NAME, new DataObject(DataObject.VisibilityOptions.Member, mapName)},
                 }
             });
@@ -301,7 +296,6 @@ public class MultiplayerManager : MonoBehaviour
             try
             {
                 await LobbyService.Instance.RemovePlayerAsync(joinedLobby.Id, AuthenticationService.Instance.PlayerId);
-
                 joinedLobby = null;
 
                 OnLeftLobby?.Invoke(this, EventArgs.Empty);
@@ -448,7 +442,7 @@ public class MultiplayerManager : MonoBehaviour
             }
         }
     }
-    public async void QuickJoinLobby()
+    public async void QuickJoinLobby(int mode)
     {
         try
         {
@@ -469,7 +463,15 @@ public class MultiplayerManager : MonoBehaviour
         catch (Exception)
         {
             startingQPTitle.SetActive(false);
-            CreateLobby(GameDataHolder.multiplayerName + "'s game", 20, false, GameMode.FreeForAll);
+            if (mode == 0)
+            {
+                CreateLobby(GameDataHolder.multiplayerName + "'s game", 20, false, "Supremacy");
+
+            }
+            else
+            {
+                CreateLobby(GameDataHolder.multiplayerName + "'s Co-op game", 4, false, "Ice-cream Ops");
+            }
         }
     }
 

@@ -48,6 +48,7 @@ public class featherScript : NetworkBehaviour
                 NetworkObject ob = NetworkManager.Singleton.SpawnManager.SpawnedObjects[targetID];
                 if (!ob) return;
                 ob.GetComponent<Pigeon>().OnPigeonHitCLientRPC(attackProperties.Value);
+                Destroy(gameObject);
             }
         }
         catch

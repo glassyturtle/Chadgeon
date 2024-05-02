@@ -24,6 +24,8 @@ public class LobbyUI : MonoBehaviour
     [SerializeField] private GameObject addBotsMenu;
     [SerializeField] private GameObject manageFlocksMenu;
     [SerializeField] private GameObject changeFlockMenu;
+    [SerializeField] private GameObject changeBotAmountSetting;
+    [SerializeField] private GameObject changeFlockButtonGameobject;
     [SerializeField] private List<GameObject> hostButtons;
     [SerializeField] private TextMeshProUGUI lobbyNameText;
     [SerializeField] private TextMeshProUGUI lobbyMapText;
@@ -112,10 +114,22 @@ public class LobbyUI : MonoBehaviour
         else
         {
             botDifficulty += 1;
-            if (botDifficulty > botDifficultyNames.Count - 1)
+            if (MultiplayerManager.Instance.joinedLobby.Data[MultiplayerManager.KEY_GAMEMODE].Value == "Supremacy")
             {
-                botDifficulty = 0;
+                if (botDifficulty > botDifficultyNames.Count - 2)
+                {
+                    botDifficulty = 0;
+                }
+
             }
+            else
+            {
+                if (botDifficulty > botDifficultyNames.Count - 1)
+                {
+                    botDifficulty = 0;
+                }
+            }
+
         }
         botDifficultyText.text = botDifficultyNames[botDifficulty];
         UpdateLobbySettingsAfterDelay();
@@ -263,6 +277,18 @@ public class LobbyUI : MonoBehaviour
     private void UpdateLobby(Lobby lobby)
     {
         ClearLobby();
+        GameDataHolder.gameMode = lobby.Data[MultiplayerManager.KEY_GAMEMODE].Value;
+        if (lobby.Data[MultiplayerManager.KEY_GAMEMODE].Value == "Supremacy")
+        {
+            changeBotAmountSetting.SetActive(true);
+            changeFlockButtonGameobject.SetActive(true);
+        }
+        else
+        {
+            changeBotAmountSetting.SetActive(false);
+            changeFlockButtonGameobject.SetActive(false);
+        }
+
         foreach (Player player in lobby.Players)
         {
             Transform playerSingleTransform = Instantiate(playerSingleTemplate, container);
@@ -275,7 +301,7 @@ public class LobbyUI : MonoBehaviour
             );
             Debug.Log(player.Id + " " + Time.time);
 
-            lobbyPlayerSingleUI.UpdatePlayer(player);
+            lobbyPlayerSingleUI.UpdatePlayer(player, lobby);
         }
 
         //changeGameModeButton.gameObject.SetActive(MultiplayerManager.Instance.IsLobbyHost());

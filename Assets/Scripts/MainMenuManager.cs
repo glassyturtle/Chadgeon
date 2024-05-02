@@ -193,7 +193,7 @@ public class MainMenuManager : MonoBehaviour
     public void StartQuickplay(int mode)
     {
         playMenu.SetActive(false);
-        MultiplayerManager.Instance.QuickJoinLobby();
+        MultiplayerManager.Instance.QuickJoinLobby(mode);
     }
     private void RefreshShopButtons()
     {

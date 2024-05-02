@@ -11,18 +11,18 @@ public class EndScreenScript : MonoBehaviour
     {
         int chadCoinsGained = 0;
 
-        int defeatedCoins = Mathf.RoundToInt(GameDataHolder.kills / 0.25f);
+        int defeatedCoins = Mathf.FloorToInt(GameDataHolder.kills * 0.25f);
         chadCoinsGained += defeatedCoins;
         pigeonsDefeatedCoins.text = defeatedCoins.ToString();
 
 
-        int collectedCoins = Mathf.RoundToInt(GameDataHolder.conesCollected / 0.20f);
-        chadCoinsGained += collectedCoins;
-        foodCollectedCoins.text = collectedCoins.ToString();
+        int collectedFood = Mathf.FloorToInt(GameDataHolder.conesCollected * 0.10f);
+        chadCoinsGained += collectedFood;
+        foodCollectedCoins.text = collectedFood.ToString();
 
 
-        chadCoinsGained += Mathf.RoundToInt(GameManager.instance.player.level.Value / 0.5f);
-        levelsAchivedCoins.text = Mathf.RoundToInt(GameManager.instance.player.level.Value / 0.5f).ToString();
+        chadCoinsGained += Mathf.FloorToInt(GameManager.instance.player.level.Value * 0.25f);
+        levelsAchivedCoins.text = Mathf.FloorToInt(GameManager.instance.player.level.Value * 0.25f).ToString();
 
         amtPigeonsDefeated.text = GameDataHolder.kills.ToString();
         amtFoodCollected.text = GameDataHolder.conesCollected.ToString();
@@ -31,12 +31,15 @@ public class EndScreenScript : MonoBehaviour
         if (pigeonWon)
         {
             dominantVictory.SetActive(true);
+            gloriousDefeat.SetActive(false);
+
             victoryText.text = "Dominant Victory";
             victoryCoins.text = "20";
             chadCoinsGained += 20;
         }
         else
         {
+            dominantVictory.SetActive(false);
             gloriousDefeat.SetActive(true);
             victoryText.text = "Glorious Defeat";
             victoryCoins.text = "5";
@@ -44,6 +47,7 @@ public class EndScreenScript : MonoBehaviour
         }
 
         SaveDataManager.gamesPlayed++;
+        SaveDataManager.totalPigeonsKo += GameDataHolder.kills;
         SaveDataManager.chadCoins += chadCoinsGained;
         SaveDataManager.SaveGameData();
     }

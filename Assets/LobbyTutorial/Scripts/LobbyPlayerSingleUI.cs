@@ -26,33 +26,42 @@ public class LobbyPlayerSingleUI : MonoBehaviour
         kickPlayerButton.gameObject.SetActive(visible);
     }
 
-    public void UpdatePlayer(Player player)
+    public void UpdatePlayer(Player player, Lobby lobby)
     {
         this.player = player;
         playerNameText.text = player.Data[MultiplayerManager.KEY_PLAYER_NAME].Value;
-        switch (player.Data[MultiplayerManager.KEY_PLAYER_FLOCK].Value)
+        if (lobby.Data[MultiplayerManager.KEY_GAMEMODE].Value == "Supremacy")
         {
-            case "0":
-                playerFlockText.text = "No Flock";
-                playerFlockText.color = Color.white;
-                break;
-            case "1":
-                playerFlockText.text = "Enjoyers";
-                playerFlockText.color = Color.cyan;
-                break;
-            case "2":
-                playerFlockText.text = "Psychos";
-                playerFlockText.color = Color.red;
-                break;
-            case "3":
-                playerFlockText.text = "Minions";
-                playerFlockText.color = Color.yellow;
-                break;
-            case "4":
-                playerFlockText.text = "Looksmaxers";
-                playerFlockText.color = Color.green;
-                break;
+            switch (player.Data[MultiplayerManager.KEY_PLAYER_FLOCK].Value)
+            {
+                case "0":
+                    playerFlockText.text = "No Flock";
+                    playerFlockText.color = Color.white;
+                    break;
+                case "1":
+                    playerFlockText.text = "Enjoyers";
+                    playerFlockText.color = Color.cyan;
+                    break;
+                case "2":
+                    playerFlockText.text = "Psychos";
+                    playerFlockText.color = Color.red;
+                    break;
+                case "3":
+                    playerFlockText.text = "Minions";
+                    playerFlockText.color = Color.yellow;
+                    break;
+                case "4":
+                    playerFlockText.text = "Looksmaxers";
+                    playerFlockText.color = Color.green;
+                    break;
+            }
         }
+        else
+        {
+            playerFlockText.text = "Lvl: " + player.Data[MultiplayerManager.KEY_PLAYER_RANK].Value;
+            playerFlockText.color = Color.white;
+        }
+
         rs.UpdateRank(int.Parse(player.Data[MultiplayerManager.KEY_PLAYER_RANK].Value));
         //Changes skin icon
         int skinID = int.Parse(player.Data[MultiplayerManager.KEY_PLAYER_SKIN].Value);

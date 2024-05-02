@@ -1,7 +1,7 @@
 public static class GameDataHolder
 {
     public static string joinCode = "ERROR";
-
+    public static string gameMode = "Supremacy";
     public static string multiplayerName = "Chadgeon";
     public static int map = 0;
     public static int flock = 0;
@@ -21,5 +21,7 @@ public static class GameDataHolder
     {
         kills = 0;
         conesCollected = 0;
+        flock = 0;
+        map = 0;
     }
 }
