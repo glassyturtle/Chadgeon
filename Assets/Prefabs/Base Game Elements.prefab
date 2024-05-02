@@ -2682,8 +2682,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 20
-  m_fontSizeBase: 20
+  m_fontSize: 30
+  m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -2949,6 +2949,10 @@ MonoBehaviour:
     m_InternalValue: 0
   currentSecond:
     m_InternalValue: -1
+  enemiesRemaining:
+    m_InternalValue: 0
+  waveNumber:
+    m_InternalValue: 0
   borderSize:
     m_InternalValue: 0.4
   player: {fileID: 0}

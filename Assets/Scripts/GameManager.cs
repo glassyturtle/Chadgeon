@@ -15,6 +15,8 @@ public class GameManager : NetworkBehaviour
 
     public NetworkVariable<bool> isSuddenDeath = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> currentSecond = new NetworkVariable<int>(-1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<int> enemiesRemaining = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<int> waveNumber = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<float> borderSize = new NetworkVariable<float>(0.40f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public Pigeon player;
     public List<Pigeon> allpigeons = new List<Pigeon>();
@@ -52,11 +54,13 @@ public class GameManager : NetworkBehaviour
     [SerializeField] string[] repeatableUpgradeDesc;
     bool gameover = false;
     bool canSpawnFood = true;
+    bool lookingForConeToBuild = true;
     bool pauseMenuOpen = false;
     private Pigeon.Upgrades[] upgradesThatCanBeSelected = new Pigeon.Upgrades[4];
     private int currentSpectate = 0;
     bool uiOpen = true;
     bool gracePeriod = true;
+    Vector3 iceCreamPos = Vector2.zero;
     private bool hasOpenedChurch = false;
     private List<GameObject> unbuiltConeGameobjects = new();
 
@@ -112,165 +116,174 @@ public class GameManager : NetworkBehaviour
             NetworkManager.Singleton.SceneManager.OnLoadEventCompleted += SceneManager_OnLoadEventCompleted;
         }
     }
+    private void Update()
+    {
+        if (currentSecond.Value == -1) return;
+        int minutes = Mathf.RoundToInt(currentSecond.Value / 60);
+        borderTransform.localScale = new Vector3(borderSize.Value, borderSize.Value, 0);
+
+
+
+        if (GameDataHolder.gameMode == "Supremacy")
+        {
+            int seconds = currentSecond.Value % 60;
+            if (seconds < 10)
+            {
+                timeleftText.text = minutes + ":0" + seconds;
+            }
+            else
+            {
+                timeleftText.text = minutes + ":" + seconds;
+            }
+            icecreamBar.fillAmount = (float)currentSecond.Value / secondsTillSuddenDeath;
+
+        }
+        else
+        {
+            timeleftText.text = Mathf.RoundToInt((currentSecond.Value / 500f) * 100) + "%";
+            icecreamBar.fillAmount = (float)currentSecond.Value / 500;
+            if (!gracePeriod && !lookingForConeToBuild)
+            {
+                gameObjectiveText.text = "Wave " + waveNumber.Value + " Enemies Remaining: " + enemiesRemaining.Value;
+                if (IsServer && enemiesRemaining.Value <= 0)
+                {
+                    StartGracePeriodClientRpc(20);
+                }
+            }
+            if (IsServer && currentSecond.Value <= 0)
+            {
+                string victoryText = "The Goons have eaten the the last of the Enjoyer's Cone";
+                ShowWinScreenClientRpc(victoryText, -1, 1);
+            }
+        }
+
+
+
+
+        if (!audioSource.isPlaying)
+        {
+            audioSource.clip = gigaChadSong;
+            audioSource.loop = true;
+            audioSource.Play();
+        }
+        if (!player) return;
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (pauseMenuOpen == true)
+            {
+                pauseMenuOpen = false;
+                pauseMenu.SetActive(false);
+            }
+            else
+            {
+                pauseMenuOpen = true;
+                pauseMenu.SetActive(true);
+
+            }
+        }
+        if (Input.GetKeyDown(KeyCode.U))
+        {
+            if (uiOpen == true)
+            {
+                uiOpen = false;
+                gameUI.SetActive(false);
+            }
+            else
+            {
+                uiOpen = true;
+                gameUI.SetActive(true);
+
+            }
+        }
+
+        if (Input.GetKey(KeyCode.Space))
+        {
+            minimapUI.SetActive(true);
+        }
+        else
+        {
+            minimapUI.SetActive(false);
+        }
+
+        if (player.isSprinting == true)
+        {
+            sprintUI.SetActive(true);
+            sprintBar.fillAmount = player.stamina / player.maxStamina;
+        }
+        else
+        {
+            staminaCooldownBar.fillAmount = player.stamina / player.maxStamina;
+            sprintUI.SetActive(false);
+        }
+
+        featherChargeCounter.text = player.chargedFeathers.ToString();
+
+        healthBar.fillAmount = (float)player.currentHP.Value / player.maxHp.Value;
+        hpText.text = (float)player.currentHP.Value + "/" + player.maxHp.Value;
+        xpBar.fillAmount = (float)player.xp / player.xpTillLevelUp;
+        levelText.text = player.level.Value.ToString();
+
+        if (IsServer && canSpawnFood && !isSuddenDeath.Value && gracePeriod)
+        {
+            SpawnFood();
+            if (!hasOpenedChurch && currentSecond.Value < 120)
+            {
+                hasOpenedChurch = true;
+                OpenChurchDoorClientRpc();
+            }
+        }
+        if (IsServer && isSuddenDeath.Value)
+        {
+            if (borderSize.Value > 0.01f)
+                borderSize.Value -= Time.deltaTime / 400;
+        }
+
+        if (IsOwnedByServer && isSuddenDeath.Value)
+        {
+            CheckWinGame();
+        }
+    }
 
 
     private void SceneManager_OnLoadEventCompleted(string sceneName, LoadSceneMode loadSceneMode, List<ulong> clientsCompleted, List<ulong> clientsTimedOut)
     {
         StartCoroutine(WaitForClients());
     }
-    IEnumerator WaitForClients()
+
+
+    [ServerRpc(RequireOwnership = false)]
+    public void DestroyFoodObjectServerRpc(NetworkObjectReference foodie)
     {
-        //Get total pigeon count
-        int totalPigeons = GameDataHolder.playerCount + GameDataHolder.botsToSpawn + GameDataHolder.botsFlock1 + GameDataHolder.botsFlock2 + GameDataHolder.botsFlock3 + GameDataHolder.botsFlock4;
-
-        while (true)
+        foodie.TryGet(out NetworkObject foodieNetObj);
+        if (foodieNetObj)
         {
-            if (GameDataHolder.playerCount == NetworkManager.Singleton.ConnectedClients.Count)
-            {
-                yield return new WaitForSeconds(1);
-                if (GameDataHolder.gameMode == "Supremacy")
-                {
-                    foreach (ulong client in NetworkManager.Singleton.ConnectedClientsIds)
-                    {
-                        Vector3 spawnPos = GetSpawnPos();
-                        GameObject player = Instantiate(playerPrefab, spawnPos, transform.rotation);
-                        player.GetComponent<NetworkObject>().SpawnAsPlayerObject(client, true);
-                    }
-
-                    for (int i = 0; i < GameDataHolder.botsToSpawn; i++)
-                    {
-                        Vector3 spawnPos = GetSpawnPos();
-                        GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
-                        PigeonAI ai = pigeon.GetComponent<PigeonAI>();
-                        ai.SetAI(GameDataHolder.botDifficulty);
-                        pigeon.GetComponent<NetworkObject>().Spawn();
-                    }
-                    for (int i = 0; i < GameDataHolder.botsFlock1; i++)
-                    {
-                        Vector3 spawnPos = GetSpawnPos();
-                        GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
-                        PigeonAI ai = pigeon.GetComponent<PigeonAI>();
-                        ai.flock = 1;
-                        ai.SetAI(GameDataHolder.botDifficulty);
-                        pigeon.GetComponent<NetworkObject>().Spawn();
-                    }
-                    for (int i = 0; i < GameDataHolder.botsFlock2; i++)
-                    {
-                        Vector3 spawnPos = GetSpawnPos();
-                        GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
-                        PigeonAI ai = pigeon.GetComponent<PigeonAI>();
-                        ai.flock = 2;
-                        ai.SetAI(GameDataHolder.botDifficulty);
-                        pigeon.GetComponent<NetworkObject>().Spawn();
-                    }
-                    for (int i = 0; i < GameDataHolder.botsFlock3; i++)
-                    {
-                        Vector3 spawnPos = GetSpawnPos();
-                        GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
-                        PigeonAI ai = pigeon.GetComponent<PigeonAI>();
-                        ai.flock = 3;
-                        ai.SetAI(GameDataHolder.botDifficulty);
-                        pigeon.GetComponent<NetworkObject>().Spawn();
-                    }
-                    for (int i = 0; i < GameDataHolder.botsFlock4; i++)
-                    {
-                        Vector3 spawnPos = GetSpawnPos();
-                        GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
-                        PigeonAI ai = pigeon.GetComponent<PigeonAI>();
-                        ai.flock = 4;
-                        ai.SetAI(GameDataHolder.botDifficulty);
-                        pigeon.GetComponent<NetworkObject>().Spawn();
-                    }
-                }
-                else
-                {
-                    currentSecond.Value = 500;
-                    int spawnArea = Random.Range(0, spawnLocations.Count);
-                    foreach (ulong client in NetworkManager.Singleton.ConnectedClientsIds)
-                    {
-                        Vector3 spawnPos = GetSpawnPos(spawnArea);
-                        GameObject player = Instantiate(playerPrefab, spawnPos, transform.rotation);
-                        player.GetComponent<NetworkObject>().SpawnAsPlayerObject(client, true);
-                    }
-                    spawnArea = Random.Range(0, spawnLocations.Count);
-                    for (int i = 0; i < 3; i++)
-                    {
-                        GameObject cone = Instantiate(unbuiltConePrefab, spawnLocations[spawnArea].transform.position, transform.rotation);
-                        unbuiltConeGameobjects.Add(cone);
-                        cone.GetComponent<NetworkObject>().Spawn();
-                        spawnArea += Random.Range(3, 7);
-                        if (spawnArea > spawnLocations.Count)
-                        {
-                            spawnArea -= spawnLocations.Count;
-                        }
-                    }
-                }
-
-
-                /*
-                //TestBots
-                for (int i = 0; i < 10; i++)
-                {
-                    Vector3 spawnPos = GetSpawnPos();
-                    GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
-                    PigeonAI ai = pigeon.GetComponent<PigeonAI>();
-                    totalPigeons += 1;
-                    ai.SetAI(2);
-                    pigeon.GetComponent<NetworkObject>().Spawn();
-                }
-                for (int i = 0; i < 10; i++)
-                {
-                    Vector3 spawnPos = GetSpawnPos();
-                    GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
-                    PigeonAI ai = pigeon.GetComponent<PigeonAI>();
-                    totalPigeons += 1;
-                    ai.SetAI(1);
-                    pigeon.GetComponent<NetworkObject>().Spawn();
-                }
-                for (int i = 0; i < 10; i++)
-                {
-                    Vector3 spawnPos = GetSpawnPos();
-                    GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
-                    PigeonAI ai = pigeon.GetComponent<PigeonAI>();
-                    ai.SetAI(0);
-                    totalPigeons += 1;
-                    pigeon.GetComponent<NetworkObject>().Spawn();
-                }
-                */
-
-
-
-
-                while (true)
-                {
-                    if (totalPigeons == pigeonStartData.Count)
-                    {
-                        currentSecond.Value = secondsTillSuddenDeath;
-                        UpdatePigeonsForClientsClientRpc(pigeonStartData.ToArray());
-
-
-
-                        if (GameDataHolder.gameMode == "Supremacy")
-                        {
-                            StartCoroutine(DepreciateIceCream());
-
-                        }
-                        else
-                        {
-                            StartCoroutine(SetupicecreamHealth());
-                        }
-
-
-                        yield break;
-                    }
-                    yield return null;
-                }
-            }
-
-
-            yield return null;
-
+            food foodieObj = foodieNetObj.GetComponent<food>();
+            foodieObj.DestroySelf();
         }
+    }
+    [ServerRpc]
+    public void ConstructIceCreamConeServerRpc(Vector3 pos)
+    {
+        iceCreamPos = pos;
+        GameObject cone = Instantiate(builtConePrefab, pos, transform.rotation);
+        cone.GetComponent<NetworkObject>().Spawn();
+        foreach (GameObject unbuiltCones in unbuiltConeGameobjects)
+        {
+            Destroy(unbuiltCones);
+        }
+        iceCreamUI.SetActive(true);
+        gracePeriod = true;
+        gameObjectiveText.text = "Get Cones ";
+        StartGracePeriodClientRpc(30);
+        lookingForConeToBuild = false;
+    }
+
+
+    [ClientRpc]
+    private void StartGracePeriodClientRpc(int seconds)
+    {
+        StartCoroutine(StartGracePeriod(seconds));
     }
     [ClientRpc]
     private void UpdatePigeonsForClientsClientRpc(PigeonInitializeProperties[] data)
@@ -285,6 +298,48 @@ public class GameManager : NetworkBehaviour
             }
         }
     }
+    [ClientRpc]
+    public void ActiveateIcecreamUIClientRpc()
+    {
+        iceCreamUI.SetActive(true);
+
+    }
+    [ClientRpc]
+    private void HideLoadingPigeonsTextClientRpc()
+    {
+        loadingPigeonsText.SetActive(false);
+        playerUI.SetActive(true);
+    }
+    [ClientRpc]
+    private void ActivateSuddenDeathUIClientRpc()
+    {
+        suddenDeathText.SetActive(true);
+        iceCreamUI.SetActive(false);
+    }
+    [ClientRpc]
+    private void OpenChurchDoorClientRpc()
+    {
+        if (churchDoor) churchDoor.SetActive(false);
+    }
+    [ClientRpc]
+    public void ShowWinScreenClientRpc(string victorytext, int teamThatWon, ulong pigeonThatWon)
+    {
+        playerUI.SetActive(false);
+        endGameDescriptionText.text = victorytext;
+        endScreen.SetActive(true);
+
+
+
+        if (teamThatWon == player.flock || pigeonThatWon == player.NetworkObjectId)
+        {
+            endScreen.GetComponent<EndScreenScript>().UpdateChadCoinWinStuff(true);
+        }
+        else
+        {
+            endScreen.GetComponent<EndScreenScript>().UpdateChadCoinWinStuff(false);
+        }
+    }
+
 
     public void CheckWinGame()
     {
@@ -339,23 +394,55 @@ public class GameManager : NetworkBehaviour
 
 
     }
-    [ClientRpc]
-    public void ShowWinScreenClientRpc(string victorytext, int teamThatWon, ulong pigeonThatWon)
+    public Vector3 GetSpawnPos()
     {
-        playerUI.SetActive(false);
-        endGameDescriptionText.text = victorytext;
-        endScreen.SetActive(true);
+        return GetSpawnPos(Random.Range(0, spawnLocations.Count));
+    }
+    public Vector3 GetSpawnPos(int location)
+    {
+        Transform pos = spawnLocations[Random.Range(0, spawnLocations.Count)];
+        float spawnX = pos.position.x;
+        float spawnY = pos.position.y;
 
 
+        float spawnRange = 2f;
 
-        if (teamThatWon == player.flock || pigeonThatWon == player.NetworkObjectId)
+        if (Random.Range(0, 100) <= 50)
         {
-            endScreen.GetComponent<EndScreenScript>().UpdateChadCoinWinStuff(true);
+            if (Random.Range(0, 100) <= 50)
+            {
+                spawnX += Random.Range(0, spawnRange);
+                spawnY += Random.Range(-spawnRange, spawnRange);
+            }
+            else
+            {
+                spawnX += Random.Range(-0, -spawnRange);
+                spawnY += Random.Range(-spawnRange, spawnRange);
+            }
         }
         else
         {
-            endScreen.GetComponent<EndScreenScript>().UpdateChadCoinWinStuff(false);
+            if (Random.Range(0, 100) <= 50)
+            {
+                spawnX += Random.Range(-spawnRange, spawnRange);
+                spawnY += Random.Range(0, spawnRange);
+            }
+            else
+            {
+                spawnX += Random.Range(-spawnRange, spawnRange);
+                spawnY += Random.Range(-0, -spawnRange);
+            }
         }
+        return new Vector3(spawnX, spawnY);
+    }
+    public void SetFullScreen()
+    {
+        Screen.fullScreen = !Screen.fullScreen;
+    }
+    public void ClosePauseMenu()
+    {
+        pauseMenuOpen = false;
+        pauseMenu.SetActive(false);
     }
     public void AddUpgradeToDisply(int upgrade)
     {
@@ -616,211 +703,188 @@ public class GameManager : NetworkBehaviour
     {
         DestroyFoodObjectServerRpc(foodie.NetworkObject);
     }
-    [ServerRpc(RequireOwnership = false)]
-    public void DestroyFoodObjectServerRpc(NetworkObjectReference foodie)
-    {
-        foodie.TryGet(out NetworkObject foodieNetObj);
-        if (foodieNetObj)
-        {
-            food foodieObj = foodieNetObj.GetComponent<food>();
-            foodieObj.DestroySelf();
-        }
-    }
-    [ServerRpc]
-    public void ConstructIceCreamConeServerRpc(Vector3 pos)
-    {
-        GameObject cone = Instantiate(builtConePrefab, pos, transform.rotation);
-        cone.GetComponent<NetworkObject>().Spawn();
-        foreach (GameObject unbuiltCones in unbuiltConeGameobjects)
-        {
-            Destroy(unbuiltCones);
-        }
-        iceCreamUI.SetActive(true);
-
-        gracePeriod = true;
-        gameObjectiveText.text = "Get Cones";
-    }
-    [ClientRpc]
-    public void ActiveateIcecreamUIClientRpc()
-    {
-        iceCreamUI.SetActive(true);
-
-    }
 
 
-    public Vector3 GetSpawnPos()
-    {
-        return GetSpawnPos(Random.Range(0, spawnLocations.Count));
-    }
-    public Vector3 GetSpawnPos(int location)
-    {
-        Transform pos = spawnLocations[Random.Range(0, spawnLocations.Count)];
-        float spawnX = pos.position.x;
-        float spawnY = pos.position.y;
-
-
-        float spawnRange = 2f;
-
-        if (Random.Range(0, 100) <= 50)
-        {
-            if (Random.Range(0, 100) <= 50)
-            {
-                spawnX += Random.Range(0, spawnRange);
-                spawnY += Random.Range(-spawnRange, spawnRange);
-            }
-            else
-            {
-                spawnX += Random.Range(-0, -spawnRange);
-                spawnY += Random.Range(-spawnRange, spawnRange);
-            }
-        }
-        else
-        {
-            if (Random.Range(0, 100) <= 50)
-            {
-                spawnX += Random.Range(-spawnRange, spawnRange);
-                spawnY += Random.Range(0, spawnRange);
-            }
-            else
-            {
-                spawnX += Random.Range(-spawnRange, spawnRange);
-                spawnY += Random.Range(-0, -spawnRange);
-            }
-        }
-        return new Vector3(spawnX, spawnY);
-    }
-
-
-    public void SetFullScreen()
-    {
-        Screen.fullScreen = !Screen.fullScreen;
-    }
-    private void Update()
-    {
-        if (currentSecond.Value == -1) return;
-        int minutes = Mathf.RoundToInt(currentSecond.Value / 60);
-        borderTransform.localScale = new Vector3(borderSize.Value, borderSize.Value, 0);
-
-
-
-        if (GameDataHolder.gameMode == "Supremacy")
-        {
-            int seconds = currentSecond.Value % 60;
-            if (seconds < 10)
-            {
-                timeleftText.text = minutes + ":0" + seconds;
-            }
-            else
-            {
-                timeleftText.text = minutes + ":" + seconds;
-            }
-            icecreamBar.fillAmount = (float)currentSecond.Value / secondsTillSuddenDeath;
-
-        }
-        else
-        {
-            timeleftText.text = Mathf.RoundToInt((currentSecond.Value / 500) * 100) + "%";
-            icecreamBar.fillAmount = (float)currentSecond.Value / 500;
-
-        }
-
-
-
-
-        if (!audioSource.isPlaying)
-        {
-            audioSource.clip = gigaChadSong;
-            audioSource.loop = true;
-            audioSource.Play();
-        }
-        if (!player) return;
-
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            if (pauseMenuOpen == true)
-            {
-                pauseMenuOpen = false;
-                pauseMenu.SetActive(false);
-            }
-            else
-            {
-                pauseMenuOpen = true;
-                pauseMenu.SetActive(true);
-
-            }
-        }
-        if (Input.GetKeyDown(KeyCode.U))
-        {
-            if (uiOpen == true)
-            {
-                uiOpen = false;
-                gameUI.SetActive(false);
-            }
-            else
-            {
-                uiOpen = true;
-                gameUI.SetActive(true);
-
-            }
-        }
-
-        if (Input.GetKey(KeyCode.Space))
-        {
-            minimapUI.SetActive(true);
-        }
-        else
-        {
-            minimapUI.SetActive(false);
-        }
-
-        if (player.isSprinting == true)
-        {
-            sprintUI.SetActive(true);
-            sprintBar.fillAmount = player.stamina / player.maxStamina;
-        }
-        else
-        {
-            staminaCooldownBar.fillAmount = player.stamina / player.maxStamina;
-            sprintUI.SetActive(false);
-        }
-
-        featherChargeCounter.text = player.chargedFeathers.ToString();
-
-        healthBar.fillAmount = (float)player.currentHP.Value / player.maxHp.Value;
-        hpText.text = (float)player.currentHP.Value + "/" + player.maxHp.Value;
-        xpBar.fillAmount = (float)player.xp / player.xpTillLevelUp;
-        levelText.text = player.level.Value.ToString();
-
-        if (IsServer && canSpawnFood && !isSuddenDeath.Value && gracePeriod)
-        {
-            SpawnFoodServerRpc();
-            if (!hasOpenedChurch && currentSecond.Value < 120)
-            {
-                hasOpenedChurch = true;
-                OpenChurchDoorClientRpc();
-            }
-        }
-        if (IsServer && isSuddenDeath.Value)
-        {
-            if (borderSize.Value > 0.01f)
-                borderSize.Value -= Time.deltaTime / 400;
-        }
-
-        if (IsOwnedByServer && isSuddenDeath.Value)
-        {
-            CheckWinGame();
-        }
-    }
-    public void ClosePauseMenu()
-    {
-        pauseMenuOpen = false;
-        pauseMenu.SetActive(false);
-    }
-
-    [ServerRpc]
-    private void SpawnFoodServerRpc()
+    private void SpawnFood()
     {
         StartCoroutine(SpawnFoodDelay());
+    }
+    private void StartNextWave()
+    {
+        StartCoroutine(SpawnWave());
+    }
+
+    IEnumerator StartGracePeriod(int seconds)
+    {
+        gracePeriod = true;
+
+        while (true)
+        {
+            for (int i = 0; i < seconds; i++)
+            {
+                gameObjectiveText.text = "Collect cones! " + (seconds - i).ToString() + " Seconds left";
+                yield return new WaitForSeconds(1);
+
+            }
+            gameObjectiveText.text = "";
+            gracePeriod = false;
+            if (IsOwnedByServer) StartNextWave();
+            yield break;
+        }
+    }
+    IEnumerator WaitForClients()
+    {
+        //Get total pigeon count
+        int totalPigeons = GameDataHolder.playerCount + GameDataHolder.botsToSpawn + GameDataHolder.botsFlock1 + GameDataHolder.botsFlock2 + GameDataHolder.botsFlock3 + GameDataHolder.botsFlock4;
+
+        while (true)
+        {
+            if (GameDataHolder.playerCount == NetworkManager.Singleton.ConnectedClients.Count)
+            {
+                yield return new WaitForSeconds(1);
+                if (GameDataHolder.gameMode == "Supremacy")
+                {
+                    foreach (ulong client in NetworkManager.Singleton.ConnectedClientsIds)
+                    {
+                        Vector3 spawnPos = GetSpawnPos();
+                        GameObject player = Instantiate(playerPrefab, spawnPos, transform.rotation);
+                        player.GetComponent<NetworkObject>().SpawnAsPlayerObject(client, true);
+                    }
+
+                    for (int i = 0; i < GameDataHolder.botsToSpawn; i++)
+                    {
+                        Vector3 spawnPos = GetSpawnPos();
+                        GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+                        PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+                        ai.SetAI(GameDataHolder.botDifficulty);
+                        pigeon.GetComponent<NetworkObject>().Spawn();
+                    }
+                    for (int i = 0; i < GameDataHolder.botsFlock1; i++)
+                    {
+                        Vector3 spawnPos = GetSpawnPos();
+                        GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+                        PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+                        ai.flock = 1;
+                        ai.SetAI(GameDataHolder.botDifficulty);
+                        pigeon.GetComponent<NetworkObject>().Spawn();
+                    }
+                    for (int i = 0; i < GameDataHolder.botsFlock2; i++)
+                    {
+                        Vector3 spawnPos = GetSpawnPos();
+                        GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+                        PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+                        ai.flock = 2;
+                        ai.SetAI(GameDataHolder.botDifficulty);
+                        pigeon.GetComponent<NetworkObject>().Spawn();
+                    }
+                    for (int i = 0; i < GameDataHolder.botsFlock3; i++)
+                    {
+                        Vector3 spawnPos = GetSpawnPos();
+                        GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+                        PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+                        ai.flock = 3;
+                        ai.SetAI(GameDataHolder.botDifficulty);
+                        pigeon.GetComponent<NetworkObject>().Spawn();
+                    }
+                    for (int i = 0; i < GameDataHolder.botsFlock4; i++)
+                    {
+                        Vector3 spawnPos = GetSpawnPos();
+                        GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+                        PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+                        ai.flock = 4;
+                        ai.SetAI(GameDataHolder.botDifficulty);
+                        pigeon.GetComponent<NetworkObject>().Spawn();
+                    }
+                }
+                else
+                {
+                    currentSecond.Value = 500;
+                    int spawnArea = Random.Range(0, spawnLocations.Count);
+                    foreach (ulong client in NetworkManager.Singleton.ConnectedClientsIds)
+                    {
+                        Vector3 spawnPos = GetSpawnPos(spawnArea);
+                        GameObject player = Instantiate(playerPrefab, spawnPos, transform.rotation);
+                        player.GetComponent<NetworkObject>().SpawnAsPlayerObject(client, true);
+                    }
+                    spawnArea = Random.Range(0, spawnLocations.Count);
+                    for (int i = 0; i < 3; i++)
+                    {
+                        GameObject cone = Instantiate(unbuiltConePrefab, spawnLocations[spawnArea].transform.position, transform.rotation);
+                        unbuiltConeGameobjects.Add(cone);
+                        cone.GetComponent<NetworkObject>().Spawn();
+                        spawnArea += Random.Range(3, 7);
+                        if (spawnArea > spawnLocations.Count)
+                        {
+                            spawnArea -= spawnLocations.Count;
+                        }
+                    }
+                }
+
+
+                /*
+                //TestBots
+                for (int i = 0; i < 10; i++)
+                {
+                    Vector3 spawnPos = GetSpawnPos();
+                    GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+                    PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+                    totalPigeons += 1;
+                    ai.SetAI(2);
+                    pigeon.GetComponent<NetworkObject>().Spawn();
+                }
+                for (int i = 0; i < 10; i++)
+                {
+                    Vector3 spawnPos = GetSpawnPos();
+                    GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+                    PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+                    totalPigeons += 1;
+                    ai.SetAI(1);
+                    pigeon.GetComponent<NetworkObject>().Spawn();
+                }
+                for (int i = 0; i < 10; i++)
+                {
+                    Vector3 spawnPos = GetSpawnPos();
+                    GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+                    PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+                    ai.SetAI(0);
+                    totalPigeons += 1;
+                    pigeon.GetComponent<NetworkObject>().Spawn();
+                }
+                */
+
+
+
+
+                while (true)
+                {
+                    if (totalPigeons == pigeonStartData.Count)
+                    {
+                        currentSecond.Value = secondsTillSuddenDeath;
+                        UpdatePigeonsForClientsClientRpc(pigeonStartData.ToArray());
+
+
+
+                        if (GameDataHolder.gameMode == "Supremacy")
+                        {
+                            StartCoroutine(DepreciateIceCream());
+
+                        }
+                        else
+                        {
+                            StartCoroutine(SetupicecreamHealth());
+                        }
+
+
+                        yield break;
+                    }
+                    yield return null;
+                }
+            }
+
+
+            yield return null;
+
+        }
     }
     IEnumerator SpawnFoodDelay()
     {
@@ -864,22 +928,59 @@ public class GameManager : NetworkBehaviour
         HideLoadingPigeonsTextClientRpc();
         currentSecond.Value = 500;
     }
-    [ClientRpc]
-    private void HideLoadingPigeonsTextClientRpc()
+    IEnumerator SpawnWave()
     {
-        loadingPigeonsText.SetActive(false);
-        playerUI.SetActive(true);
-    }
-    [ClientRpc]
-    private void ActivateSuddenDeathUIClientRpc()
-    {
-        suddenDeathText.SetActive(true);
-        iceCreamUI.SetActive(false);
-    }
+        waveNumber.Value++;
+        enemiesRemaining.Value = 5;
+        for (int i = 0; i < waveNumber.Value * 2 + 3; i++)
+        {
+            yield return new WaitForSeconds(2f);
 
-    [ClientRpc]
-    private void OpenChurchDoorClientRpc()
-    {
-        if (churchDoor) churchDoor.SetActive(false);
+            Vector3 spawnPos = GetSpawnPos();
+
+            for (int y = 0; y < 10; y++)
+            {
+                if ((spawnPos - iceCreamPos).sqrMagnitude >= 10) break;
+                spawnPos = GetSpawnPos();
+
+            }
+            GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+            PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+
+            ai.SetAI(3);
+            ai.diesAfterDeath = true;
+            ai.flock = 2;
+            pigeon.GetComponent<NetworkObject>().Spawn();
+            switch (GameDataHolder.botDifficulty)
+            {
+                case 0:
+                    for (int x = 0; x < waveNumber.Value; x++)
+                    {
+                        ai.LevelUP();
+                    }
+                    break;
+                case 1:
+                    for (int x = 0; x < Mathf.RoundToInt(waveNumber.Value * 1.5f); x++)
+                    {
+                        ai.LevelUP();
+                    }
+                    break;
+                case 2:
+                    for (int x = 0; x < Mathf.RoundToInt(waveNumber.Value * 2f); x++)
+                    {
+                        ai.LevelUP();
+                    }
+                    break;
+                case 3:
+                    for (int x = 0; x < Mathf.RoundToInt(waveNumber.Value * 3f); x++)
+                    {
+                        ai.LevelUP();
+                    }
+                    break;
+            }
+        }
+
+
     }
 }
+

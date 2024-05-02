@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 145084891530330853}
   - component: {fileID: 1568871707433049499}
   - component: {fileID: 4030378900280707927}
+  - component: {fileID: 989955858673169489}
   m_Layer: 15
   m_Name: BuiltCone
   m_TagString: Untagged
@@ -93,6 +94,18 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 2
+--- !u!114 &989955858673169489
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2480496732285474503}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63c0b081fe442ff43bdd0c62d436ed8d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2846353997403037597
 GameObject:
   m_ObjectHideFlags: 0

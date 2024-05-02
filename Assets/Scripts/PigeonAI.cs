@@ -9,6 +9,8 @@ public class PigeonAI : Pigeon
     [SerializeField] protected food targetFood;
     [SerializeField] private float nextWaypointDistance = 3f;
 
+    public bool diesAfterDeath = false;
+
     // IAstarAI ai;
     //AI configurations
     public Path path;
@@ -21,6 +23,7 @@ public class PigeonAI : Pigeon
     private bool isFleeing = false;
     bool isPathfinding = false;
     Vector2 locationToPathfindTo;
+    Vector3 iceCreamLocation;
 
     private FleePath fleePath;
     public void SetAI(int difficulty)
@@ -39,6 +42,13 @@ public class PigeonAI : Pigeon
                 behaviorAI = SigmaBehavior;
                 pigeonName = "Sigma";
                 break;
+            case 3:
+                behaviorAI = PVEBehavior;
+                pigeonName = "Goon";
+                isFleeing = false;
+                iceCreamLocation = FindFirstObjectByType<BuiltConeScript>().transform.position;
+                break;
+
         }
     }
 
@@ -171,10 +181,6 @@ public class PigeonAI : Pigeon
         body.AddForce(force);
     }
 
-    public void AILevelUP()
-    {
-        //ai.maxSpeed = speed * speedMod;
-    }
 
     protected IEnumerator RechargeHitColldown()
     {
@@ -233,11 +239,15 @@ public class PigeonAI : Pigeon
 
     private void AIAttack()
     {
+        AIAttack(targetPigeon.transform.position);
+    }
+    private void AIAttack(Vector3 attackPos)
+    {
         canHit = false;
         StartCoroutine(RechargeHitColldown());
 
         Vector2 pos = transform.position;
-        pos = Vector2.MoveTowards(pos, targetPigeon.transform.position, 0.5f);
+        pos = Vector2.MoveTowards(pos, attackPos, 0.5f);
 
         Vector3 targ = pos;
         targ.z = 0f;
@@ -525,6 +535,54 @@ public class PigeonAI : Pigeon
 
 
 
+    }
+    private void PVEBehavior(float distanceToPigeon, float distanceToFood)
+    {
+        float distanceToIceCream = Vector2.SqrMagnitude(transform.position - iceCreamLocation);
+
+        Assassinate();
+        StartMewing();
+        SummonWholeGain(transform.position);
+        SummonPigeonPoo(transform.position);
+
+
+        if (targetPigeon && targetFood && distanceToFood < distanceToPigeon * 2 && distanceToFood < distanceToIceCream)
+        {
+            //goes to neaby food item 
+            if (stamina == maxStamina) AIStartSprint();
+            locationToPathfindTo = targetFood.transform.position;
+        }
+        else if (targetPigeon && distanceToPigeon < distanceToIceCream * 4)
+        {
+            if (distanceToPigeon >= 6 && stamina == maxStamina) AIStartSprint();
+
+            if (canHit && distanceToPigeon <= 3f)
+            {
+                AIStopSprinting();
+                AIAttack();
+            }
+            else
+            {
+                if (canHit) AIThrow();
+                StartSlam(targetPigeon.transform.position);
+                locationToPathfindTo = targetPigeon.transform.position;
+            }
+        }
+        else
+        {
+            if (canHit && distanceToIceCream <= 3f)
+            {
+                AIStopSprinting();
+                AIAttack(iceCreamLocation);
+                GameManager.instance.currentSecond.Value--;
+            }
+            else
+            {
+                if (canHit) AIThrow();
+                StartSlam(iceCreamLocation);
+                locationToPathfindTo = iceCreamLocation;
+            }
+        }
     }
 
     private void UpdatePath()

@@ -44,6 +44,7 @@ public class Pigeon : NetworkBehaviour
     private float knockbackMod = 1;
     private float regen = 0.02f;
     private int currentPigeonAttackSprite;
+    private int secondsToRespawn = 3;
 
     //Upgrades and abilities
     public Dictionary<Upgrades, bool> pigeonUpgrades = new();
@@ -998,7 +999,7 @@ public class Pigeon : NetworkBehaviour
             }
         }
     }
-    private void LevelUP()
+    public void LevelUP()
     {
         xp -= xpTillLevelUp;
         xpTillLevelUp += 10;
@@ -1023,7 +1024,6 @@ public class Pigeon : NetworkBehaviour
             if (pigeonAI && IsHost && IsOwner)
             {
                 AddRandomUpgrade();
-                pigeonAI.AILevelUP();
             }
             else
             {
@@ -1173,10 +1173,19 @@ public class Pigeon : NetworkBehaviour
     }
     private IEnumerator Respawn()
     {
+        if (pigeonAI && pigeonAI.diesAfterDeath)
+        {
+            GameManager.instance.enemiesRemaining.Value--;
+        }
+        bool suddenDeathBefore = false;
+        if (GameManager.instance.isSuddenDeath.Value) suddenDeathBefore = true;
+        yield return new WaitForSeconds(secondsToRespawn);
 
-        yield return new WaitForSeconds(3);
-
-        if (GameManager.instance.isSuddenDeath.Value)
+        if (pigeonAI && pigeonAI.diesAfterDeath)
+        {
+            Destroy(gameObject);
+        }
+        else if (suddenDeathBefore)
         {
             StopCoroutine(StopSlam());
             isKnockedOut.Value = true;
@@ -1185,6 +1194,7 @@ public class Pigeon : NetworkBehaviour
         }
         else
         {
+            if (GameDataHolder.gameMode != "Supremacy") secondsToRespawn += 3;
             StartFly();
         }
     }
