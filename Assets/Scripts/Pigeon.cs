@@ -41,6 +41,7 @@ public class Pigeon : NetworkBehaviour
     protected float hitColldown = 0.3f;
     protected bool canSwitchAttackSprites = true;
     protected bool inBorder = true;
+    public bool inEvacsite = false;
     private float knockbackMod = 1;
     private float regen = 0.02f;
     private int currentPigeonAttackSprite;
@@ -703,7 +704,7 @@ public class Pigeon : NetworkBehaviour
         }
 
         body.freezeRotation = true;
-        GameManager.instance.allpigeons.Add(this);
+        if ((pigeonAI && GameDataHolder.gameMode != "Supremacy") || isPlayer) GameManager.instance.allpigeons.Add(this);
     }
     protected void CheckDirection(Vector2 direction)
     {
@@ -1177,6 +1178,13 @@ public class Pigeon : NetworkBehaviour
         {
             GameManager.instance.enemiesRemaining.Value--;
         }
+        if (GameDataHolder.gameMode != "Supremacy" && isPlayer)
+        {
+
+            GameManager.instance.StartSpectating(secondsToRespawn);
+        }
+
+
         bool suddenDeathBefore = false;
         if (GameManager.instance.isSuddenDeath.Value) suddenDeathBefore = true;
         yield return new WaitForSeconds(secondsToRespawn);
@@ -1194,7 +1202,11 @@ public class Pigeon : NetworkBehaviour
         }
         else
         {
-            if (GameDataHolder.gameMode != "Supremacy") secondsToRespawn += 3;
+            if (GameDataHolder.gameMode != "Supremacy")
+            {
+                secondsToRespawn += 3;
+                GameManager.instance.StopSpectating();
+            }
             StartFly();
         }
     }

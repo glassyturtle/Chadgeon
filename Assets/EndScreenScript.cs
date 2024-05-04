@@ -33,9 +33,20 @@ public class EndScreenScript : MonoBehaviour
             dominantVictory.SetActive(true);
             gloriousDefeat.SetActive(false);
 
-            victoryText.text = "Dominant Victory";
-            victoryCoins.text = "20";
-            chadCoinsGained += 20;
+            if (GameManager.instance.player.isKnockedOut.Value || !GameManager.instance.player.inEvacsite)
+            {
+                victoryText.text = "Left behind";
+                victoryCoins.text = "5";
+                chadCoinsGained += 5;
+            }
+            else
+            {
+                victoryText.text = "Escaped";
+                victoryCoins.text = "20";
+                chadCoinsGained += 20;
+            }
+
+
         }
         else
         {

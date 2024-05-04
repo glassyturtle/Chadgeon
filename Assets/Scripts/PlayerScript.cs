@@ -185,6 +185,10 @@ public class PlayerScript : Pigeon
         {
             transform.position = Vector3.zero;
         }
+        if (collision.CompareTag("Evac"))
+        {
+            inEvacsite = true;
+        }
         if (collision.CompareTag("Border"))
         {
             inBorder = true;
@@ -200,6 +204,10 @@ public class PlayerScript : Pigeon
         if (collision.CompareTag("Border"))
         {
             inBorder = false;
+        }
+        if (collision.CompareTag("Evac"))
+        {
+            inEvacsite = false;
         }
         if (inPoo && collision.CompareTag("Poo") && !pigeonUpgrades.ContainsKey(Upgrades.pigeonPoo))
         {

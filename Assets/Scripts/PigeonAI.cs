@@ -574,7 +574,7 @@ public class PigeonAI : Pigeon
             {
                 AIStopSprinting();
                 AIAttack(iceCreamLocation);
-                GameManager.instance.currentSecond.Value--;
+                GameManager.instance.DamageCone();
             }
             else
             {

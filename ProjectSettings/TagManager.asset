@@ -10,6 +10,7 @@ TagManager:
   - Border
   - Pigeon
   - Poo
+  - Evac
   layers:
   - Default
   - TransparentFX
@@ -27,7 +28,7 @@ TagManager:
   - BuildingCollider
   - MinimapTiles
   - InteractAreaCollider
-  - 
+  - Evac
   - 
   - 
   - 
