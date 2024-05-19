@@ -14,7 +14,6 @@ public class GameManager : NetworkBehaviour
     public List<Pigeon.Upgrades> allPigeonUpgrades;
 
     public NetworkVariable<bool> isSuddenDeath = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-    public NetworkVariable<bool> lookingForConeToBuild = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> currentSecond = new NetworkVariable<int>(-1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> enemiesRemaining = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public NetworkVariable<int> waveNumber = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
@@ -24,15 +23,17 @@ public class GameManager : NetworkBehaviour
     public GameObject pigeonPrefab;
     public CinemachineCamera mainCamera;
 
-    private bool gracePeriod;
+    private bool gracePeriod = false;
+    private bool lookingForConeToBuild = true;
     [SerializeField] AudioSource audioSource, clickSound;
-    [SerializeField] AudioClip gigaChadSong;
+    [SerializeField] AudioClip[] musicTracks;
+    private int currentTrack = 0;
     [SerializeField] int secondsTillSuddenDeath;
     [SerializeField] Image icecreamBar, healthBar, xpBar, sprintBar, staminaCooldownBar;
     [SerializeField] Button endScreenMainMenuButton;
     [SerializeField] Transform borderTransform;
 
-    [SerializeField] GameObject endScreen, playerUI, gameUI, upgradeScreen, pauseMenu, spectateScreen, minimapUI, sprintUI, churchDoor, imposterCone, bannana;
+    [SerializeField] GameObject endScreen, playerUI, gameUI, upgradeScreen, pauseMenu, spectateScreen, minimapUI, sprintUI, churchDoor, imposterCone, bannana, goonPrefab, coneToDefend;
     [SerializeField] TMP_Text endGameDescriptionText, spectatingText, upgradeDescText, upgradeNameText, featherChargeCounter, gameObjectiveText, respawnTimer;
     [SerializeField] GameObject upgradeDescUI;
     [SerializeField] private GameObject[] upgradeDisplays;
@@ -53,8 +54,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] Sprite[] repeatableUpgradeButtonSprites;
     [SerializeField] string[] repeatableUpgradeNames;
     [SerializeField] string[] repeatableUpgradeDesc;
-    Pigeon ryanGosling;
-    bool gameover = false;
+    public bool gameover = false;
     bool canSpawnFood = true;
     bool pauseMenuOpen = false;
     private Pigeon.Upgrades[] upgradesThatCanBeSelected = new Pigeon.Upgrades[4];
@@ -87,7 +87,6 @@ public class GameManager : NetworkBehaviour
 
     private void Awake()
     {
-        Debug.Log(GameDataHolder.gameMode);
         instance = this;
         endScreenMainMenuButton.onClick.AddListener(() =>
         {
@@ -172,22 +171,20 @@ public class GameManager : NetworkBehaviour
             {
                 timeleftText.text = Mathf.RoundToInt((currentSecond.Value / 500f) * 100) + "%";
                 icecreamBar.fillAmount = (float)currentSecond.Value / 500;
-                if (!gracePeriod && !lookingForConeToBuild.Value)
+                if (!gracePeriod && !lookingForConeToBuild)
                 {
                     gameObjectiveText.text = "Wave " + waveNumber.Value + "/10 Enemies Remaining: " + enemiesRemaining.Value;
                     if (IsServer && enemiesRemaining.Value <= 0)
                     {
                         if (waveNumber.Value + 1 >= 11)
                         {
-                            suddenDeathText.SetActive(true);
-                            iceCreamUI.SetActive(false);
                             ActivateSuddenDeathUIClientRpc();
-                            StartCoroutine(StartEvacCountDown(30));
                             isSuddenDeath.Value = true;
                         }
                         else
                         {
                             StartGracePeriodClientRpc(20);
+
                         }
                     }
                 }
@@ -201,8 +198,13 @@ public class GameManager : NetworkBehaviour
 
         if (!audioSource.isPlaying)
         {
-            audioSource.clip = gigaChadSong;
-            audioSource.loop = true;
+            audioSource.clip = musicTracks[currentTrack];
+            if (currentTrack >= musicTracks.Length - 1) currentTrack = 0;
+            else
+            {
+                currentTrack++;
+
+            }
             audioSource.Play();
         }
         if (!player) return;
@@ -272,9 +274,6 @@ public class GameManager : NetworkBehaviour
                 OpenChurchDoorClientRpc();
             }
         }
-
-
-
     }
 
 
@@ -300,20 +299,20 @@ public class GameManager : NetworkBehaviour
         iceCreamPos = pos;
         GameObject cone = Instantiate(builtConePrefab, pos, transform.rotation);
         cone.GetComponent<NetworkObject>().Spawn();
+        coneToDefend = cone;
         foreach (GameObject unbuiltCones in unbuiltConeGameobjects)
         {
             Destroy(unbuiltCones);
         }
         ShowIceCreamUIClientRpc();
-        gracePeriod = true;
-        StartGracePeriodClientRpc(30);
-        lookingForConeToBuild.Value = false;
+        StartGracePeriodClientRpc(40);
     }
     [ClientRpc]
     private void ShowIceCreamUIClientRpc()
     {
         iceCreamUI.SetActive(true);
-
+        gracePeriod = true;
+        lookingForConeToBuild = false;
     }
     [ClientRpc]
     private void StartGracePeriodClientRpc(int seconds)
@@ -350,6 +349,25 @@ public class GameManager : NetworkBehaviour
     {
         suddenDeathText.SetActive(true);
         iceCreamUI.SetActive(false);
+        if (GameDataHolder.gameMode != "Supremacy")
+        {
+            StartCoroutine(StartEvacCountDown(30));
+            evacZone.SetActive(true);
+            if (IsServer)
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    Vector3 pos = new Vector2(Random.Range(-2f, 2f), Random.Range(-2f, 2f));
+                    pos += coneToDefend.transform.position;
+                    GameObject food = Instantiate(FoodPrefab, pos, transform.rotation);
+                    food.GetComponent<NetworkObject>().Spawn();
+                }
+
+                Destroy(coneToDefend);
+                StartCoroutine(SpawnWave());
+            }
+        }
+
     }
     [ClientRpc]
     private void OpenChurchDoorClientRpc()
@@ -815,7 +833,8 @@ public class GameManager : NetworkBehaviour
     }
     IEnumerator StartEvacCountDown(int seconds)
     {
-
+        currentSecond.Value = seconds;
+        SpawnWave();
         while (true)
         {
             yield return new WaitForSeconds(1);
@@ -977,7 +996,6 @@ public class GameManager : NetworkBehaviour
                         UpdatePigeonsForClientsClientRpc(pigeonStartData.ToArray());
 
 
-
                         if (GameDataHolder.gameMode == "Supremacy")
                         {
                             StartCoroutine(DepreciateIceCream());
@@ -1015,6 +1033,7 @@ public class GameManager : NetworkBehaviour
     IEnumerator DepreciateIceCream()
     {
         yield return new WaitForSeconds(0.1f);
+        gracePeriod = true;
         loadingPigeonsText.SetActive(false);
         playerUI.SetActive(true);
         HideLoadingPigeonsTextClientRpc();
@@ -1045,11 +1064,11 @@ public class GameManager : NetworkBehaviour
     IEnumerator SpawnWave()
     {
         waveNumber.Value++;
-        enemiesRemaining.Value = 5;
+        enemiesRemaining.Value = waveNumber.Value * 2 + 3;
         int specialWaveType = Random.Range(0, 2);
         for (int i = 0; i < waveNumber.Value * 2 + 3; i++)
         {
-            yield return new WaitForSeconds(2f);
+            yield return new WaitForSeconds(1f);
 
             Vector3 spawnPos = GetSpawnPos();
 
@@ -1059,24 +1078,28 @@ public class GameManager : NetworkBehaviour
                 spawnPos = GetSpawnPos();
 
             }
-            GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
+            GameObject pigeon = Instantiate(goonPrefab, spawnPos, transform.rotation);
             PigeonAI ai = pigeon.GetComponent<PigeonAI>();
 
             ai.SetAI(3);
             ai.diesAfterDeath = true;
             ai.flock = 2;
-            if (waveNumber.Value == 5 || waveNumber.Value == 8)
+            if (waveNumber.Value == 5 || waveNumber.Value == 8 || waveNumber.Value == 3 || waveNumber.Value == 10)
             {
                 switch (specialWaveType)
                 {
                     case 0:
                         ai.AddUpgrade(Upgrades.slam);
+                        ai.AddUpgrade(Upgrades.overclock);
                         break;
                     case 1:
                         ai.AddUpgrade(Upgrades.razorFeathers);
+                        ai.AddUpgrade(Upgrades.overclock);
                         break;
                     case 2:
                         ai.AddUpgrade(Upgrades.mewing);
+                        ai.AddUpgrade(Upgrades.overclock);
+
                         break;
 
                 }

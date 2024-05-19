@@ -24,13 +24,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1140941621586331586}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 71.12264, y: 40.79013, z: 0.1092139}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1140941621586331585
 MonoBehaviour:
@@ -54,11 +54,24 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 090f8d8d46dad3c4a86c475c9678be40, type: 2}
   - {fileID: 11400000, guid: ba0520a46d13d1f40b4d9dc378dfca6f, type: 2}
   - {fileID: 11400000, guid: aaa3fbf02c9d92d4781c41f9cfe7c7a7, type: 2}
+  - {fileID: 11400000, guid: b6a00afaea5185749976958371182732, type: 2}
+  - {fileID: 11400000, guid: 8aa19b7301ecdbb4293e758c32248ef6, type: 2}
+  - {fileID: 11400000, guid: b0f3b14c3b3532e4e85b900c38d30cab, type: 2}
+  - {fileID: 11400000, guid: 0fbfb4a1670135545a22dba09cf46ba3, type: 2}
+  - {fileID: 11400000, guid: 676a1596c042f03439217676b55dbe52, type: 2}
+  - {fileID: 11400000, guid: 1f7d30c29300b3e4a9d53ba4cb751f57, type: 2}
   headSkinSOs:
   - {fileID: 11400000, guid: 221b2343b9ac1d44780a241a399edb25, type: 2}
   - {fileID: 11400000, guid: 3e47337e8154e9d4182bfa3fff9573ad, type: 2}
   - {fileID: 11400000, guid: 7e937626680baf840bcb443774dfb85c, type: 2}
+  - {fileID: 11400000, guid: e0e67f16772e21b4cb3e88e3c7ac98a9, type: 2}
+  - {fileID: 11400000, guid: f6b932b8fd9a0ba409b3b336aa6a5f51, type: 2}
+  - {fileID: 11400000, guid: 70f2e397c5f6a2e41bfcf9b24a1ed11f, type: 2}
+  - {fileID: 11400000, guid: 509f63ca0288c9c4890518397ff84446, type: 2}
   bodySkinSOs:
   - {fileID: 11400000, guid: 66b1ab21001793e48be233eb9820fd6a, type: 2}
   - {fileID: 11400000, guid: 2ee41b251c47e7548818e2a7812aab5e, type: 2}
   - {fileID: 11400000, guid: ac10d14324cebbb4287743f4afaa8087, type: 2}
+  - {fileID: 11400000, guid: 1f95e3b092ef0be4db313684d2f16116, type: 2}
+  - {fileID: 11400000, guid: cfd2c78ccf11a8d44bc6b1a19ca52edd, type: 2}
+  - {fileID: 11400000, guid: e98a3b2c746cde64a9e830cfd48347c2, type: 2}

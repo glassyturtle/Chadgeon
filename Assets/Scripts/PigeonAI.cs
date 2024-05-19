@@ -46,7 +46,7 @@ public class PigeonAI : Pigeon
                 behaviorAI = PVEBehavior;
                 pigeonName = "Goon";
                 isFleeing = false;
-                iceCreamLocation = FindFirstObjectByType<BuiltConeScript>().transform.position;
+                if (!GameManager.instance.isSuddenDeath.Value) iceCreamLocation = FindFirstObjectByType<BuiltConeScript>().transform.position;
                 break;
 
         }
@@ -90,7 +90,7 @@ public class PigeonAI : Pigeon
         if (isMewing) return;
         if (!isKnockedOut.Value)
         {
-            if (!isSlaming)
+            if (!isSlaming && !isAssassinating)
             {
                 isPathfinding = true;
                 float distanceToPigeon = Mathf.Infinity;
@@ -261,7 +261,7 @@ public class PigeonAI : Pigeon
     }
     private void AIThrow()
     {
-        if (chargedFeathers <= 0) return;
+        if (chargedFeathers <= 0 || !targetPigeon) return;
         canHit = false;
         StartCoroutine(RechargeHitColldown());
 
@@ -538,6 +538,7 @@ public class PigeonAI : Pigeon
     }
     private void PVEBehavior(float distanceToPigeon, float distanceToFood)
     {
+        if (GameManager.instance.gameover) return;
         float distanceToIceCream = Vector2.SqrMagnitude(transform.position - iceCreamLocation);
 
         Assassinate();
@@ -545,44 +546,72 @@ public class PigeonAI : Pigeon
         SummonWholeGain(transform.position);
         SummonPigeonPoo(transform.position);
 
-
-        if (targetPigeon && targetFood && distanceToFood < distanceToPigeon * 2 && distanceToFood < distanceToIceCream)
+        if (GameManager.instance.isSuddenDeath.Value)
         {
-            //goes to neaby food item 
-            if (stamina == maxStamina) AIStartSprint();
-            locationToPathfindTo = targetFood.transform.position;
-        }
-        else if (targetPigeon && distanceToPigeon < distanceToIceCream * 4)
-        {
-            if (distanceToPigeon >= 6 && stamina == maxStamina) AIStartSprint();
-
-            if (canHit && distanceToPigeon <= 3f)
+            if (targetPigeon && targetFood && distanceToFood < distanceToPigeon * 2)
             {
-                AIStopSprinting();
-                AIAttack();
+                //goes to neaby food item 
+                if (stamina == maxStamina) AIStartSprint();
+                locationToPathfindTo = targetFood.transform.position;
             }
-            else
+            else if (targetPigeon)
             {
-                if (canHit) AIThrow();
-                StartSlam(targetPigeon.transform.position);
-                locationToPathfindTo = targetPigeon.transform.position;
+                if (distanceToPigeon >= 6 && stamina == maxStamina) AIStartSprint();
+
+                if (canHit && distanceToPigeon <= 5f)
+                {
+                    AIStopSprinting();
+                    AIAttack();
+                }
+                else
+                {
+                    if (canHit) AIThrow();
+                    StartSlam(targetPigeon.transform.position);
+                    locationToPathfindTo = targetPigeon.transform.position;
+                }
             }
         }
         else
         {
-            if (canHit && distanceToIceCream <= 3f)
+            if (targetPigeon && targetFood && distanceToFood < distanceToPigeon * 2 && distanceToFood < distanceToIceCream)
             {
-                AIStopSprinting();
-                AIAttack(iceCreamLocation);
-                GameManager.instance.DamageCone();
+                //goes to neaby food item 
+                if (stamina == maxStamina) AIStartSprint();
+                locationToPathfindTo = targetFood.transform.position;
+            }
+            else if (targetPigeon && distanceToPigeon < distanceToIceCream * 4)
+            {
+                if (distanceToPigeon >= 6 && stamina == maxStamina) AIStartSprint();
+
+                if (canHit && distanceToPigeon <= 5f)
+                {
+                    AIStopSprinting();
+                    AIAttack();
+                }
+                else
+                {
+                    if (canHit) AIThrow();
+                    StartSlam(targetPigeon.transform.position);
+                    locationToPathfindTo = targetPigeon.transform.position;
+                }
             }
             else
             {
-                if (canHit) AIThrow();
-                StartSlam(iceCreamLocation);
-                locationToPathfindTo = iceCreamLocation;
+                if (canHit && distanceToIceCream <= 5f)
+                {
+                    AIStopSprinting();
+                    AIAttack(iceCreamLocation);
+                    GameManager.instance.DamageCone();
+                }
+                else
+                {
+                    if (canHit) AIThrow();
+                    StartSlam(iceCreamLocation);
+                    locationToPathfindTo = iceCreamLocation;
+                }
             }
         }
+
     }
 
     private void UpdatePath()
@@ -634,10 +663,7 @@ public class PigeonAI : Pigeon
         {
             inBorder = true;
         }
-        if (collision.CompareTag("Poo") && !pigeonUpgrades.ContainsKey(Upgrades.pigeonPoo))
-        {
-            inPoo = true;
-        }
+
     }
 
     private void OnTriggerExit2D(Collider2D collision)
@@ -646,7 +672,14 @@ public class PigeonAI : Pigeon
         {
             inBorder = false;
         }
-        if (inPoo && collision.CompareTag("Poo") && !pigeonUpgrades.ContainsKey(Upgrades.pigeonPoo))
+    }
+    private void OnTriggerStay2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Poo") && !pigeonUpgrades.ContainsKey(Upgrades.pigeonPoo))
+        {
+            inPoo = true;
+        }
+        else
         {
             inPoo = false;
         }

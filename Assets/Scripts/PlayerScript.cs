@@ -50,6 +50,7 @@ public class PlayerScript : Pigeon
         }
         else if (isAssassinating)
         {
+            if (targetPigeon == null) LandAssassinate();
             Vector2 direction = (targetPigeon.transform.position - transform.position).normalized;
             if (!canSwitchAttackSprites) CheckDirection(direction);
             MoveServerRpc(4 * speed * Time.fixedDeltaTime * speedMod, direction);
@@ -193,10 +194,7 @@ public class PlayerScript : Pigeon
         {
             inBorder = true;
         }
-        if (collision.CompareTag("Poo") && !pigeonUpgrades.ContainsKey(Upgrades.pigeonPoo))
-        {
-            inPoo = true;
-        }
+
     }
 
     private void OnTriggerExit2D(Collider2D collision)
@@ -209,7 +207,15 @@ public class PlayerScript : Pigeon
         {
             inEvacsite = false;
         }
-        if (inPoo && collision.CompareTag("Poo") && !pigeonUpgrades.ContainsKey(Upgrades.pigeonPoo))
+
+    }
+    private void OnTriggerStay2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Poo") && !pigeonUpgrades.ContainsKey(Upgrades.pigeonPoo))
+        {
+            inPoo = true;
+        }
+        else
         {
             inPoo = false;
         }

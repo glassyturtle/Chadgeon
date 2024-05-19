@@ -62,7 +62,7 @@ public class LobbyPlayerSingleUI : MonoBehaviour
             playerFlockText.color = Color.white;
         }
 
-        rs.UpdateRank(int.Parse(player.Data[MultiplayerManager.KEY_PLAYER_RANK].Value));
+        rs.UpdateRank(int.Parse(player.Data[MultiplayerManager.KEY_PLAYER_RANK].Value) - 1);
         //Changes skin icon
         int skinID = int.Parse(player.Data[MultiplayerManager.KEY_PLAYER_SKIN].Value);
         if (skinID != -1) pigeonBaseImage.sprite = CustomizationManager.Instance.GetSprite(CustomizationManager.SpriteType.baseSkin, skinID, 0);

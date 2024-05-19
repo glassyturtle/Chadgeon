@@ -39,6 +39,12 @@ public static class SaveDataManager
         iceCream = 4,
         whitedeath = 2,
         ryanGosling = 8,
+        blackDeath = 9,
+        demon = 10,
+        orange = 11,
+        nigeon = 12,
+        robot = 13,
+        risk = 14,
     }
 
 

@@ -68,6 +68,7 @@ public class Pigeon : NetworkBehaviour
     [SerializeField] protected Pigeon targetPigeon;
     [SerializeField] protected Rigidbody2D body;
     [SerializeField] private GameObject bloodEffect;
+    [SerializeField] private SpriteRenderer allyIconMinimap;
     [SerializeField] private GameObject feather;
     [SerializeField] private GameObject healthBarGameobject;
     [SerializeField] private Transform hpBar;
@@ -78,8 +79,6 @@ public class Pigeon : NetworkBehaviour
     [SerializeField] private HitScript slash;
     [SerializeField] private GameObject wholeGains;
     [SerializeField] private GameObject pigeonPoo;
-    [SerializeField] private AudioClip[] cruchSound;
-    [SerializeField] private AudioSource audioSource;
 
 
     //Skins
@@ -189,7 +188,27 @@ public class Pigeon : NetworkBehaviour
 
             //Calculates total damage taken with modifiers
             totalDamageTaking = atkProp.damage;
+            if (isPlayer && GameDataHolder.gameMode != "Supremacy")
+            {
+                switch (GameManager.instance.allpigeons.Count)
+                {
+                    case 1:
+                        totalDamageTaking = Mathf.RoundToInt(totalDamageTaking * 0.65f);
+                        break;
+                    case 2:
+                        totalDamageTaking = Mathf.RoundToInt(totalDamageTaking * 0.8f);
+                        break;
+
+                    case 3:
+                        totalDamageTaking = Mathf.RoundToInt(totalDamageTaking * 0.90f);
+                        break;
+
+
+                }
+            }
+
             if (isSlaming) totalDamageTaking /= 2;
+
             if (atkProp.hasCriticalDamage && Random.Range(0, 100) <= 25) totalDamageTaking *= 2;
             if (atkProp.isAssassin && ((float)currentHP.Value / maxHp.Value) <= 0.33f) totalDamageTaking *= 2;
             if (!atkProp.isEnchanted && pigeonUpgrades.ContainsKey(Upgrades.tough)) totalDamageTaking = Mathf.RoundToInt(totalDamageTaking * 0.7f);
@@ -253,6 +272,26 @@ public class Pigeon : NetworkBehaviour
             wasPlayer = isPlayer,
         };
 
+        /*
+        if (!isPlayer && GameDataHolder.gameMode != "Supremacy")
+        {
+            switch (GameDataHolder.botDifficulty)
+            {
+                case 0:
+                    ddProp.xpOnKill = Mathf.RoundToInt(ddProp.xpOnKill * 0.6f);
+                    break;
+                case 1:
+                    ddProp.xpOnKill = Mathf.RoundToInt(ddProp.xpOnKill * 0.5f);
+                    break;
+                case 2:
+                    ddProp.xpOnKill = Mathf.RoundToInt(ddProp.xpOnKill * 0.4f);
+                    break;
+                case 3:
+                    ddProp.xpOnKill = Mathf.RoundToInt(ddProp.xpOnKill * 0.3f);
+                    break;
+            }
+        }
+        */
         OnDealtDamageServerRpc(ddProp, atkProp.pigeonID);
 
     }
@@ -351,15 +390,6 @@ public class Pigeon : NetworkBehaviour
     }
 
 
-    //Public
-    public void PlayEatSound()
-    {
-        if (!audioSource.isPlaying)
-        {
-            audioSource.clip = cruchSound[Random.Range(0, cruchSound.Length)];
-            audioSource.Play();
-        }
-    }
     public void GainXP(int amnt)
     {
         if (isKnockedOut.Value) return;
@@ -460,20 +490,27 @@ public class Pigeon : NetworkBehaviour
                 break;
             case Upgrades.slam:
                 if (isPlayer) GameManager.instance.ActivateAbility(Upgrades.slam);
+                m2AbilityCooldown = 0;
                 hasAbilityM2 = true; break;
             case Upgrades.hiddinTalon:
                 if (isPlayer) GameManager.instance.ActivateAbility(Upgrades.hiddinTalon);
+                qAbilityCooldown = 0;
                 hasAbilityQ = true; break;
             case Upgrades.mewing:
                 if (isPlayer) GameManager.instance.ActivateAbility(Upgrades.mewing);
+                qAbilityCooldown = 0;
                 hasAbilityQ = true; break;
             case Upgrades.wholeGains:
+                eAbilityCooldown = 0;
                 if (isPlayer) GameManager.instance.ActivateAbility(Upgrades.wholeGains);
                 hasAbilityE = true; break;
             case Upgrades.pigeonPoo:
+                eAbilityCooldown = 0;
                 if (isPlayer) GameManager.instance.ActivateAbility(Upgrades.pigeonPoo);
                 hasAbilityE = true; break;
             case Upgrades.razorFeathers:
+                m2AbilityCooldown = 0;
+                chargedFeathers = 3;
                 if (isPlayer) GameManager.instance.ActivateAbility(Upgrades.razorFeathers);
                 hasAbilityM2 = true; break;
         }
@@ -494,20 +531,41 @@ public class Pigeon : NetworkBehaviour
                 case 1:
                     flockDisplayText.text = "Enjoyers";
                     flockDisplayText.color = Color.cyan;
+                    if (GameManager.instance.player.flock == flock && GameManager.instance.player != this)
+                    {
+                        allyIconMinimap.gameObject.SetActive(true);
+                        allyIconMinimap.color = Color.cyan;
+                    }
                     break;
                 case 2:
                     flockDisplayText.text = "Psychos";
                     flockDisplayText.color = Color.red;
+                    if (GameManager.instance.player.flock == flock && GameManager.instance.player != this)
+                    {
+                        allyIconMinimap.gameObject.SetActive(true);
+                        allyIconMinimap.color = Color.red;
+                    }
                     break;
                 case 3:
                     flockDisplayText.text = "Minions";
                     flockDisplayText.color = Color.yellow;
+                    if (GameManager.instance.player.flock == flock && GameManager.instance.player != this)
+                    {
+                        allyIconMinimap.gameObject.SetActive(true);
+                        allyIconMinimap.color = Color.yellow;
+                    }
                     break;
                 case 4:
                     flockDisplayText.text = "Looksmaxers";
                     flockDisplayText.color = Color.green;
+                    if (GameManager.instance.player.flock == flock && GameManager.instance.player != this)
+                    {
+                        allyIconMinimap.gameObject.SetActive(true);
+                        allyIconMinimap.color = Color.green;
+                    }
                     break;
             }
+
         }
         else
         {
@@ -704,7 +762,7 @@ public class Pigeon : NetworkBehaviour
         }
 
         body.freezeRotation = true;
-        if ((pigeonAI && GameDataHolder.gameMode != "Supremacy") || isPlayer) GameManager.instance.allpigeons.Add(this);
+        if ((pigeonAI && GameDataHolder.gameMode == "Supremacy") || isPlayer) GameManager.instance.allpigeons.Add(this);
     }
     protected void CheckDirection(Vector2 direction)
     {
@@ -773,17 +831,17 @@ public class Pigeon : NetworkBehaviour
     {
         targetPigeon = GetNearestPigeonTarget();
 
-        if (qAbilityCooldown > 0 || targetPigeon != null || !pigeonUpgrades.ContainsKey(Upgrades.hiddinTalon)) return false;
+        if (qAbilityCooldown > 0 || targetPigeon == null || !pigeonUpgrades.ContainsKey(Upgrades.hiddinTalon)) return false;
 
         //Starts mew Cooldown
         if (pigeonUpgrades.ContainsKey(Upgrades.overclock))
         {
-            if (isPlayer) GameManager.instance.StartCooldown(Upgrades.hiddinTalon, 67);
+            if (isPlayer) GameManager.instance.StartCooldown(Upgrades.hiddinTalon, 45);
             qAbilityCooldown = 67;
         }
         else
         {
-            if (isPlayer) GameManager.instance.StartCooldown(Upgrades.hiddinTalon, 90);
+            if (isPlayer) GameManager.instance.StartCooldown(Upgrades.hiddinTalon, 60);
             qAbilityCooldown = 90;
         }
 
@@ -805,6 +863,7 @@ public class Pigeon : NetworkBehaviour
     }
     protected void StopMogging()
     {
+        if (!isMaxing) return;
         isMaxing = false;
         speedMod += .5f;
 
@@ -838,9 +897,9 @@ public class Pigeon : NetworkBehaviour
         canSwitchAttackSprites = true;
 
         Vector2 pos = transform.position;
-        pos = Vector2.MoveTowards(pos, abilityTargetPos, 0.1f);
+        pos = Vector2.MoveTowards(pos, targetPigeon.transform.position, 0.1f);
 
-        Vector3 targ = abilityTargetPos;
+        Vector3 targ = targetPigeon.transform.position;
         targ.z = 0f;
         targ.x -= transform.position.x;
         targ.y -= transform.position.y;

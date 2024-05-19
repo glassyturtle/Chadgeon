@@ -12,6 +12,10 @@ public class StatsMenuScript : MonoBehaviour
     public void OpenStatsMenu()
     {
         gameObject.SetActive(true);
+        pigeonHeadImage.gameObject.SetActive(true);
+        pigeonBaseImage.gameObject.SetActive(true);
+        pigeonBodyImage.gameObject.SetActive(true);
+
         if (SaveDataManager.selectedSkinBase != -1) pigeonBaseImage.sprite = CustomizationManager.Instance.GetSprite(CustomizationManager.SpriteType.baseSkin, SaveDataManager.selectedSkinBase, 0);
         else
         {
@@ -33,8 +37,8 @@ public class StatsMenuScript : MonoBehaviour
 
 
         mainMenu.SetActive(false);
-        rs.UpdateRank(Mathf.FloorToInt(SaveDataManager.totalPigeonXPEarned / 5000));
-        pigeonLevelText.text = (1 + Mathf.FloorToInt(SaveDataManager.totalPigeonXPEarned / 5000)).ToString();
+        rs.UpdateRank(Mathf.FloorToInt((SaveDataManager.totalPigeonXPEarned / 10000) + (SaveDataManager.gamesPlayed / 5)));
+        pigeonLevelText.text = (1 + Mathf.FloorToInt((SaveDataManager.totalPigeonXPEarned / 10000) + (SaveDataManager.gamesPlayed / 5))).ToString();
         pigeonNameText.text = SaveDataManager.playerName;
         gamesPlayedText.text = SaveDataManager.gamesPlayed.ToString();
         pigeonsKOText.text = SaveDataManager.totalPigeonsKo.ToString();

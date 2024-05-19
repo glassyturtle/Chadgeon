@@ -30,6 +30,11 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] Image pigeonHeadImage;
     [SerializeField] Image pigeonBaseImage;
 
+    [SerializeField] AudioSource musicSorce;
+    [SerializeField] AudioClip mainMenuMusic;
+    [SerializeField] AudioClip customizationMusic;
+
+
     private SaveDataManager.Skins skinTryingToUnlock = SaveDataManager.Skins.classic;
     private int skinCost;
 
@@ -140,6 +145,8 @@ public class MainMenuManager : MonoBehaviour
     }
     public void OpenCustomizations()
     {
+        musicSorce.clip = customizationMusic;
+        musicSorce.Play();
         if (SaveDataManager.selectedSkinBase != -1) pigeonBaseImage.sprite = CustomizationManager.Instance.GetSprite(CustomizationManager.SpriteType.baseSkin, SaveDataManager.selectedSkinBase, 0);
         else
         {
@@ -165,6 +172,8 @@ public class MainMenuManager : MonoBehaviour
     }
     public void CloseCustomizations()
     {
+        musicSorce.clip = mainMenuMusic;
+        musicSorce.Play();
         customizationMenu.SetActive(false);
         mainMenu.SetActive(true);
         SaveDataManager.SaveGameData();

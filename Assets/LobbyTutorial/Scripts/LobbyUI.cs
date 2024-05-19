@@ -26,6 +26,7 @@ public class LobbyUI : MonoBehaviour
     [SerializeField] private GameObject changeFlockMenu;
     [SerializeField] private GameObject changeBotAmountSetting;
     [SerializeField] private GameObject changeFlockButtonGameobject;
+    [SerializeField] private GameObject editFlockButton;
     [SerializeField] private List<GameObject> hostButtons;
     [SerializeField] private TextMeshProUGUI lobbyNameText;
     [SerializeField] private TextMeshProUGUI lobbyMapText;
@@ -277,17 +278,7 @@ public class LobbyUI : MonoBehaviour
     private void UpdateLobby(Lobby lobby)
     {
         ClearLobby();
-        GameDataHolder.gameMode = lobby.Data[MultiplayerManager.KEY_GAMEMODE].Value;
-        if (lobby.Data[MultiplayerManager.KEY_GAMEMODE].Value == "Supremacy")
-        {
-            changeBotAmountSetting.SetActive(true);
-            changeFlockButtonGameobject.SetActive(true);
-        }
-        else
-        {
-            changeBotAmountSetting.SetActive(false);
-            changeFlockButtonGameobject.SetActive(false);
-        }
+
 
         foreach (Player player in lobby.Players)
         {
@@ -328,7 +319,19 @@ public class LobbyUI : MonoBehaviour
         playerCountText.text = lobby.Players.Count + "/" + lobby.MaxPlayers + " Player Pigeons";
         joinCodeText.text = lobby.LobbyCode;
 
-
+        GameDataHolder.gameMode = lobby.Data[MultiplayerManager.KEY_GAMEMODE].Value;
+        if (lobby.Data[MultiplayerManager.KEY_GAMEMODE].Value == "Supremacy")
+        {
+            editFlockButton.SetActive(true);
+            changeBotAmountSetting.SetActive(true);
+            changeFlockButtonGameobject.SetActive(true);
+        }
+        else
+        {
+            editFlockButton.SetActive(false);
+            changeBotAmountSetting.SetActive(false);
+            changeFlockButtonGameobject.SetActive(false);
+        }
 
 
         Show();

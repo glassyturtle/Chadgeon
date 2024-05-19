@@ -156,7 +156,7 @@ public class MultiplayerManager : MonoBehaviour
                         {"PlayerName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, GameDataHolder.multiplayerName) },
                         {"PlayerSkin", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinBase.ToString()) },
                         {"PlayerBody", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinBody.ToString()) },
-                        {"PlayerRank", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, Mathf.FloorToInt(SaveDataManager.totalPigeonXPEarned / 5000).ToString()) },
+                        {"PlayerRank", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, Mathf.FloorToInt(1 + Mathf.FloorToInt((SaveDataManager.totalPigeonXPEarned / 10000) + (SaveDataManager.gamesPlayed / 5))).ToString()) },
                         {"PlayerHead", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinHead.ToString()) },
                         {"Flock", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, "0") },
                     }
@@ -278,7 +278,7 @@ public class MultiplayerManager : MonoBehaviour
                         {"PlayerName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, GameDataHolder.multiplayerName) },
                                                 {"PlayerSkin", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinBase.ToString()) },
                         {"PlayerBody", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinBody.ToString()) },
-                        {"PlayerRank", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, Mathf.FloorToInt(SaveDataManager.totalPigeonXPEarned / 5000).ToString()) },
+                        {"PlayerRank", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, Mathf.FloorToInt(1 + Mathf.FloorToInt((SaveDataManager.totalPigeonXPEarned / 10000) + (SaveDataManager.gamesPlayed / 5))).ToString()) },
                         {"PlayerHead", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinHead.ToString()) },
                         {"Flock", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, newFlock) },
                     }

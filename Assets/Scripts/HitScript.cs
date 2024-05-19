@@ -10,8 +10,6 @@ public class HitScript : NetworkBehaviour
     [SerializeField] private Collider2D area;
     [SerializeField] private GameObject mask;
     [SerializeField] private SpriteRenderer sr;
-    [SerializeField] private AudioClip[] hitClips;
-    [SerializeField] private AudioSource audioSource;
 
 
     private void Update()
@@ -74,11 +72,6 @@ public class HitScript : NetworkBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (!audioSource.isPlaying)
-        {
-            audioSource.clip = hitClips[Random.Range(0, hitClips.Length)];
-            audioSource.Play();
-        }
 
         if (!IsOwner) return;
 

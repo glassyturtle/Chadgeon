@@ -29,7 +29,6 @@ public class food : NetworkBehaviour
         Pigeon hitPigeon = collision.GetComponent<Pigeon>();
         if (hitPigeon)
         {
-            hitPigeon.PlayEatSound();
             if (hitPigeon.IsOwner)
             {
                 hitPigeon.GainXP(xpGained, true);
