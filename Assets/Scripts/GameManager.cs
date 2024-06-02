@@ -97,7 +97,7 @@ public class GameManager : NetworkBehaviour
         if (GameDataHolder.multiplayerName != "") chageonName.text = GameDataHolder.multiplayerName;
         else chageonName.text = "Chadgeon ";
 
-        if (GameDataHolder.gameMode == "Supremacy")
+        if (GameDataHolder.gameMode == 0)
         {
             gameObjectiveText.gameObject.SetActive(false);
         }
@@ -137,7 +137,7 @@ public class GameManager : NetworkBehaviour
 
 
 
-        if (GameDataHolder.gameMode == "Supremacy")
+        if (GameDataHolder.gameMode == 0)
         {
             int seconds = currentSecond.Value % 60;
             if (seconds < 10)
@@ -349,7 +349,7 @@ public class GameManager : NetworkBehaviour
     {
         suddenDeathText.SetActive(true);
         iceCreamUI.SetActive(false);
-        if (GameDataHolder.gameMode != "Supremacy")
+        if (GameDataHolder.gameMode == 1)
         {
             StartCoroutine(StartEvacCountDown(30));
             evacZone.SetActive(true);
@@ -466,7 +466,7 @@ public class GameManager : NetworkBehaviour
     }
     public Vector3 GetSpawnPos(int location)
     {
-        Transform pos = spawnLocations[Random.Range(0, spawnLocations.Count)];
+        Transform pos = spawnLocations[location];
         float spawnX = pos.position.x;
         float spawnY = pos.position.y;
 
@@ -872,10 +872,10 @@ public class GameManager : NetworkBehaviour
 
         while (true)
         {
-            if (GameDataHolder.playerCount == NetworkManager.Singleton.ConnectedClients.Count)
+            if (GameDataHolder.isSinglePlayer || GameDataHolder.playerCount == NetworkManager.Singleton.ConnectedClients.Count)
             {
                 yield return new WaitForSeconds(1);
-                if (GameDataHolder.gameMode == "Supremacy")
+                if (GameDataHolder.gameMode == 0)
                 {
                     foreach (ulong client in NetworkManager.Singleton.ConnectedClientsIds)
                     {
@@ -990,13 +990,13 @@ public class GameManager : NetworkBehaviour
 
                 while (true)
                 {
-                    if (totalPigeons == pigeonStartData.Count)
+                    if (totalPigeons == pigeonStartData.Count || GameDataHolder.isSinglePlayer)
                     {
                         currentSecond.Value = secondsTillSuddenDeath;
                         UpdatePigeonsForClientsClientRpc(pigeonStartData.ToArray());
 
 
-                        if (GameDataHolder.gameMode == "Supremacy")
+                        if (GameDataHolder.gameMode == 0)
                         {
                             StartCoroutine(DepreciateIceCream());
 
@@ -1137,5 +1137,6 @@ public class GameManager : NetworkBehaviour
 
 
     }
+
 }
 

@@ -33,6 +33,7 @@ MonoBehaviour:
     - Assembly-CSharp
     - Assembly-CSharp-firstpass
     - AstarPathfindingProject
+    - Discord
     - unity-websocket-sharp
     showAdvancedSettings: 0
   addMgrToSceneAutomatically: 0

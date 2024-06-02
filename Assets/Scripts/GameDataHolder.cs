@@ -1,7 +1,8 @@
 public static class GameDataHolder
 {
+    public static bool isSinglePlayer = true;
     public static string joinCode = "ERROR";
-    public static string gameMode = "Supremacy";
+    public static int gameMode = 0;
     public static string multiplayerName = "Chadgeon";
     public static int map = 0;
     public static int flock = 0;

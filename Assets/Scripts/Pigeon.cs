@@ -79,6 +79,10 @@ public class Pigeon : NetworkBehaviour
     [SerializeField] private HitScript slash;
     [SerializeField] private GameObject wholeGains;
     [SerializeField] private GameObject pigeonPoo;
+    [SerializeField] AudioSource audioSorce;
+    [SerializeField] AudioSource DINGSOURCE;
+    [SerializeField] AudioClip flySound;
+    [SerializeField] AudioClip levelUp;
 
 
     //Skins
@@ -188,7 +192,7 @@ public class Pigeon : NetworkBehaviour
 
             //Calculates total damage taken with modifiers
             totalDamageTaking = atkProp.damage;
-            if (isPlayer && GameDataHolder.gameMode != "Supremacy")
+            if (isPlayer && GameDataHolder.gameMode != 0)
             {
                 switch (GameManager.instance.allpigeons.Count)
                 {
@@ -308,9 +312,9 @@ public class Pigeon : NetworkBehaviour
             if (isPlayer)
             {
                 GameDataHolder.kills++;
+                DINGSOURCE.Play();
                 if (ddProp.wasPlayer) SaveDataManager.playerPigeonsKo++;
             }
-
             GainXP(ddProp.xpOnKill);
         }
     }
@@ -708,7 +712,7 @@ public class Pigeon : NetworkBehaviour
             {
                 if (GameDataHolder.multiplayerName == "") pigeonName = "Chadgeon";
                 else pigeonName = GameDataHolder.multiplayerName;
-                if (GameDataHolder.gameMode == "Supremacy") flock = GameDataHolder.flock;
+                if (GameDataHolder.gameMode == 0) flock = GameDataHolder.flock;
                 else flock = 1;
                 skinBase = SaveDataManager.selectedSkinBase;
                 skinBody = SaveDataManager.selectedSkinBody;
@@ -762,7 +766,7 @@ public class Pigeon : NetworkBehaviour
         }
 
         body.freezeRotation = true;
-        if ((pigeonAI && GameDataHolder.gameMode == "Supremacy") || isPlayer) GameManager.instance.allpigeons.Add(this);
+        if ((pigeonAI && GameDataHolder.gameMode == 0) || isPlayer) GameManager.instance.allpigeons.Add(this);
     }
     protected void CheckDirection(Vector2 direction)
     {
@@ -1061,6 +1065,11 @@ public class Pigeon : NetworkBehaviour
     }
     public void LevelUP()
     {
+        if (isPlayer)
+        {
+            audioSorce.clip = levelUp;
+            audioSorce.Play();
+        }
         xp -= xpTillLevelUp;
         xpTillLevelUp += 10;
         level.Value++;
@@ -1237,7 +1246,7 @@ public class Pigeon : NetworkBehaviour
         {
             GameManager.instance.enemiesRemaining.Value--;
         }
-        if (GameDataHolder.gameMode != "Supremacy" && isPlayer)
+        if (GameDataHolder.gameMode != 0 && isPlayer)
         {
 
             GameManager.instance.StartSpectating(secondsToRespawn);
@@ -1261,11 +1270,12 @@ public class Pigeon : NetworkBehaviour
         }
         else
         {
-            if (GameDataHolder.gameMode != "Supremacy")
+            if (GameDataHolder.gameMode != 0)
             {
                 secondsToRespawn += 3;
                 GameManager.instance.StopSpectating();
             }
+            PlayFlyServerRpc();
             StartFly();
         }
     }
@@ -1381,5 +1391,20 @@ public class Pigeon : NetworkBehaviour
         ChangePigeonSizeServerRpc(true);
         yield return new WaitForSeconds(20f);
         StopMogging();
+    }
+
+
+
+    [ServerRpc]
+    private void PlayFlyServerRpc()
+    {
+        PlayFlyClientRpc();
+
+    }
+    [ClientRpc]
+    private void PlayFlyClientRpc()
+    {
+        audioSorce.clip = flySound;
+        audioSorce.Play();
     }
 }

@@ -11,6 +11,9 @@ public class HitScript : NetworkBehaviour
     [SerializeField] private GameObject mask;
     [SerializeField] private SpriteRenderer sr;
 
+    [SerializeField] AudioSource audioSorce;
+    [SerializeField] AudioClip[] swooshSounds;
+
 
     private void Update()
     {
@@ -28,6 +31,7 @@ public class HitScript : NetworkBehaviour
     }
     public void Activate(Vector3 pos, Quaternion angle, bool isSlaming)
     {
+        PlaySwooshServerRpc();
         if (isSlaming)
         {
             transform.localScale = new Vector3(6, 6, 1);
@@ -100,5 +104,17 @@ public class HitScript : NetworkBehaviour
         }
     }
 
+    [ServerRpc]
+    private void PlaySwooshServerRpc()
+    {
+        PlaySwooshClientRpc();
+
+    }
+    [ClientRpc]
+    private void PlaySwooshClientRpc()
+    {
+        audioSorce.clip = swooshSounds[Random.Range(0, swooshSounds.Length)];
+        audioSorce.Play();
+    }
 
 }

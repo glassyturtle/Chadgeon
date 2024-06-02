@@ -26,6 +26,7 @@ public class LoginScript : MonoBehaviour
     }
     public void StartLogin()
     {
+        GameDataHolder.isSinglePlayer = false;
         backButton.SetActive(false);
         playButtons.SetActive(false);
         connectingUI.SetActive(true);
@@ -33,6 +34,17 @@ public class LoginScript : MonoBehaviour
         connectingText.gameObject.SetActive(true);
         LoginIntoChadgeonAsync();
     }
+    public void StartSinglePlayer()
+    {
+        GameDataHolder.isSinglePlayer = true;
+        backButton.SetActive(false);
+        playButtons.SetActive(false);
+        connectingUI.SetActive(true);
+        connectingText.text = "Loading Game...";
+        connectingText.gameObject.SetActive(true);
+        LoginIntoChadgeonAsync();
+    }
+
     private async void LoginIntoChadgeonAsync()
     {
         try
@@ -46,7 +58,9 @@ public class LoginScript : MonoBehaviour
                 Debug.Log("signed in " + AuthenticationService.Instance.PlayerId);
             };
 
-            connectingText.text = "Signing In...";
+            if (GameDataHolder.isSinglePlayer) connectingText.text = "Loading Game...";
+            else connectingText.text = "Signing In...";
+
 
             await AuthenticationService.Instance.SignInAnonymouslyAsync();
 
@@ -56,9 +70,20 @@ public class LoginScript : MonoBehaviour
         }
         catch (Exception e)
         {
-            connectingText.text = "Could not Connect to server";
-            backButton.SetActive(true);
-            Debug.LogException(e);
+            if (GameDataHolder.isSinglePlayer)
+            {
+
+                connectingText.text = "Starting Game...";
+
+                await SceneManager.LoadSceneAsync("MainMenu");
+            }
+            else
+            {
+                connectingText.text = "Could not Connect to server";
+                backButton.SetActive(true);
+                Debug.LogException(e);
+            }
+
         }
     }
 

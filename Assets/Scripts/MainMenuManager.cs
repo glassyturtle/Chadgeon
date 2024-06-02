@@ -44,6 +44,7 @@ public class MainMenuManager : MonoBehaviour
         chadCoinsText.text = SaveDataManager.chadCoins.ToString();
         nameInput.text = SaveDataManager.playerName.ToString();
         GameDataHolder.ResetStats();
+        Debug.Log(GameDataHolder.isSinglePlayer);
         RefreshShopButtons();
     }
     public void OpenPurchaseSkinNotification(int selectedSkinCost, string skinName, int skinID)
@@ -202,6 +203,7 @@ public class MainMenuManager : MonoBehaviour
     public void StartQuickplay(int mode)
     {
         playMenu.SetActive(false);
+        GameDataHolder.gameMode = mode;
         MultiplayerManager.Instance.QuickJoinLobby(mode);
     }
     private void RefreshShopButtons()

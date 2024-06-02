@@ -55,17 +55,6 @@ public class MultiplayerManager : MonoBehaviour
     }
 
 
-    public enum PlayerCharacter
-    {
-        Classic,
-        Chadgeon,
-        IceCream,
-        Minion,
-        WhereWereTheMinions,
-        Forest,
-        AmericanPigeon,
-    }
-
 
     private void Awake()
     {
@@ -85,6 +74,11 @@ public class MultiplayerManager : MonoBehaviour
 
     public async void CreateLobby(string lobbyName, int maxPlayers, bool isPrivate, string gameMode)
     {
+        if (GameDataHolder.isSinglePlayer)
+        {
+            OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = null });
+            return;
+        }
         Player player = GetPlayer();
 
         CreateLobbyOptions options = new CreateLobbyOptions
@@ -156,7 +150,7 @@ public class MultiplayerManager : MonoBehaviour
                         {"PlayerName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, GameDataHolder.multiplayerName) },
                         {"PlayerSkin", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinBase.ToString()) },
                         {"PlayerBody", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinBody.ToString()) },
-                        {"PlayerRank", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, Mathf.FloorToInt(1 + Mathf.FloorToInt((SaveDataManager.totalPigeonXPEarned / 10000) + (SaveDataManager.gamesPlayed / 5))).ToString()) },
+                        {"PlayerRank", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, Mathf.FloorToInt(1 + (SaveDataManager.totalPigeonXPEarned / 10000f) + (SaveDataManager.gamesPlayed / 5f)).ToString()) },
                         {"PlayerHead", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinHead.ToString()) },
                         {"Flock", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, "0") },
                     }
@@ -278,7 +272,7 @@ public class MultiplayerManager : MonoBehaviour
                         {"PlayerName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, GameDataHolder.multiplayerName) },
                                                 {"PlayerSkin", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinBase.ToString()) },
                         {"PlayerBody", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinBody.ToString()) },
-                        {"PlayerRank", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, Mathf.FloorToInt(1 + Mathf.FloorToInt((SaveDataManager.totalPigeonXPEarned / 10000) + (SaveDataManager.gamesPlayed / 5))).ToString()) },
+                        {"PlayerRank", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, Mathf.FloorToInt(1 + (SaveDataManager.totalPigeonXPEarned / 10000f) + (SaveDataManager.gamesPlayed / 5f)).ToString())  },
                         {"PlayerHead", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, SaveDataManager.selectedSkinHead.ToString()) },
                         {"Flock", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, newFlock) },
                     }
@@ -291,6 +285,10 @@ public class MultiplayerManager : MonoBehaviour
     }
     public async void LeaveLobby()
     {
+        if (GameDataHolder.isSinglePlayer)
+        {
+            OnLeftLobby?.Invoke(this, EventArgs.Empty);
+        }
         if (joinedLobby != null)
         {
             try
@@ -306,6 +304,7 @@ public class MultiplayerManager : MonoBehaviour
             }
         }
     }
+
     public async void KickPlayer(string playerId)
     {
         if (IsLobbyHost())
@@ -367,41 +366,32 @@ public class MultiplayerManager : MonoBehaviour
 
         OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = lobby });
     }
-    public async void UpdatePlayerFlock(PlayerCharacter playerFlock)
-    {
-        if (joinedLobby != null)
-        {
-            try
-            {
-                UpdatePlayerOptions options = new UpdatePlayerOptions();
 
-                options.Data = new Dictionary<string, PlayerDataObject>() {
-                    {
-                        KEY_PLAYER_FLOCK, new PlayerDataObject(
-                            visibility: PlayerDataObject.VisibilityOptions.Public,
-                            value: playerFlock.ToString())
-                    }
-                };
-
-                string playerId = AuthenticationService.Instance.PlayerId;
-
-                Lobby lobby = await LobbyService.Instance.UpdatePlayerAsync(joinedLobby.Id, playerId, options);
-                joinedLobby = lobby;
-
-                OnJoinedLobbyUpdate?.Invoke(this, new LobbyEventArgs { lobby = joinedLobby });
-            }
-            catch (LobbyServiceException e)
-            {
-                Debug.Log(e);
-            }
-        }
-    }
     public Lobby GetJoinedLobby()
     {
         return joinedLobby;
     }
     public async void StartGame(int BofDiff, int botToSpawn)
     {
+        if (GameDataHolder.isSinglePlayer)
+        {
+            NetworkManager.Singleton.StartHost();
+            GameDataHolder.botsToSpawn = botToSpawn;
+
+            switch (GameDataHolder.map)
+            {
+                case 0:
+                    NetworkManager.Singleton.SceneManager.LoadScene("KTown", LoadSceneMode.Single);
+                    break;
+                case 1:
+                    NetworkManager.Singleton.SceneManager.LoadScene("Yu Gardens", LoadSceneMode.Single);
+                    break;
+                case 2:
+                    NetworkManager.Singleton.SceneManager.LoadScene("Central Park", LoadSceneMode.Single);
+                    break;
+            }
+            GameDataHolder.playerCount = 1;
+        }
         if (IsLobbyHost())
         {
             try

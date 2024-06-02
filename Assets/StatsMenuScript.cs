@@ -37,8 +37,8 @@ public class StatsMenuScript : MonoBehaviour
 
 
         mainMenu.SetActive(false);
-        rs.UpdateRank(Mathf.FloorToInt((SaveDataManager.totalPigeonXPEarned / 10000) + (SaveDataManager.gamesPlayed / 5)));
-        pigeonLevelText.text = (1 + Mathf.FloorToInt((SaveDataManager.totalPigeonXPEarned / 10000) + (SaveDataManager.gamesPlayed / 5))).ToString();
+        rs.UpdateRank(Mathf.FloorToInt((SaveDataManager.totalPigeonXPEarned / 10000f) + (SaveDataManager.gamesPlayed / 5f)));
+        pigeonLevelText.text = (1 + Mathf.FloorToInt((SaveDataManager.totalPigeonXPEarned / 10000f) + (SaveDataManager.gamesPlayed / 5f))).ToString();
         pigeonNameText.text = SaveDataManager.playerName;
         gamesPlayedText.text = SaveDataManager.gamesPlayed.ToString();
         pigeonsKOText.text = SaveDataManager.totalPigeonsKo.ToString();

@@ -45,6 +45,7 @@ public static class SaveDataManager
         nigeon = 12,
         robot = 13,
         risk = 14,
+        ice = 15,
     }
 
 

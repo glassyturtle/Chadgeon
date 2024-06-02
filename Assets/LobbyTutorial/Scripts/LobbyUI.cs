@@ -15,7 +15,7 @@ public class LobbyUI : MonoBehaviour
     [SerializeField] private List<string> mapNames;
     [SerializeField] private List<string> botDifficultyNames;
     private int selectedMap = 0;
-    private int neutralBotAmount = 0;
+    private int neutralBotAmount = 5;
     private int botDifficulty = 1;
     private int selectedFlock = 0;
 
@@ -104,35 +104,96 @@ public class LobbyUI : MonoBehaviour
     }
     public void ChangeDifficulty(bool left)
     {
-        if (left)
+        if (GameDataHolder.isSinglePlayer)
         {
-            botDifficulty -= 1;
-            if (botDifficulty < 0)
+            if (left)
             {
-                botDifficulty = botDifficultyNames.Count - 1;
-            }
-        }
-        else
-        {
-            botDifficulty += 1;
-            if (MultiplayerManager.Instance.joinedLobby.Data[MultiplayerManager.KEY_GAMEMODE].Value == "Supremacy")
-            {
-                if (botDifficulty > botDifficultyNames.Count - 2)
+                GameDataHolder.botDifficulty -= 1;
+                if (GameDataHolder.gameMode == 0)
                 {
-                    botDifficulty = 0;
+                    if (GameDataHolder.botDifficulty < 0)
+                    {
+                        GameDataHolder.botDifficulty = botDifficultyNames.Count - 1;
+                    }
+
+                }
+                else
+                {
+                    if (GameDataHolder.botDifficulty < 0)
+                    {
+                        GameDataHolder.botDifficulty = botDifficultyNames.Count;
+                    }
                 }
 
             }
             else
             {
-                if (botDifficulty > botDifficultyNames.Count - 1)
+                GameDataHolder.botDifficulty += 1;
+                if (GameDataHolder.gameMode == 0)
                 {
-                    botDifficulty = 0;
-                }
-            }
+                    if (GameDataHolder.botDifficulty > botDifficultyNames.Count - 2)
+                    {
+                        GameDataHolder.botDifficulty = 0;
+                    }
 
+                }
+                else
+                {
+                    if (GameDataHolder.botDifficulty > botDifficultyNames.Count - 1)
+                    {
+                        GameDataHolder.botDifficulty = 0;
+                    }
+                }
+
+            }
         }
-        botDifficultyText.text = botDifficultyNames[botDifficulty];
+        else
+        {
+            if (left)
+            {
+                botDifficulty -= 1;
+                if (MultiplayerManager.Instance.joinedLobby.Data[MultiplayerManager.KEY_GAMEMODE].Value == "Supremacy")
+                {
+                    if (botDifficulty < 0)
+                    {
+                        botDifficulty = botDifficultyNames.Count - 1;
+                    }
+
+                }
+                else
+                {
+                    if (botDifficulty < 0)
+                    {
+                        botDifficulty = botDifficultyNames.Count;
+                    }
+                }
+
+            }
+            else
+            {
+                botDifficulty += 1;
+                if (MultiplayerManager.Instance.joinedLobby.Data[MultiplayerManager.KEY_GAMEMODE].Value == "Supremacy")
+                {
+                    if (botDifficulty > botDifficultyNames.Count - 2)
+                    {
+                        botDifficulty = 0;
+                    }
+
+                }
+                else
+                {
+                    if (botDifficulty > botDifficultyNames.Count - 1)
+                    {
+                        botDifficulty = 0;
+                    }
+                }
+
+            }
+            GameDataHolder.botDifficulty = botDifficulty;
+        }
+
+
+        botDifficultyText.text = botDifficultyNames[GameDataHolder.botDifficulty];
         UpdateLobbySettingsAfterDelay();
     }
 
@@ -266,8 +327,9 @@ public class LobbyUI : MonoBehaviour
     private void ResetLobbyDefaultValues(object sender, MultiplayerManager.LobbyEventArgs e)
     {
         selectedMap = 0;
-        neutralBotAmount = 0;
+        neutralBotAmount = 10;
         botDifficulty = 1;
+        GameDataHolder.botDifficulty = botDifficulty;
         selectedFlock = 0;
     }
     private void UpdateLobby()
@@ -279,62 +341,106 @@ public class LobbyUI : MonoBehaviour
     {
         ClearLobby();
 
-
-        foreach (Player player in lobby.Players)
+        if (GameDataHolder.isSinglePlayer)
         {
             Transform playerSingleTransform = Instantiate(playerSingleTemplate, container);
             playerSingleTransform.gameObject.SetActive(true);
             LobbyPlayerSingleUI lobbyPlayerSingleUI = playerSingleTransform.GetComponent<LobbyPlayerSingleUI>();
 
-            lobbyPlayerSingleUI.SetKickPlayerButtonVisible(
-                MultiplayerManager.Instance.IsLobbyHost() &&
-                player.Id != AuthenticationService.Instance.PlayerId // Don't allow kick self
-            );
-            Debug.Log(player.Id + " " + Time.time);
+            lobbyPlayerSingleUI.SetKickPlayerButtonVisible(false);
 
-            lobbyPlayerSingleUI.UpdatePlayer(player, lobby);
-        }
+            lobbyPlayerSingleUI.UpdatePlayerSinglePlayer();
 
-        //changeGameModeButton.gameObject.SetActive(MultiplayerManager.Instance.IsLobbyHost());
-        if (MultiplayerManager.Instance.IsLobbyHost())
-        {
-            //Enable Host Buttons
             foreach (GameObject obj in hostButtons)
             {
                 obj.SetActive(true);
             }
-        }
-        else
-        {
-            //Disable Buttons
-            foreach (GameObject obj in hostButtons)
+
+            lobbyNameText.text = SaveDataManager.playerName + "'s Game";
+            playerCountText.text = "Singleplayer";
+            joinCodeText.text = "N/A";
+
+            if (GameDataHolder.gameMode == 0)
             {
-                obj.SetActive(false);
+                editFlockButton.SetActive(true);
+                changeBotAmountSetting.SetActive(true);
+                changeFlockButtonGameobject.SetActive(true);
             }
-            lobbyMapText.text = lobby.Data[MultiplayerManager.KEY_MAP_NAME].Value;
-            neutralBotAmtText.text = lobby.Data[MultiplayerManager.KEY_BOT_AMT].Value;
-            botDifficultyText.text = lobby.Data[MultiplayerManager.KEY_DIFFICULTY].Value;
-        }
-        lobbyNameText.text = lobby.Name;
-        playerCountText.text = lobby.Players.Count + "/" + lobby.MaxPlayers + " Player Pigeons";
-        joinCodeText.text = lobby.LobbyCode;
-
-        GameDataHolder.gameMode = lobby.Data[MultiplayerManager.KEY_GAMEMODE].Value;
-        if (lobby.Data[MultiplayerManager.KEY_GAMEMODE].Value == "Supremacy")
-        {
-            editFlockButton.SetActive(true);
-            changeBotAmountSetting.SetActive(true);
-            changeFlockButtonGameobject.SetActive(true);
+            else
+            {
+                editFlockButton.SetActive(false);
+                changeBotAmountSetting.SetActive(false);
+                changeFlockButtonGameobject.SetActive(false);
+            }
         }
         else
         {
-            editFlockButton.SetActive(false);
-            changeBotAmountSetting.SetActive(false);
-            changeFlockButtonGameobject.SetActive(false);
+            foreach (Player player in lobby.Players)
+            {
+                Transform playerSingleTransform = Instantiate(playerSingleTemplate, container);
+                playerSingleTransform.gameObject.SetActive(true);
+                LobbyPlayerSingleUI lobbyPlayerSingleUI = playerSingleTransform.GetComponent<LobbyPlayerSingleUI>();
+
+                lobbyPlayerSingleUI.SetKickPlayerButtonVisible(
+                    MultiplayerManager.Instance.IsLobbyHost() &&
+                    player.Id != AuthenticationService.Instance.PlayerId // Don't allow kick self
+                );
+                Debug.Log(player.Id + " " + Time.time);
+
+                lobbyPlayerSingleUI.UpdatePlayer(player, lobby);
+            }
+
+            //changeGameModeButton.gameObject.SetActive(MultiplayerManager.Instance.IsLobbyHost());
+            if (MultiplayerManager.Instance.IsLobbyHost())
+            {
+                //Enable Host Buttons
+                foreach (GameObject obj in hostButtons)
+                {
+                    obj.SetActive(true);
+                }
+            }
+            else
+            {
+                //Disable Buttons
+                foreach (GameObject obj in hostButtons)
+                {
+                    obj.SetActive(false);
+                }
+                lobbyMapText.text = lobby.Data[MultiplayerManager.KEY_MAP_NAME].Value;
+                neutralBotAmtText.text = lobby.Data[MultiplayerManager.KEY_BOT_AMT].Value;
+                botDifficultyText.text = lobby.Data[MultiplayerManager.KEY_DIFFICULTY].Value;
+            }
+            lobbyNameText.text = lobby.Name;
+            playerCountText.text = lobby.Players.Count + "/" + lobby.MaxPlayers + " Player Pigeons";
+            joinCodeText.text = lobby.LobbyCode;
+
+            switch (lobby.Data[MultiplayerManager.KEY_GAMEMODE].Value)
+            {
+                case "Supremacy":
+                    GameDataHolder.gameMode = 0;
+                    break;
+                default:
+                    GameDataHolder.gameMode = 1;
+                    break;
+            }
+
+            if (lobby.Data[MultiplayerManager.KEY_GAMEMODE].Value == "Supremacy")
+            {
+                editFlockButton.SetActive(true);
+                changeBotAmountSetting.SetActive(true);
+                changeFlockButtonGameobject.SetActive(true);
+            }
+            else
+            {
+                editFlockButton.SetActive(false);
+                changeBotAmountSetting.SetActive(false);
+                changeFlockButtonGameobject.SetActive(false);
+            }
+
+
         }
-
-
         Show();
+
     }
 
     private void ClearLobby()
@@ -353,6 +459,7 @@ public class LobbyUI : MonoBehaviour
 
     private void UpdateLobbySettingsAfterDelay()
     {
+        if (GameDataHolder.isSinglePlayer) return;
         StopAllCoroutines();
         StartCoroutine(DelayUpdate());
     }

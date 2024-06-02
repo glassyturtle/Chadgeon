@@ -12,7 +12,7 @@ public class EndScreenScript : MonoBehaviour
         int chadCoinsGained = 0;
 
         float coinMultiplier = 1;
-        if (GameDataHolder.gameMode != "Supremacy")
+        if (GameDataHolder.gameMode == 1)
         {
             coinMultiplier = 0.25f;
         }
@@ -43,7 +43,7 @@ public class EndScreenScript : MonoBehaviour
         {
             dominantVictory.SetActive(true);
             gloriousDefeat.SetActive(false);
-            if (GameDataHolder.gameMode != "Supremacy")
+            if (GameDataHolder.gameMode == 1)
             {
                 if (GameManager.instance.player.isKnockedOut.Value || !GameManager.instance.player.inEvacsite)
                 {

@@ -88,9 +88,68 @@ public class LobbyPlayerSingleUI : MonoBehaviour
             pigeonHeadImage.gameObject.SetActive(false);
         }
 
-        MultiplayerManager.PlayerCharacter playerCharacter =
-            System.Enum.Parse<MultiplayerManager.PlayerCharacter>(player.Data[MultiplayerManager.KEY_PLAYER_SKIN].Value);
-        //characterImage.sprite = LobbyAssets.Instance.GetSprite(playerCharacter);
+    }
+    public void UpdatePlayerSinglePlayer()
+    {
+        playerNameText.text = SaveDataManager.playerName;
+        if (GameDataHolder.gameMode == 0)
+        {
+            switch (GameDataHolder.flock)
+            {
+                case 0:
+                    playerFlockText.text = "No Flock";
+                    playerFlockText.color = Color.white;
+                    break;
+                case 1:
+                    playerFlockText.text = "Enjoyers";
+                    playerFlockText.color = Color.cyan;
+                    break;
+                case 2:
+                    playerFlockText.text = "Psychos";
+                    playerFlockText.color = Color.red;
+                    break;
+                case 3:
+                    playerFlockText.text = "Minions";
+                    playerFlockText.color = Color.yellow;
+                    break;
+                case 4:
+                    playerFlockText.text = "Looksmaxers";
+                    playerFlockText.color = Color.green;
+                    break;
+            }
+        }
+        else
+        {
+            playerFlockText.text = "Lvl: " + (1 + Mathf.FloorToInt((SaveDataManager.totalPigeonXPEarned / 10000f) + (SaveDataManager.gamesPlayed / 5f))).ToString();
+            playerFlockText.color = Color.white;
+        }
+
+        rs.UpdateRank(Mathf.FloorToInt((SaveDataManager.totalPigeonXPEarned / 10000f) + (SaveDataManager.gamesPlayed / 5f)));
+        //Changes skin icon
+        int skinID = SaveDataManager.selectedSkinBase;
+        if (skinID != -1) pigeonBaseImage.sprite = CustomizationManager.Instance.GetSprite(CustomizationManager.SpriteType.baseSkin, skinID, 0);
+        else
+        {
+            pigeonBaseImage.sprite = null;
+            pigeonBaseImage.gameObject.SetActive(false);
+        }
+
+        skinID = SaveDataManager.selectedSkinBody;
+        if (skinID != -1) pigeonBodyImage.sprite = CustomizationManager.Instance.GetSprite(CustomizationManager.SpriteType.body, skinID, 0);
+        else
+        {
+            pigeonBodyImage.sprite = null;
+            pigeonBodyImage.gameObject.SetActive(false);
+        }
+
+        skinID = SaveDataManager.selectedSkinHead;
+        if (skinID != -1) pigeonHeadImage.sprite = CustomizationManager.Instance.GetSprite(CustomizationManager.SpriteType.head, skinID, 0);
+        else
+        {
+            pigeonHeadImage.sprite = null;
+            pigeonHeadImage.gameObject.SetActive(false);
+        }
+
     }
 
     private void KickPlayer()
