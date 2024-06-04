@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using Unity.Cinemachine;
 using Unity.Netcode;
@@ -33,7 +34,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] Button endScreenMainMenuButton;
     [SerializeField] Transform borderTransform;
 
-    [SerializeField] GameObject endScreen, playerUI, gameUI, upgradeScreen, pauseMenu, spectateScreen, minimapUI, sprintUI, churchDoor, imposterCone, bannana, goonPrefab, coneToDefend;
+    [SerializeField] GameObject endScreen, playerUI, gameUI, pauseMenu, spectateScreen, upgradeScreen, minimapUI, sprintUI, churchDoor, goonPrefab, coneToDefend;
     [SerializeField] TMP_Text endGameDescriptionText, spectatingText, upgradeDescText, upgradeNameText, featherChargeCounter, gameObjectiveText, respawnTimer;
     [SerializeField] GameObject upgradeDescUI;
     [SerializeField] private GameObject[] upgradeDisplays;
@@ -47,7 +48,6 @@ public class GameManager : NetworkBehaviour
     [SerializeField] GameObject playerPrefab, evacZone;
     [SerializeField] GameObject extraUpgradeSelectionGameobject;
     [SerializeField] Image[] upgradeButtonImages;
-    [SerializeField] TextMeshProUGUI[] upgradeButtonText;
     [SerializeField] Sprite[] upgradeButtonSprites;
     [SerializeField] string[] upgradeNames;
     [SerializeField] string[] upgradeDesc;
@@ -103,6 +103,7 @@ public class GameManager : NetworkBehaviour
         }
         else
         {
+            GameDataHolder.botsToSpawn = 0;
             iceCreamUI.SetActive(false);
             gracePeriod = false;
             gameObjectiveText.gameObject.SetActive(true);
@@ -176,6 +177,7 @@ public class GameManager : NetworkBehaviour
                     gameObjectiveText.text = "Wave " + waveNumber.Value + "/10 Enemies Remaining: " + enemiesRemaining.Value;
                     if (IsServer && enemiesRemaining.Value <= 0)
                     {
+                        LevelUpPigeonAlliesPVE();
                         if (waveNumber.Value + 1 >= 11)
                         {
                             ActivateSuddenDeathUIClientRpc();
@@ -330,6 +332,16 @@ public class GameManager : NetworkBehaviour
                 if (!ob) return;
                 ob.GetComponent<Pigeon>().UpatePigeonInitialValues(p);
             }
+        }
+    }
+    [ClientRpc]
+    public void UpdatePigeonClientRpc(PigeonInitializeProperties data)
+    {
+        if (NetworkManager.Singleton.SpawnManager.SpawnedObjects[data.pigeonID])
+        {
+            NetworkObject ob = NetworkManager.Singleton.SpawnManager.SpawnedObjects[data.pigeonID];
+            if (!ob) return;
+            ob.GetComponent<Pigeon>().UpatePigeonInitialValues(data);
         }
     }
     [ClientRpc]
@@ -513,7 +525,8 @@ public class GameManager : NetworkBehaviour
     public void AddUpgradeToDisply(int upgrade)
     {
         upgradeHolder.SetActive(true);
-        upgradeDisplays[upgrade].SetActive(true);
+        if (upgrade >= 0) upgradeDisplays[upgrade].SetActive(true);
+
     }
     public void ShowUpgradeDes(int desc)
     {
@@ -522,40 +535,28 @@ public class GameManager : NetworkBehaviour
 
         if (desc >= 0)
         {
-            if (!upgradeScreen.activeSelf)
-            {
-                upgradeNameText.gameObject.SetActive(true);
-                upgradeNameText.text = upgradeNames[desc];
-            }
+
             upgradeDescText.text = upgradeDesc[desc];
+            upgradeNameText.text = upgradeNames[desc];
         }
         else
         {
             switch ((Upgrades)desc)
             {
                 case Upgrades.pigeonOfGrowth:
-                    if (!upgradeScreen.activeSelf)
-                    {
-                        upgradeNameText.gameObject.SetActive(true);
-                        upgradeNameText.text = repeatableUpgradeNames[0];
-                    }
                     upgradeDescText.text = repeatableUpgradeDesc[0];
+                    upgradeNameText.text = repeatableUpgradeNames[0];
+
                     break;
                 case Upgrades.pigeonOfMomentum:
-                    if (!upgradeScreen.activeSelf)
-                    {
-                        upgradeNameText.gameObject.SetActive(true);
-                        upgradeNameText.text = repeatableUpgradeNames[1];
-                    }
                     upgradeDescText.text = repeatableUpgradeDesc[1];
+                    upgradeNameText.text = repeatableUpgradeNames[1];
+
                     break;
                 case Upgrades.pigeonOfViolence:
-                    if (!upgradeScreen.activeSelf)
-                    {
-                        upgradeNameText.gameObject.SetActive(true);
-                        upgradeNameText.text = repeatableUpgradeNames[2];
-                    }
                     upgradeDescText.text = repeatableUpgradeDesc[2];
+                    upgradeNameText.text = repeatableUpgradeNames[2];
+
                     break;
             }
         }
@@ -565,8 +566,6 @@ public class GameManager : NetworkBehaviour
     }
     public void CloseUpgradeDes()
     {
-        upgradeNameText.gameObject.SetActive(false);
-
         upgradeDescText.text = "";
         upgradeDescUI.SetActive(false);
     }
@@ -591,7 +590,8 @@ public class GameManager : NetworkBehaviour
     }
     public void StartSpectating(int second)
     {
-        playerUI.SetActive(false);
+        if (GameDataHolder.gameMode == 0) playerUI.SetActive(false);
+
         spectateScreen.SetActive(true);
         for (int i = 0; i < allpigeons.Count; i++)
         {
@@ -634,7 +634,15 @@ public class GameManager : NetworkBehaviour
 
             for (int x = 0; x < 1000; x++)
             {
-                upgrade = allPigeonUpgrades[Random.Range(0, allPigeonUpgrades.Count)];
+                if (player.level.Value >= 25 && Random.Range(0, 100) <= 20)
+                {
+                    upgrade = ((Upgrades)Random.Range(-1, -3));
+                }
+                else
+                {
+                    upgrade = allPigeonUpgrades[Random.Range(0, allPigeonUpgrades.Count)];
+
+                }
                 hasAbilitySlotUnlocked = false;
 
                 switch (upgrade)
@@ -669,7 +677,6 @@ public class GameManager : NetworkBehaviour
             {
                 upgradeDescibers[i].desc = (int)upgrade;
                 upgradeButtonImages[i].sprite = upgradeButtonSprites[(int)upgrade];
-                upgradeButtonText[i].text = upgradeNames[(int)upgrade];
             }
             else
             {
@@ -678,17 +685,14 @@ public class GameManager : NetworkBehaviour
                     case Upgrades.pigeonOfGrowth:
                         upgradeDescibers[i].desc = -3;
                         upgradeButtonImages[i].sprite = repeatableUpgradeButtonSprites[0];
-                        upgradeButtonText[i].text = repeatableUpgradeNames[0];
                         break;
                     case Upgrades.pigeonOfMomentum:
                         upgradeDescibers[i].desc = -2;
                         upgradeButtonImages[i].sprite = repeatableUpgradeButtonSprites[1];
-                        upgradeButtonText[i].text = repeatableUpgradeNames[1];
                         break;
                     case Upgrades.pigeonOfViolence:
                         upgradeDescibers[i].desc = -1;
                         upgradeButtonImages[i].sprite = repeatableUpgradeButtonSprites[2];
-                        upgradeButtonText[i].text = repeatableUpgradeNames[2];
                         break;
                 }
             }
@@ -804,6 +808,31 @@ public class GameManager : NetworkBehaviour
     }
 
 
+    private void LevelUpPigeonAlliesPVE()
+    {
+        RespawnDeadAlliesClientRpc();
+        allpigeons = allpigeons.OrderByDescending(p => p.level.Value).ToList();
+        for (int i = 0; i < allpigeons.Count; i++)
+        {
+            switch (i)
+            {
+                case 1:
+                    allpigeons[i].ReciveCatchupXPClientRpc(0.25f);
+                    break;
+                case 2:
+                    allpigeons[i].ReciveCatchupXPClientRpc(0.5f);
+                    break;
+                case 3:
+                    allpigeons[i].ReciveCatchupXPClientRpc(0.75f);
+                    break;
+            }
+        }
+    }
+    [ClientRpc]
+    private void RespawnDeadAlliesClientRpc()
+    {
+        player.PVERespawn();
+    }
     private void SpawnFood()
     {
         StartCoroutine(SpawnFoodDelay());
@@ -1106,6 +1135,10 @@ public class GameManager : NetworkBehaviour
             }
 
             pigeon.GetComponent<NetworkObject>().Spawn();
+
+
+
+
             switch (GameDataHolder.botDifficulty)
             {
                 case 0:

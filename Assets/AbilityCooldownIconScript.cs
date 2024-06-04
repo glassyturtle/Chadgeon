@@ -14,7 +14,7 @@ public class AbilityCooldownIconScript : MonoBehaviour
     }
     public void StartCooldown(int cooldownTime)
     {
-        if (!GameManager.instance.gameover)
+        if (gameObject.activeInHierarchy)
             StartCoroutine(CoolDown(cooldownTime));
     }
     IEnumerator CoolDown(int seconds)

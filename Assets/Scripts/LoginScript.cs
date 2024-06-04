@@ -16,6 +16,7 @@ public class LoginScript : MonoBehaviour
     private void Awake()
     {
         SaveDataManager.LoadGameData();
+
     }
 
 

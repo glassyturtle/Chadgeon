@@ -11,6 +11,7 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private GameObject lobbyListMenu;
     [SerializeField] private GameObject playMenu;
     [SerializeField] private GameObject customizationMenu;
+    [SerializeField] private GameObject credits;
     [SerializeField] private GameObject purchaseMenu;
     [SerializeField] private GameObject skins, skinBody, skinHead, skinBase;
     [SerializeField] private TMP_Text chadCoinsText;
@@ -33,7 +34,8 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] AudioSource musicSorce;
     [SerializeField] AudioClip mainMenuMusic;
     [SerializeField] AudioClip customizationMusic;
-
+    [SerializeField] AudioClip creditsMusic;
+    [SerializeField] CreditsScrollScript creditsScroll;
 
     private SaveDataManager.Skins skinTryingToUnlock = SaveDataManager.Skins.classic;
     private int skinCost;
@@ -44,7 +46,6 @@ public class MainMenuManager : MonoBehaviour
         chadCoinsText.text = SaveDataManager.chadCoins.ToString();
         nameInput.text = SaveDataManager.playerName.ToString();
         GameDataHolder.ResetStats();
-        Debug.Log(GameDataHolder.isSinglePlayer);
         RefreshShopButtons();
     }
     public void OpenPurchaseSkinNotification(int selectedSkinCost, string skinName, int skinID)
@@ -144,6 +145,14 @@ public class MainMenuManager : MonoBehaviour
         playMenu.SetActive(true);
         mainMenu.SetActive(false);
     }
+    public void OpenCredits()
+    {
+        musicSorce.clip = creditsMusic;
+        musicSorce.Play();
+        creditsScroll.StartScroll();
+        credits.SetActive(true);
+        mainMenu.SetActive(false);
+    }
     public void OpenCustomizations()
     {
         musicSorce.clip = customizationMusic;
@@ -182,6 +191,13 @@ public class MainMenuManager : MonoBehaviour
     public void ClosePlayMenu()
     {
         playMenu.SetActive(false);
+        mainMenu.SetActive(true);
+    }
+    public void CloseCredits()
+    {
+        musicSorce.clip = mainMenuMusic;
+        musicSorce.Play();
+        credits.SetActive(false);
         mainMenu.SetActive(true);
     }
     public void ShowSkins()
@@ -255,5 +271,25 @@ public class MainMenuManager : MonoBehaviour
                 skinClothesButtons[i].LockSkin();
             }
         }
+    }
+
+
+
+    public void OpenTwitter()
+    {
+
+        Application.OpenURL("https://twitter.com/GlassyTurtle");
+    }
+
+
+    public void OpenYT()
+    {
+
+        Application.OpenURL("https://www.youtube.com/channel/UCQdwhf-zvwglBAa761oexWQ");
+    }
+    public void OpenDiscord()
+    {
+
+        Application.OpenURL("https://t.co/6wGb4HO8pV");
     }
 }

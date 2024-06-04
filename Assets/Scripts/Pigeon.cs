@@ -217,7 +217,7 @@ public class Pigeon : NetworkBehaviour
             if (atkProp.isAssassin && ((float)currentHP.Value / maxHp.Value) <= 0.33f) totalDamageTaking *= 2;
             if (!atkProp.isEnchanted && pigeonUpgrades.ContainsKey(Upgrades.tough)) totalDamageTaking = Mathf.RoundToInt(totalDamageTaking * 0.7f);
             if (isMaxing) totalDamageTaking = Mathf.RoundToInt(totalDamageTaking * 0.5f);
-            if (atkProp.hasBleed && Random.Range(0, 100) <= 25)
+            if (atkProp.hasBleed)
             {
                 StopCoroutine(StartBleed());
                 StartCoroutine(StartBleed());
@@ -318,6 +318,12 @@ public class Pigeon : NetworkBehaviour
             GainXP(ddProp.xpOnKill);
         }
     }
+    [ClientRpc]
+    public void ReciveCatchupXPClientRpc(float levelPercent)
+    {
+        if (!IsOwner) return;
+        GainXP(Mathf.RoundToInt(levelPercent * xpTillLevelUp));
+    }
 
 
     //Server Rpcs
@@ -340,9 +346,17 @@ public class Pigeon : NetworkBehaviour
         }
     }
     [ServerRpc]
-    private void UpdateSeverPigeonsServerRpc(GameManager.PigeonInitializeProperties pigeonData)
+    private void UpdateSeverPigeonsServerRpc(GameManager.PigeonInitializeProperties pigeonData, bool isPVEPigeon)
     {
-        GameManager.instance.pigeonStartData.Add(pigeonData);
+        if (isPVEPigeon)
+        {
+            GameManager.instance.UpdatePigeonClientRpc(pigeonData);
+        }
+        else
+        {
+            GameManager.instance.pigeonStartData.Add(pigeonData);
+        }
+
     }
     [ServerRpc]
     private void HandleKnockbackServerRpc(Vector2 force)
@@ -469,7 +483,7 @@ public class Pigeon : NetworkBehaviour
                 speed += 200;
                 break;
             case Upgrades.regen:
-                regen = 0.06f;
+                regen = 0.1f;
                 break;
             case Upgrades.tough:
                 speedMod -= .1f;
@@ -576,6 +590,17 @@ public class Pigeon : NetworkBehaviour
             flockDisplayText.gameObject.SetActive(false);
         }
     }
+    public void PVERespawn()
+    {
+        if (isFlying || !isKnockedOut.Value) return;
+        if (GameDataHolder.gameMode != 0)
+        {
+            secondsToRespawn += 3;
+            GameManager.instance.StopSpectating();
+        }
+        PlayFlyServerRpc();
+        StartFly();
+    }
 
 
     //Protected
@@ -676,13 +701,13 @@ public class Pigeon : NetworkBehaviour
 
         if (pigeonUpgrades.ContainsKey(Upgrades.overclock))
         {
-            if (isPlayer) GameManager.instance.StartCooldown(Upgrades.wholeGains, 22);
-            eAbilityCooldown = 22;
+            if (isPlayer) GameManager.instance.StartCooldown(Upgrades.wholeGains, 15);
+            eAbilityCooldown = 15;
         }
         else
         {
-            if (isPlayer) GameManager.instance.StartCooldown(Upgrades.wholeGains, 30);
-            eAbilityCooldown = 30;
+            if (isPlayer) GameManager.instance.StartCooldown(Upgrades.wholeGains, 20);
+            eAbilityCooldown = 20;
         }
         SpawnWholeGainsServerRpc(pos);
     }
@@ -692,13 +717,13 @@ public class Pigeon : NetworkBehaviour
 
         if (pigeonUpgrades.ContainsKey(Upgrades.overclock))
         {
-            if (isPlayer) GameManager.instance.StartCooldown(Upgrades.pigeonPoo, 7);
-            eAbilityCooldown = 7;
+            if (isPlayer) GameManager.instance.StartCooldown(Upgrades.pigeonPoo, 6);
+            eAbilityCooldown = 6;
         }
         else
         {
-            if (isPlayer) GameManager.instance.StartCooldown(Upgrades.pigeonPoo, 10);
-            eAbilityCooldown = 10;
+            if (isPlayer) GameManager.instance.StartCooldown(Upgrades.pigeonPoo, 8);
+            eAbilityCooldown = 8;
         }
         SpawnPigeonPooServerRpc(pos);
     }
@@ -751,15 +776,32 @@ public class Pigeon : NetworkBehaviour
                 flockDisplayText.gameObject.SetActive(false);
             }
 
-            UpdateSeverPigeonsServerRpc(new GameManager.PigeonInitializeProperties
+            if (isPlayer)
             {
-                flock = flock,
-                skinBase = skinBase,
-                skinHead = skinHead,
-                skinBody = skinBody,
-                pigeonID = NetworkObjectId,
-                pigeonName = pigeonName
-            });
+                UpdateSeverPigeonsServerRpc(new GameManager.PigeonInitializeProperties
+                {
+                    flock = flock,
+                    skinBase = skinBase,
+                    skinHead = skinHead,
+                    skinBody = skinBody,
+                    pigeonID = NetworkObjectId,
+                    pigeonName = pigeonName
+                }, false);
+            }
+            else
+            {
+                UpdateSeverPigeonsServerRpc(new GameManager.PigeonInitializeProperties
+                {
+                    flock = flock,
+                    skinBase = skinBase,
+                    skinHead = skinHead,
+                    skinBody = skinBody,
+                    pigeonID = NetworkObjectId,
+                    pigeonName = pigeonName
+                }, pigeonAI.diesAfterDeath);
+            }
+
+
 
             StartCoroutine(JumpAnimation());
             StartCoroutine(Regen());
@@ -1257,6 +1299,9 @@ public class Pigeon : NetworkBehaviour
         if (GameManager.instance.isSuddenDeath.Value) suddenDeathBefore = true;
         yield return new WaitForSeconds(secondsToRespawn);
 
+        if (isFlying || !isKnockedOut.Value) yield break;
+
+
         if (pigeonAI && pigeonAI.diesAfterDeath)
         {
             Destroy(gameObject);
@@ -1281,7 +1326,7 @@ public class Pigeon : NetworkBehaviour
     }
     private IEnumerator StartBleed()
     {
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < 3; i++)
         {
             yield return new WaitForSeconds(1);
             SpawnBloodServerRpc();

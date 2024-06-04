@@ -113,7 +113,7 @@ public class LobbyUI : MonoBehaviour
                 {
                     if (GameDataHolder.botDifficulty < 0)
                     {
-                        GameDataHolder.botDifficulty = botDifficultyNames.Count - 1;
+                        GameDataHolder.botDifficulty = botDifficultyNames.Count - 2;
                     }
 
                 }
@@ -121,7 +121,7 @@ public class LobbyUI : MonoBehaviour
                 {
                     if (GameDataHolder.botDifficulty < 0)
                     {
-                        GameDataHolder.botDifficulty = botDifficultyNames.Count;
+                        GameDataHolder.botDifficulty = botDifficultyNames.Count - 1;
                     }
                 }
 
@@ -156,7 +156,7 @@ public class LobbyUI : MonoBehaviour
                 {
                     if (botDifficulty < 0)
                     {
-                        botDifficulty = botDifficultyNames.Count - 1;
+                        botDifficulty = botDifficultyNames.Count - 2;
                     }
 
                 }
@@ -164,7 +164,7 @@ public class LobbyUI : MonoBehaviour
                 {
                     if (botDifficulty < 0)
                     {
-                        botDifficulty = botDifficultyNames.Count;
+                        botDifficulty = botDifficultyNames.Count - 1;
                     }
                 }
 
@@ -385,7 +385,6 @@ public class LobbyUI : MonoBehaviour
                     MultiplayerManager.Instance.IsLobbyHost() &&
                     player.Id != AuthenticationService.Instance.PlayerId // Don't allow kick self
                 );
-                Debug.Log(player.Id + " " + Time.time);
 
                 lobbyPlayerSingleUI.UpdatePlayer(player, lobby);
             }
