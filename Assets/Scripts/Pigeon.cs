@@ -123,6 +123,7 @@ public class Pigeon : NetworkBehaviour
         public bool hasCriticalDamage;
         public bool isAssassin;
         public bool hasKnockBack;
+        public bool hasMewingKnockback;
         public bool attackingUp;
         public bool isFacingLeft;
         public bool isEnchanted;
@@ -147,6 +148,7 @@ public class Pigeon : NetworkBehaviour
             serializer.SerializeValue(ref isAssassin);
             serializer.SerializeValue(ref isAssassinating);
             serializer.SerializeValue(ref hasBleed);
+            serializer.SerializeValue(ref hasMewingKnockback);
         }
     }
     public struct DealtDamageProperties : INetworkSerializable
@@ -228,9 +230,10 @@ public class Pigeon : NetworkBehaviour
             //Calculates Life Steal
 
             //Calculates Knockback
-
-            if (atkProp.hasKnockBack) HandleKnockbackServerRpc(40 * totalDamageTaking * knockbackMod * direction);
-            else HandleKnockbackServerRpc(20 * totalDamageTaking * knockbackMod * direction);
+            int totalKnockback = 20;
+            if (atkProp.hasMewingKnockback) totalKnockback += 20;
+            if (atkProp.hasKnockBack) totalKnockback += 20;
+            HandleKnockbackServerRpc(totalKnockback * totalDamageTaking * knockbackMod * direction);
         }
 
 
@@ -473,14 +476,14 @@ public class Pigeon : NetworkBehaviour
         switch (upgrade)
         {
             case Upgrades.pigeonOfGrowth:
-                maxHp.Value += 30;
-                currentHP.Value += 30;
+                maxHp.Value += 20;
+                currentHP.Value += 20;
                 break;
             case Upgrades.pigeonOfViolence:
-                damage += 12;
+                damage += 9;
                 break;
             case Upgrades.pigeonOfMomentum:
-                speed += 200;
+                speed += 60;
                 break;
             case Upgrades.regen:
                 regen = 0.1f;
@@ -540,7 +543,6 @@ public class Pigeon : NetworkBehaviour
         skinHead = data.skinHead;
         skinBody = data.skinBody;
         pigeonName = data.pigeonName;
-
         if (flock != 0)
         {
             flockDisplayText.gameObject.SetActive(true);
@@ -590,6 +592,7 @@ public class Pigeon : NetworkBehaviour
             flockDisplayText.gameObject.SetActive(false);
         }
     }
+
     public void PVERespawn()
     {
         if (isFlying || !isKnockedOut.Value) return;
@@ -858,6 +861,8 @@ public class Pigeon : NetworkBehaviour
     {
         if (qAbilityCooldown > 0 || !pigeonUpgrades.ContainsKey(Upgrades.mewing)) return false;
 
+        if (isPlayer) GameManager.instance.SwapToMewingSong();
+
         //Starts mew Cooldown
         if (pigeonUpgrades.ContainsKey(Upgrades.overclock))
         {
@@ -912,7 +917,7 @@ public class Pigeon : NetworkBehaviour
         if (!isMaxing) return;
         isMaxing = false;
         speedMod += .5f;
-
+        if (isPlayer) GameManager.instance.StopMewingSong();
         ChangePigeonSizeServerRpc(false);
     }
     protected void EndSlam()
@@ -1064,6 +1069,7 @@ public class Pigeon : NetworkBehaviour
         if (pigeonUpgrades.TryGetValue(Upgrades.assassin, out _)) atkProp.isAssassin = true;
         if (pigeonUpgrades.TryGetValue(Upgrades.enchanted, out _)) atkProp.isEnchanted = true;
         if (pigeonUpgrades.TryGetValue(Upgrades.bleed, out _)) atkProp.hasBleed = true;
+        if (isMaxing) atkProp.hasMewingKnockback = true;
 
         return atkProp;
     }
@@ -1127,7 +1133,7 @@ public class Pigeon : NetworkBehaviour
             currentHP.Value += 5;
         }
 
-        speed += 25;
+        speed += 20;
 
         if (0 == level.Value % 5)
         {
@@ -1432,7 +1438,6 @@ public class Pigeon : NetworkBehaviour
         isMewing = false;
         isMaxing = true;
         speedMod -= .5f;
-        knockbackMod += 1f;
         ChangePigeonSizeServerRpc(true);
         yield return new WaitForSeconds(20f);
         StopMogging();

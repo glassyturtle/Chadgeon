@@ -25,4 +25,5 @@ public static class GameDataHolder
         flock = 0;
         map = 0;
     }
+
 }

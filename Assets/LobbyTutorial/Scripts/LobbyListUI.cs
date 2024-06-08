@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using TMPro;
 using Unity.Services.Lobbies.Models;
@@ -36,7 +35,6 @@ public class LobbyListUI : MonoBehaviour
     {
         MultiplayerManager.Instance.OnLobbyListChanged += LobbyManager_OnLobbyListChanged;
         MultiplayerManager.Instance.OnJoinedLobby += LobbyManager_OnJoinedLobby;
-        MultiplayerManager.Instance.OnLeftLobby += LobbyManager_OnLeftLobby;
         MultiplayerManager.Instance.OnKickedFromLobby += LobbyManager_OnKickedFromLobby;
         Hide();
     }
@@ -66,11 +64,6 @@ public class LobbyListUI : MonoBehaviour
         joinGameMenu.SetActive(true);
         couldNotJoinTitle.SetActive(false);
         connectingTitle.SetActive(false);
-    }
-
-    private void LobbyManager_OnLeftLobby(object sender, EventArgs e)
-    {
-        Show();
     }
 
     private void LobbyManager_OnJoinedLobby(object sender, MultiplayerManager.LobbyEventArgs e)

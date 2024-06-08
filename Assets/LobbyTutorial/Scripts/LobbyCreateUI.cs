@@ -16,7 +16,7 @@ public class LobbyCreateUI : MonoBehaviour
     private string lobbyName = "Chadgeon's Game";
     private bool isPrivate = true;
     private int maxPlayers = 69;
-    private string gameMode;
+    private int gameMode;
 
     private void Awake()
     {
@@ -57,7 +57,7 @@ public class LobbyCreateUI : MonoBehaviour
         sampleNameText.text = lobbyName + "...";
         isPrivate = false;
         maxPlayers = 69;
-        gameMode = "Supremacy";
+        gameMode = 0;
     }
 
 }

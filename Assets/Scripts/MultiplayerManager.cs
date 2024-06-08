@@ -38,6 +38,13 @@ public class MultiplayerManager : MonoBehaviour
     public const string KEY_PLAYER_SKINBODY = "PlayerBody";
     public const string KEY_PLAYER_SKINHEAD = "PlayerHead";
     public const string KEY_GAMEMODE = "GameMode";
+    public const string KEY_GAMEMODE_NUMBER = "0";
+    public const string KEY_ENJOYERBOTS = "Enjoyers";
+    public const string KEY_PSYCHOBOTS = "Psychos";
+    public const string KEY_MINIONBOTS = "Minions";
+    public const string KEY_LOOKSMAXERBOTS = "Looksmaxers";
+
+
 
     [SerializeField] private GameObject couldNotJoinTitle;
     [SerializeField] private GameObject connectingTitle;
@@ -72,7 +79,7 @@ public class MultiplayerManager : MonoBehaviour
     private Lobby hostLobby;
     private float heartBeatTimer = 15;
 
-    public async void CreateLobby(string lobbyName, int maxPlayers, bool isPrivate, string gameMode)
+    public async void CreateLobby(string lobbyName, int maxPlayers, bool isPrivate, int gameMode)
     {
         if (GameDataHolder.isSinglePlayer)
         {
@@ -81,16 +88,42 @@ public class MultiplayerManager : MonoBehaviour
         }
         Player player = GetPlayer();
 
+
+        string gamemodeName = "Supremacy";
+
+        switch (gameMode)
+        {
+            case 0:
+                gamemodeName = "Supremacy";
+                break;
+            case 1:
+                gamemodeName = "Ice-cream Ops";
+                break;
+            case 2:
+                gamemodeName = "Flock Supremacy";
+                break;
+
+        }
+
+
         CreateLobbyOptions options = new CreateLobbyOptions
         {
             Player = player,
             IsPrivate = isPrivate,
+
             Data = new Dictionary<string, DataObject> {
                 {KEY_START_GAME, new DataObject(DataObject.VisibilityOptions.Member, "0")},
                 {KEY_BOT_AMT, new DataObject(DataObject.VisibilityOptions.Member, "5")},
                 {KEY_DIFFICULTY, new DataObject(DataObject.VisibilityOptions.Public, "Chad")},
-                {KEY_GAMEMODE, new DataObject(DataObject.VisibilityOptions.Public, gameMode)},
+                {KEY_GAMEMODE, new DataObject(DataObject.VisibilityOptions.Public, gamemodeName)},
                 {KEY_MAP_NAME, new DataObject(DataObject.VisibilityOptions.Member, "Kaiserslautern")},
+                {KEY_FLOCK_AMT, new DataObject(DataObject.VisibilityOptions.Member, "2")},
+                {KEY_LOOKSMAXERBOTS, new DataObject(DataObject.VisibilityOptions.Member, "5")},
+                {KEY_MINIONBOTS, new DataObject(DataObject.VisibilityOptions.Member, "5")},
+                {KEY_ENJOYERBOTS, new DataObject(DataObject.VisibilityOptions.Member, "5")},
+                {KEY_PSYCHOBOTS, new DataObject(DataObject.VisibilityOptions.Member, "5")},
+                {KEY_GAMEMODE_NUMBER, new DataObject(DataObject.VisibilityOptions.Public, gameMode.ToString(), DataObject.IndexOptions.S1)},
+
             }
         };
 
@@ -156,7 +189,7 @@ public class MultiplayerManager : MonoBehaviour
                     }
         };
     }
-    public async void UpdateLobbySettings(string mapName, string botAmt, string botDiff)
+    public async void UpdateLobbySettings(string mapName, string botDiff, string flockAmt)
     {
         try
         {
@@ -164,10 +197,15 @@ public class MultiplayerManager : MonoBehaviour
             {
                 Data = new Dictionary<string, DataObject> {
                     {KEY_START_GAME, new DataObject(DataObject.VisibilityOptions.Member, "0")},
-                    {KEY_BOT_AMT, new DataObject(DataObject.VisibilityOptions.Member, botAmt)},
+                    {KEY_BOT_AMT, new DataObject(DataObject.VisibilityOptions.Member, GameDataHolder.botsToSpawn.ToString())},
                     {KEY_DIFFICULTY, new DataObject(DataObject.VisibilityOptions.Public, botDiff)},
                     {KEY_GAMEMODE, new DataObject(DataObject.VisibilityOptions.Public, joinedLobby.Data[KEY_GAMEMODE].Value)},
                     {KEY_MAP_NAME, new DataObject(DataObject.VisibilityOptions.Member, mapName)},
+                    {KEY_FLOCK_AMT, new DataObject(DataObject.VisibilityOptions.Member, flockAmt)},
+                    {KEY_LOOKSMAXERBOTS, new DataObject(DataObject.VisibilityOptions.Member, GameDataHolder.botsFlock4.ToString())},
+                    {KEY_MINIONBOTS, new DataObject(DataObject.VisibilityOptions.Member, GameDataHolder.botsFlock3.ToString())},
+                    {KEY_ENJOYERBOTS, new DataObject(DataObject.VisibilityOptions.Member,GameDataHolder.botsFlock1.ToString())},
+                    {KEY_PSYCHOBOTS, new DataObject(DataObject.VisibilityOptions.Member,GameDataHolder.botsFlock2.ToString())},
                 }
             });
 
@@ -264,6 +302,12 @@ public class MultiplayerManager : MonoBehaviour
                 case "4":
                     GameDataHolder.flock = 4;
                     break;
+            }
+
+            if (GameDataHolder.isSinglePlayer)
+            {
+                OnJoinedLobbyUpdate?.Invoke(this, new LobbyEventArgs { lobby = joinedLobby });
+                return;
             }
             await LobbyService.Instance.UpdatePlayerAsync(joinedLobby.Id, AuthenticationService.Instance.PlayerId, new UpdatePlayerOptions
             {
@@ -371,12 +415,22 @@ public class MultiplayerManager : MonoBehaviour
     {
         return joinedLobby;
     }
-    public async void StartGame(int BofDiff, int botToSpawn)
+    public async void StartGame(int BofDiff, int flocks)
     {
+        if (GameDataHolder.gameMode == 2) GameDataHolder.gameMode = 0;
+        if (flocks == 2)
+        {
+            GameDataHolder.botsFlock3 = 0;
+            GameDataHolder.botsFlock4 = 0;
+        }
+        if (flocks == 3)
+        {
+            GameDataHolder.botsFlock4 = 0;
+        }
+
         if (GameDataHolder.isSinglePlayer)
         {
             NetworkManager.Singleton.StartHost();
-            GameDataHolder.botsToSpawn = botToSpawn;
 
             switch (GameDataHolder.map)
             {
@@ -396,11 +450,7 @@ public class MultiplayerManager : MonoBehaviour
         {
             try
             {
-                Debug.Log("Start Game");
                 GameDataHolder.botDifficulty = BofDiff;
-                GameDataHolder.botsToSpawn = botToSpawn;
-
-
 
                 string relayCode = await CreateRelay();
                 Lobby lobby = await Lobbies.Instance.UpdateLobbyAsync(joinedLobby.Id, new UpdateLobbyOptions
@@ -441,7 +491,11 @@ public class MultiplayerManager : MonoBehaviour
             startingQPTitle.SetActive(true);
             QuickJoinLobbyOptions options = new QuickJoinLobbyOptions
             {
-                Player = player
+                Player = player,
+                Filter = new List<QueryFilter>
+                {
+                    new QueryFilter(QueryFilter.FieldOptions.S1, mode.ToString(), QueryFilter.OpOptions.EQ)
+                }
             };
 
             Lobby lobby = await LobbyService.Instance.QuickJoinLobbyAsync(options);
@@ -453,14 +507,18 @@ public class MultiplayerManager : MonoBehaviour
         catch (Exception)
         {
             startingQPTitle.SetActive(false);
-            if (mode == 0)
+            switch (mode)
             {
-                CreateLobby(GameDataHolder.multiplayerName + "'s game", 20, false, "Supremacy");
+                case 0:
+                    CreateLobby(GameDataHolder.multiplayerName + "'s game", 20, false, 0);
+                    break;
+                case 1:
+                    CreateLobby(GameDataHolder.multiplayerName + "'s Co-op game", 4, false, 1);
+                    break;
+                case 2:
+                    CreateLobby(GameDataHolder.multiplayerName + "'s game", 20, false, 2);
+                    break;
 
-            }
-            else
-            {
-                CreateLobby(GameDataHolder.multiplayerName + "'s Co-op game", 4, false, "Ice-cream Ops");
             }
         }
     }

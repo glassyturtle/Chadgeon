@@ -18,31 +18,44 @@ public class LobbyUI : MonoBehaviour
     private int neutralBotAmount = 5;
     private int botDifficulty = 1;
     private int selectedFlock = 0;
+    private int amtOfFlocks = 2;
 
     [SerializeField] private Transform playerSingleTemplate;
     [SerializeField] private Transform container;
-    [SerializeField] private GameObject addBotsMenu;
-    [SerializeField] private GameObject manageFlocksMenu;
+
+
+
+
     [SerializeField] private GameObject changeFlockMenu;
+    [SerializeField] private GameObject changeAmtOfFlocksUI;
     [SerializeField] private GameObject changeBotAmountSetting;
+    [SerializeField] private GameObject flockBotsTitle;
+    [SerializeField] private GameObject EnjoyerBotAmountSetting;
+    [SerializeField] private GameObject PsychoBotAmountSetting;
+    [SerializeField] private GameObject MinionBotAmountSetting;
+    [SerializeField] private GameObject LooksMaxerBotAmountSetting;
     [SerializeField] private GameObject changeFlockButtonGameobject;
-    [SerializeField] private GameObject editFlockButton;
+
+
+
+
+
     [SerializeField] private List<GameObject> hostButtons;
     [SerializeField] private TextMeshProUGUI lobbyNameText;
     [SerializeField] private TextMeshProUGUI lobbyMapText;
     [SerializeField] private TextMeshProUGUI neutralBotAmtText;
-    [SerializeField] private TextMeshProUGUI selectedFlockBotsText;
+    [SerializeField] private TextMeshProUGUI enjoyerAmtText;
+    [SerializeField] private TextMeshProUGUI psychoAmtText;
+    [SerializeField] private TextMeshProUGUI minionAmtText;
+    [SerializeField] private TextMeshProUGUI looksMaxerAmtText;
+    [SerializeField] private TextMeshProUGUI flockAmtText;
     [SerializeField] private TextMeshProUGUI playerCountText;
-    [SerializeField] private TextMeshProUGUI selectedFoxNameText;
-    [SerializeField] private TextMeshProUGUI gameModeText;
     [SerializeField] private TextMeshProUGUI joinCodeText;
     [SerializeField] private TextMeshProUGUI botDifficultyText;
     [SerializeField] private Button leaveLobbyButton;
-    [SerializeField] private Button changeGameModeButton;
     [SerializeField] private Button startGameButton;
     [SerializeField] private Button openBotMenu;
-    [SerializeField] private Button addBotButton;
-    [SerializeField] private Button closeBotMenuButton;
+
 
 
 
@@ -54,13 +67,14 @@ public class LobbyUI : MonoBehaviour
 
         startGameButton.onClick.AddListener(() =>
         {
-            MultiplayerManager.Instance.StartGame(botDifficulty, neutralBotAmount);
+            MultiplayerManager.Instance.StartGame(botDifficulty, amtOfFlocks);
         });
 
         leaveLobbyButton.onClick.AddListener(() =>
         {
             MultiplayerManager.Instance.LeaveLobby();
         });
+
         /*
         changeGameModeButton.onClick.AddListener(() =>
         {
@@ -71,8 +85,8 @@ public class LobbyUI : MonoBehaviour
 
     private void Start()
     {
-        MultiplayerManager.Instance.OnJoinedLobby += UpdateLobby_Event;
         MultiplayerManager.Instance.OnJoinedLobby += ResetLobbyDefaultValues;
+        MultiplayerManager.Instance.OnJoinedLobby += UpdateLobby_Event;
         MultiplayerManager.Instance.OnJoinedLobbyUpdate += UpdateLobby_Event;
         MultiplayerManager.Instance.OnLobbySettingsChanged += UpdateLobby_Event;
         MultiplayerManager.Instance.OnLeftLobby += LobbyManager_OnLeftLobby;
@@ -109,7 +123,7 @@ public class LobbyUI : MonoBehaviour
             if (left)
             {
                 GameDataHolder.botDifficulty -= 1;
-                if (GameDataHolder.gameMode == 0)
+                if (GameDataHolder.gameMode != 1)
                 {
                     if (GameDataHolder.botDifficulty < 0)
                     {
@@ -129,7 +143,7 @@ public class LobbyUI : MonoBehaviour
             else
             {
                 GameDataHolder.botDifficulty += 1;
-                if (GameDataHolder.gameMode == 0)
+                if (GameDataHolder.gameMode != 1)
                 {
                     if (GameDataHolder.botDifficulty > botDifficultyNames.Count - 2)
                     {
@@ -152,7 +166,7 @@ public class LobbyUI : MonoBehaviour
             if (left)
             {
                 botDifficulty -= 1;
-                if (MultiplayerManager.Instance.joinedLobby.Data[MultiplayerManager.KEY_GAMEMODE].Value == "Supremacy")
+                if (MultiplayerManager.Instance.joinedLobby.Data[MultiplayerManager.KEY_GAMEMODE_NUMBER].Value != "1")
                 {
                     if (botDifficulty < 0)
                     {
@@ -172,7 +186,7 @@ public class LobbyUI : MonoBehaviour
             else
             {
                 botDifficulty += 1;
-                if (MultiplayerManager.Instance.joinedLobby.Data[MultiplayerManager.KEY_GAMEMODE].Value == "Supremacy")
+                if (MultiplayerManager.Instance.joinedLobby.Data[MultiplayerManager.KEY_GAMEMODE_NUMBER].Value != "1")
                 {
                     if (botDifficulty > botDifficultyNames.Count - 2)
                     {
@@ -211,8 +225,34 @@ public class LobbyUI : MonoBehaviour
         {
             neutralBotAmount += 1;
         }
+        GameDataHolder.botsToSpawn = neutralBotAmount;
         neutralBotAmtText.text = neutralBotAmount.ToString();
         UpdateLobbySettingsAfterDelay();
+    }
+    public void ChangeFlockAmount(bool left)
+    {
+        if (left)
+        {
+            amtOfFlocks -= 1;
+            if (amtOfFlocks < 2)
+            {
+                amtOfFlocks = 2;
+            }
+        }
+        else
+        {
+            amtOfFlocks += 1;
+            if (amtOfFlocks > 4)
+            {
+                amtOfFlocks = 4;
+            }
+        }
+        flockAmtText.text = amtOfFlocks.ToString();
+        UpdateLobbySettingsAfterDelay();
+    }
+    public void ChangeSelectedFlock(int flock)
+    {
+        selectedFlock = flock;
     }
     public void ChangeSelectedFactionBots(bool left)
     {
@@ -252,57 +292,27 @@ public class LobbyUI : MonoBehaviour
                 return;
             case 1:
                 GameDataHolder.botsFlock1 = newAmt;
+                enjoyerAmtText.text = newAmt.ToString();
                 break;
             case 2:
                 GameDataHolder.botsFlock2 = newAmt;
+                psychoAmtText.text = newAmt.ToString();
                 break;
             case 3:
                 GameDataHolder.botsFlock3 = newAmt;
+                minionAmtText.text = newAmt.ToString();
                 break;
             case 4:
                 GameDataHolder.botsFlock4 = newAmt;
+                looksMaxerAmtText.text = newAmt.ToString();
                 break;
         }
+        UpdateLobbySettingsAfterDelay();
 
-        selectedFlockBotsText.text = newAmt.ToString();
-    }
-    public void SelectFlockToEdit(int flock)
-    {
-        selectedFlock = flock;
-        switch (selectedFlock)
-        {
-            case 0:
-                return;
-            case 1:
-                selectedFoxNameText.text = "Enjoyers";
-                selectedFlockBotsText.text = GameDataHolder.botsFlock1.ToString();
-                break;
-            case 2:
-                selectedFoxNameText.text = "Psychos";
-                selectedFlockBotsText.text = GameDataHolder.botsFlock2.ToString();
-
-                break;
-            case 3:
-                selectedFoxNameText.text = "Minons";
-                selectedFlockBotsText.text = GameDataHolder.botsFlock3.ToString();
-
-                break;
-            case 4:
-                selectedFoxNameText.text = "Looksmaxers";
-                selectedFlockBotsText.text = GameDataHolder.botsFlock4.ToString();
-
-                break;
-        }
     }
 
-    public void OpenAddBotMenu()
-    {
-        addBotsMenu.SetActive(true);
-    }
-    public void OpenManageFlockMenu()
-    {
-        manageFlocksMenu.SetActive(true);
-    }
+
+
     public void OpenChangeFlockMenu()
     {
         changeFlockMenu.SetActive(true);
@@ -310,9 +320,6 @@ public class LobbyUI : MonoBehaviour
     public void CloseAllPopUpMenus()
     {
         changeFlockMenu.SetActive(false);
-        manageFlocksMenu.SetActive(false);
-        addBotsMenu.SetActive(false);
-
     }
     private void LobbyManager_OnLeftLobby(object sender, System.EventArgs e)
     {
@@ -327,9 +334,54 @@ public class LobbyUI : MonoBehaviour
     private void ResetLobbyDefaultValues(object sender, MultiplayerManager.LobbyEventArgs e)
     {
         selectedMap = 0;
-        neutralBotAmount = 10;
         botDifficulty = 1;
+        GameDataHolder.botsToSpawn = 0;
+        GameDataHolder.botsFlock1 = 0;
+        GameDataHolder.botsFlock2 = 0;
+        GameDataHolder.botsFlock3 = 0;
+        GameDataHolder.botsFlock4 = 0;
+
         GameDataHolder.botDifficulty = botDifficulty;
+        switch (GameDataHolder.gameMode)
+        {
+            case 0:
+                neutralBotAmount = 10;
+                GameDataHolder.botsToSpawn = 10;
+                break;
+            case 2:
+                GameDataHolder.botsFlock1 = 5;
+                GameDataHolder.botsFlock2 = 5;
+                GameDataHolder.botsFlock3 = 5;
+                GameDataHolder.botsFlock4 = 5;
+                break;
+        }
+        selectedFlock = 0;
+    }
+
+    private void ResetLobbyDefaultValues()
+    {
+        selectedMap = 0;
+        botDifficulty = 1;
+        GameDataHolder.botsToSpawn = 0;
+        GameDataHolder.botsFlock1 = 0;
+        GameDataHolder.botsFlock2 = 0;
+        GameDataHolder.botsFlock3 = 0;
+        GameDataHolder.botsFlock4 = 0;
+
+        GameDataHolder.botDifficulty = botDifficulty;
+        switch (GameDataHolder.gameMode)
+        {
+            case 0:
+                neutralBotAmount = 10;
+                GameDataHolder.botsToSpawn = 10;
+                break;
+            case 2:
+                GameDataHolder.botsFlock1 = 5;
+                GameDataHolder.botsFlock2 = 5;
+                GameDataHolder.botsFlock3 = 5;
+                GameDataHolder.botsFlock4 = 5;
+                break;
+        }
         selectedFlock = 0;
     }
     private void UpdateLobby()
@@ -343,12 +395,13 @@ public class LobbyUI : MonoBehaviour
 
         if (GameDataHolder.isSinglePlayer)
         {
+            AdjustLobbyButtonVisibility(GameDataHolder.gameMode);
+
+            //Showing player in lobby
             Transform playerSingleTransform = Instantiate(playerSingleTemplate, container);
             playerSingleTransform.gameObject.SetActive(true);
             LobbyPlayerSingleUI lobbyPlayerSingleUI = playerSingleTransform.GetComponent<LobbyPlayerSingleUI>();
-
             lobbyPlayerSingleUI.SetKickPlayerButtonVisible(false);
-
             lobbyPlayerSingleUI.UpdatePlayerSinglePlayer();
 
             foreach (GameObject obj in hostButtons)
@@ -360,36 +413,9 @@ public class LobbyUI : MonoBehaviour
             playerCountText.text = "Singleplayer";
             joinCodeText.text = "N/A";
 
-            if (GameDataHolder.gameMode == 0)
-            {
-                editFlockButton.SetActive(true);
-                changeBotAmountSetting.SetActive(true);
-                changeFlockButtonGameobject.SetActive(true);
-            }
-            else
-            {
-                editFlockButton.SetActive(false);
-                changeBotAmountSetting.SetActive(false);
-                changeFlockButtonGameobject.SetActive(false);
-            }
         }
         else
         {
-            foreach (Player player in lobby.Players)
-            {
-                Transform playerSingleTransform = Instantiate(playerSingleTemplate, container);
-                playerSingleTransform.gameObject.SetActive(true);
-                LobbyPlayerSingleUI lobbyPlayerSingleUI = playerSingleTransform.GetComponent<LobbyPlayerSingleUI>();
-
-                lobbyPlayerSingleUI.SetKickPlayerButtonVisible(
-                    MultiplayerManager.Instance.IsLobbyHost() &&
-                    player.Id != AuthenticationService.Instance.PlayerId // Don't allow kick self
-                );
-
-                lobbyPlayerSingleUI.UpdatePlayer(player, lobby);
-            }
-
-            //changeGameModeButton.gameObject.SetActive(MultiplayerManager.Instance.IsLobbyHost());
             if (MultiplayerManager.Instance.IsLobbyHost())
             {
                 //Enable Host Buttons
@@ -397,51 +423,114 @@ public class LobbyUI : MonoBehaviour
                 {
                     obj.SetActive(true);
                 }
+
+                //Show Other Buttons
+                AdjustLobbyButtonVisibility(int.Parse(lobby.Data[MultiplayerManager.KEY_GAMEMODE_NUMBER].Value));
             }
             else
             {
-                //Disable Buttons
+                //Update Game Data based on Lobby
+                GameDataHolder.gameMode = int.Parse(lobby.Data[MultiplayerManager.KEY_GAMEMODE_NUMBER].Value);
+                GameDataHolder.botsToSpawn = int.Parse(lobby.Data[MultiplayerManager.KEY_BOT_AMT].Value);
+                GameDataHolder.botsFlock1 = int.Parse(lobby.Data[MultiplayerManager.KEY_ENJOYERBOTS].Value);
+                GameDataHolder.botsFlock2 = int.Parse(lobby.Data[MultiplayerManager.KEY_PSYCHOBOTS].Value);
+                GameDataHolder.botsFlock3 = int.Parse(lobby.Data[MultiplayerManager.KEY_MINIONBOTS].Value);
+                GameDataHolder.botsFlock4 = int.Parse(lobby.Data[MultiplayerManager.KEY_LOOKSMAXERBOTS].Value);
+                amtOfFlocks = int.Parse(lobby.Data[MultiplayerManager.KEY_FLOCK_AMT].Value);
+
+                //Disable host only Buttons
                 foreach (GameObject obj in hostButtons)
                 {
                     obj.SetActive(false);
                 }
+
+                //Show Other Buttons
+                AdjustLobbyButtonVisibility(int.Parse(lobby.Data[MultiplayerManager.KEY_GAMEMODE_NUMBER].Value));
+
                 lobbyMapText.text = lobby.Data[MultiplayerManager.KEY_MAP_NAME].Value;
-                neutralBotAmtText.text = lobby.Data[MultiplayerManager.KEY_BOT_AMT].Value;
                 botDifficultyText.text = lobby.Data[MultiplayerManager.KEY_DIFFICULTY].Value;
             }
+
+
+            //Showing players in lobby
+            foreach (Player player in lobby.Players)
+            {
+                Transform playerSingleTransform = Instantiate(playerSingleTemplate, container);
+                playerSingleTransform.gameObject.SetActive(true);
+                LobbyPlayerSingleUI lobbyPlayerSingleUI = playerSingleTransform.GetComponent<LobbyPlayerSingleUI>();
+                lobbyPlayerSingleUI.SetKickPlayerButtonVisible(
+                    MultiplayerManager.Instance.IsLobbyHost() &&
+                    player.Id != AuthenticationService.Instance.PlayerId // Don't allow kick self
+                );
+                lobbyPlayerSingleUI.UpdatePlayer(player, lobby);
+            }
+
             lobbyNameText.text = lobby.Name;
             playerCountText.text = lobby.Players.Count + "/" + lobby.MaxPlayers + " Player Pigeons";
             joinCodeText.text = lobby.LobbyCode;
-
-            switch (lobby.Data[MultiplayerManager.KEY_GAMEMODE].Value)
-            {
-                case "Supremacy":
-                    GameDataHolder.gameMode = 0;
-                    break;
-                default:
-                    GameDataHolder.gameMode = 1;
-                    break;
-            }
-
-            if (lobby.Data[MultiplayerManager.KEY_GAMEMODE].Value == "Supremacy")
-            {
-                editFlockButton.SetActive(true);
-                changeBotAmountSetting.SetActive(true);
-                changeFlockButtonGameobject.SetActive(true);
-            }
-            else
-            {
-                editFlockButton.SetActive(false);
-                changeBotAmountSetting.SetActive(false);
-                changeFlockButtonGameobject.SetActive(false);
-            }
-
-
         }
         Show();
 
     }
+    private void AdjustLobbyButtonVisibility(int gameMode)
+    {
+        switch (gameMode)
+        {
+            case 0:
+                changeBotAmountSetting.SetActive(true);
+                changeFlockButtonGameobject.SetActive(false);
+                changeAmtOfFlocksUI.SetActive(false);
+                EnjoyerBotAmountSetting.SetActive(false);
+                PsychoBotAmountSetting.SetActive(false);
+                MinionBotAmountSetting.SetActive(false);
+                LooksMaxerBotAmountSetting.SetActive(false);
+                flockBotsTitle.SetActive(false);
+                neutralBotAmtText.text = GameDataHolder.botsToSpawn.ToString();
+                break;
+            case 1:
+                changeBotAmountSetting.SetActive(false);
+                changeFlockButtonGameobject.SetActive(false);
+                changeAmtOfFlocksUI.SetActive(false);
+                EnjoyerBotAmountSetting.SetActive(false);
+                PsychoBotAmountSetting.SetActive(false);
+                MinionBotAmountSetting.SetActive(false);
+                LooksMaxerBotAmountSetting.SetActive(false);
+                flockBotsTitle.SetActive(false);
 
+                break;
+            case 2:
+                changeBotAmountSetting.SetActive(false);
+                changeFlockButtonGameobject.SetActive(true);
+                changeAmtOfFlocksUI.SetActive(true);
+                flockAmtText.text = amtOfFlocks.ToString();
+                flockBotsTitle.SetActive(true);
+
+                EnjoyerBotAmountSetting.SetActive(false);
+                PsychoBotAmountSetting.SetActive(false);
+                MinionBotAmountSetting.SetActive(false);
+                LooksMaxerBotAmountSetting.SetActive(false);
+                if (amtOfFlocks >= 2)
+                {
+                    EnjoyerBotAmountSetting.SetActive(true);
+                    PsychoBotAmountSetting.SetActive(true);
+                    enjoyerAmtText.text = GameDataHolder.botsFlock1.ToString();
+                    psychoAmtText.text = GameDataHolder.botsFlock2.ToString();
+                }
+                if (amtOfFlocks >= 3)
+                {
+                    MinionBotAmountSetting.SetActive(true);
+                    minionAmtText.text = GameDataHolder.botsFlock3.ToString();
+
+                }
+                if (amtOfFlocks == 4)
+                {
+                    LooksMaxerBotAmountSetting.SetActive(true);
+                    looksMaxerAmtText.text = GameDataHolder.botsFlock4.ToString();
+                }
+
+                break;
+        }
+    }
     private void ClearLobby()
     {
         foreach (Transform child in container)
@@ -458,14 +547,18 @@ public class LobbyUI : MonoBehaviour
 
     private void UpdateLobbySettingsAfterDelay()
     {
-        if (GameDataHolder.isSinglePlayer) return;
+        if (GameDataHolder.isSinglePlayer)
+        {
+            UpdateLobby(null);
+            return;
+        }
         StopAllCoroutines();
         StartCoroutine(DelayUpdate());
     }
     IEnumerator DelayUpdate()
     {
-        yield return new WaitForSeconds(3f);
-        MultiplayerManager.Instance.UpdateLobbySettings(mapNames[GameDataHolder.map], neutralBotAmount.ToString(), botDifficultyNames[botDifficulty]);
+        yield return new WaitForSeconds(2f);
+        MultiplayerManager.Instance.UpdateLobbySettings(mapNames[GameDataHolder.map], botDifficultyNames[botDifficulty], amtOfFlocks.ToString());
     }
     private void Show()
     {

@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,6 +14,7 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private GameObject customizationMenu;
     [SerializeField] private GameObject credits;
     [SerializeField] private GameObject purchaseMenu;
+    [SerializeField] private GameObject veiwLobbiesCard;
     [SerializeField] private GameObject skins, skinBody, skinHead, skinBase;
     [SerializeField] private TMP_Text chadCoinsText;
     [SerializeField] private TMP_InputField nameInput;
@@ -47,6 +49,11 @@ public class MainMenuManager : MonoBehaviour
         nameInput.text = SaveDataManager.playerName.ToString();
         GameDataHolder.ResetStats();
         RefreshShopButtons();
+        if (GameDataHolder.isSinglePlayer) veiwLobbiesCard.gameObject.SetActive(false);
+    }
+    private void Start()
+    {
+        MultiplayerManager.Instance.OnLeftLobby += LobbyManager_OnLeftLobby;
     }
     public void OpenPurchaseSkinNotification(int selectedSkinCost, string skinName, int skinID)
     {
@@ -221,6 +228,10 @@ public class MainMenuManager : MonoBehaviour
         playMenu.SetActive(false);
         GameDataHolder.gameMode = mode;
         MultiplayerManager.Instance.QuickJoinLobby(mode);
+    }
+    private void LobbyManager_OnLeftLobby(object sender, EventArgs e)
+    {
+        playMenu.SetActive(true);
     }
     private void RefreshShopButtons()
     {

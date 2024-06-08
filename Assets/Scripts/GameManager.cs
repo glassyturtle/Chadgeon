@@ -26,7 +26,7 @@ public class GameManager : NetworkBehaviour
 
     private bool gracePeriod = false;
     private bool lookingForConeToBuild = true;
-    [SerializeField] AudioSource audioSource, clickSound;
+    [SerializeField] AudioSource audioSource, mewingSorce;
     [SerializeField] AudioClip[] musicTracks;
     private int currentTrack = 0;
     [SerializeField] int secondsTillSuddenDeath;
@@ -35,7 +35,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] Transform borderTransform;
 
     [SerializeField] GameObject endScreen, playerUI, gameUI, pauseMenu, spectateScreen, upgradeScreen, minimapUI, sprintUI, churchDoor, goonPrefab, coneToDefend;
-    [SerializeField] TMP_Text endGameDescriptionText, spectatingText, upgradeDescText, upgradeNameText, featherChargeCounter, gameObjectiveText, respawnTimer;
+    [SerializeField] TMP_Text endGameDescriptionText, spectatingText, upgradeDescText, upgradeNameText, featherChargeCounter, gameObjectiveText, respawnTimer, pauseMenuText;
     [SerializeField] GameObject upgradeDescUI;
     [SerializeField] private GameObject[] upgradeDisplays;
     [SerializeField] private UpgradeDescriber[] upgradeDescibers;
@@ -87,6 +87,7 @@ public class GameManager : NetworkBehaviour
 
     private void Awake()
     {
+        if (GameDataHolder.gameMode == 2) GameDataHolder.gameMode = 0;
         instance = this;
         endScreenMainMenuButton.onClick.AddListener(() =>
         {
@@ -108,6 +109,12 @@ public class GameManager : NetworkBehaviour
             gracePeriod = false;
             gameObjectiveText.gameObject.SetActive(true);
         }
+    }
+    private void Start()
+    {
+
+
+        NetworkManager.Singleton.OnClientDisconnectCallback += NetworkManager_OnClientDisconnectCallback;
     }
     public override void OnNetworkSpawn()
     {
@@ -135,7 +142,6 @@ public class GameManager : NetworkBehaviour
         if (currentSecond.Value == -1) return;
         int minutes = Mathf.RoundToInt(currentSecond.Value / 60);
         borderTransform.localScale = new Vector3(borderSize.Value, borderSize.Value, 0);
-
 
 
         if (GameDataHolder.gameMode == 0)
@@ -217,12 +223,17 @@ public class GameManager : NetworkBehaviour
             {
                 pauseMenuOpen = false;
                 pauseMenu.SetActive(false);
+                if (GameDataHolder.isSinglePlayer) Time.timeScale = 1;
             }
             else
             {
                 pauseMenuOpen = true;
                 pauseMenu.SetActive(true);
-
+                if (GameDataHolder.isSinglePlayer)
+                {
+                    pauseMenuText.text = "Chadgeon realizes he is in a singleplayer game and cannot move";
+                    Time.timeScale = 0;
+                }
             }
         }
         if (Input.GetKeyDown(KeyCode.U))
@@ -521,6 +532,8 @@ public class GameManager : NetworkBehaviour
     {
         pauseMenuOpen = false;
         pauseMenu.SetActive(false);
+        if (GameDataHolder.isSinglePlayer) Time.timeScale = 1;
+
     }
     public void AddUpgradeToDisply(int upgrade)
     {
@@ -616,6 +629,7 @@ public class GameManager : NetworkBehaviour
     }
     public void ReturnToMainMenu()
     {
+        Time.timeScale = 1;
         NetworkManager.Singleton.Shutdown();
         SceneManager.LoadScene("MainMenu");
     }
@@ -636,7 +650,7 @@ public class GameManager : NetworkBehaviour
             {
                 if (player.level.Value >= 25 && Random.Range(0, 100) <= 20)
                 {
-                    upgrade = ((Upgrades)Random.Range(-1, -3));
+                    upgrade = ((Upgrades)Random.Range(-1, -4));
                 }
                 else
                 {
@@ -667,7 +681,7 @@ public class GameManager : NetworkBehaviour
 
             if (player.pigeonUpgrades.ContainsKey(upgrade) || hasAbilitySlotUnlocked)
             {
-                upgrade = ((Upgrades)Random.Range(-1, -3));
+                upgrade = ((Upgrades)Random.Range(-1, -4));
             }
 
 
@@ -706,7 +720,6 @@ public class GameManager : NetworkBehaviour
     }
     public void SelectUpgrade(int selected)
     {
-        clickSound.Play();
         upgradeScreen.SetActive(false);
         upgradeDescUI.SetActive(false);
         player.AddUpgrade(upgradesThatCanBeSelected[selected]);
@@ -806,10 +819,34 @@ public class GameManager : NetworkBehaviour
     {
         DestroyFoodObjectServerRpc(foodie.NetworkObject);
     }
+    public void SwapToMewingSong()
+    {
+        audioSource.volume = 0;
+        mewingSorce.Play();
+    }
+    public void StopMewingSong()
+    {
+        mewingSorce.Stop();
+        audioSource.volume = 1;
+    }
 
-
+    private void NetworkManager_OnClientDisconnectCallback(ulong clientId)
+    {
+        StartCoroutine(GameManager.instance.CheckMissingHost());
+    }
     private void LevelUpPigeonAlliesPVE()
     {
+        List<int> missingpigoens = new List<int>();
+        for (int i = 0; i < allpigeons.Count; i++)
+        {
+            if (allpigeons[i] == null) missingpigoens.Add(i);
+        }
+        foreach (int i in missingpigoens)
+        {
+            allpigeons.RemoveAt(i);
+        }
+
+
         RespawnDeadAlliesClientRpc();
         allpigeons = allpigeons.OrderByDescending(p => p.level.Value).ToList();
         for (int i = 0; i < allpigeons.Count; i++)
@@ -883,7 +920,16 @@ public class GameManager : NetworkBehaviour
             }
         }
     }
+    public IEnumerator CheckMissingHost()
+    {
+        yield return new WaitForSeconds(1);
+        if (player == null && !gameover)
+        {
 
+            //server is sutting down
+            hostDCUI.SetActive(true);
+        }
+    }
     IEnumerator RespawnTimer(int seconds)
     {
         respawnTimer.gameObject.SetActive(true);
@@ -960,7 +1006,7 @@ public class GameManager : NetworkBehaviour
                 }
                 else
                 {
-                    currentSecond.Value = 500;
+                    currentSecond.Value = 600;
                     int spawnArea = Random.Range(0, spawnLocations.Count - 1);
                     foreach (ulong client in NetworkManager.Singleton.ConnectedClientsIds)
                     {
@@ -1019,10 +1065,12 @@ public class GameManager : NetworkBehaviour
 
                 while (true)
                 {
-                    if (totalPigeons == pigeonStartData.Count || GameDataHolder.isSinglePlayer)
+                    if (totalPigeons == pigeonStartData.Count)
                     {
                         currentSecond.Value = secondsTillSuddenDeath;
+
                         UpdatePigeonsForClientsClientRpc(pigeonStartData.ToArray());
+
 
 
                         if (GameDataHolder.gameMode == 0)
@@ -1103,7 +1151,7 @@ public class GameManager : NetworkBehaviour
 
             for (int y = 0; y < 10; y++)
             {
-                if ((spawnPos - iceCreamPos).sqrMagnitude >= 10) break;
+                if ((spawnPos - iceCreamPos).sqrMagnitude >= 100) break;
                 spawnPos = GetSpawnPos();
 
             }

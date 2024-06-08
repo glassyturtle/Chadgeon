@@ -30,7 +30,7 @@ public class LobbyPlayerSingleUI : MonoBehaviour
     {
         this.player = player;
         playerNameText.text = player.Data[MultiplayerManager.KEY_PLAYER_NAME].Value;
-        if (lobby.Data[MultiplayerManager.KEY_GAMEMODE].Value == "Supremacy")
+        if (GameDataHolder.gameMode == 2)
         {
             switch (player.Data[MultiplayerManager.KEY_PLAYER_FLOCK].Value)
             {
@@ -92,7 +92,7 @@ public class LobbyPlayerSingleUI : MonoBehaviour
     public void UpdatePlayerSinglePlayer()
     {
         playerNameText.text = SaveDataManager.playerName;
-        if (GameDataHolder.gameMode == 0)
+        if (GameDataHolder.gameMode == 2)
         {
             switch (GameDataHolder.flock)
             {
