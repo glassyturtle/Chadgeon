@@ -140,6 +140,7 @@ MonoBehaviour:
   area: {fileID: 248876684084415752}
   mask: {fileID: 3333318757107592351}
   sr: {fileID: 5912057867144508185}
+  pigeonRef: {fileID: 3937453662887302832}
   audioSorce: {fileID: 4082756583595316557}
   swooshSounds:
   - {fileID: 8300000, guid: d0047a4531027c94da10f568c37efa90, type: 3}
@@ -1394,6 +1395,7 @@ MonoBehaviour:
     m_InternalValue: 1
   isFlying: 0
   isSprinting: 0
+  isMaxing: 0
   xp: 0
   xpTillLevelUp: 30
   flock: 0
@@ -1403,6 +1405,8 @@ MonoBehaviour:
   isPlayer: 0
   speed: 900
   damage: 10
+  speedMod: 1
+  damageTakenModifier: 1
   inEvacsite: 0
   hasAbilityM2: 0
   hasAbilityE: 0
@@ -1425,7 +1429,7 @@ MonoBehaviour:
   wholeGains: {fileID: 4071180946374529513, guid: a5a6c1e2a96acaf4cb2413ab79643b2b, type: 3}
   pigeonPoo: {fileID: 5697750818802058696, guid: d283742cc1351494a801211bacc45bf9, type: 3}
   audioSorce: {fileID: 6911069253900164750}
-  killSound: {fileID: 0}
+  DINGSOURCE: {fileID: 0}
   flySound: {fileID: 8300000, guid: aaf368f23ea47d7409cc5bafb3ce52af, type: 3}
   levelUp: {fileID: 0}
   skinBase: 1

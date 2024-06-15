@@ -50,10 +50,19 @@ public class MainMenuManager : MonoBehaviour
         GameDataHolder.ResetStats();
         RefreshShopButtons();
         if (GameDataHolder.isSinglePlayer) veiwLobbiesCard.gameObject.SetActive(false);
+        if (SaveDataManager.gamesPlayed >= 20)
+        {
+            SteamIntegration.instance.UnlockAchivement("average_chadgeon");
+            if (SaveDataManager.gamesPlayed >= 100)
+            {
+                SteamIntegration.instance.UnlockAchivement("average_enjoyer");
+            }
+        }
     }
     private void Start()
     {
         MultiplayerManager.Instance.OnLeftLobby += LobbyManager_OnLeftLobby;
+        MultiplayerManager.Instance.OnKickedFromLobby += LobbyManager_OnLeftLobby;
     }
     public void OpenPurchaseSkinNotification(int selectedSkinCost, string skinName, int skinID)
     {
@@ -283,7 +292,6 @@ public class MainMenuManager : MonoBehaviour
             }
         }
     }
-
 
 
     public void OpenTwitter()

@@ -12,18 +12,46 @@ public class LobbyCreateUI : MonoBehaviour
     [SerializeField] private Button createButton;
     [SerializeField] private TMP_InputField lobbyNameField;
     [SerializeField] private TMP_Text sampleNameText;
+    [SerializeField] private TMP_Text gamemodeText;
+    [SerializeField] private string[] gamemodeNames;
 
     private string lobbyName = "Chadgeon's Game";
     private bool isPrivate = true;
-    private int maxPlayers = 69;
-    private int gameMode;
+    private int maxPlayers = 20;
+    private int gameMode = 0;
 
+
+    public void ChangeGamemode(bool left)
+    {
+        if (left)
+        {
+            gameMode -= 1;
+            if (gameMode < 0)
+            {
+                gameMode = 0;
+            }
+        }
+        else
+        {
+            gameMode += 1;
+            if (gameMode > 2)
+            {
+                gameMode = 2;
+            }
+        }
+        gamemodeText.text = gamemodeNames[gameMode];
+    }
     private void Awake()
     {
+        gameMode = 0;
         Instance = this;
         createButton.onClick.AddListener(() =>
         {
             if (lobbyNameField.text != "") lobbyName = lobbyNameField.text;
+
+            if (gameMode
+            == 1) maxPlayers = 4;
+            else maxPlayers = 20;
 
             MultiplayerManager.Instance.CreateLobby(
                 lobbyName,

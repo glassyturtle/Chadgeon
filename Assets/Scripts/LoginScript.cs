@@ -50,7 +50,6 @@ public class LoginScript : MonoBehaviour
     {
         try
         {
-
             await UnityServices.InitializeAsync();
             if (AuthenticationService.Instance.IsSignedIn) return;
 

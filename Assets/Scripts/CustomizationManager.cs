@@ -12,6 +12,7 @@ public class CustomizationManager : MonoBehaviour
         Instance = this;
     }
 
+
     public enum SpriteType
     {
         baseSkin,

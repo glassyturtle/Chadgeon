@@ -46,6 +46,7 @@ public static class SaveDataManager
         robot = 13,
         risk = 14,
         ice = 15,
+        worm = 16,
     }
 
 

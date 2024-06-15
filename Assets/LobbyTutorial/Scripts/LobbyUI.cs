@@ -15,7 +15,7 @@ public class LobbyUI : MonoBehaviour
     [SerializeField] private List<string> mapNames;
     [SerializeField] private List<string> botDifficultyNames;
     private int selectedMap = 0;
-    private int neutralBotAmount = 5;
+    private int neutralBotAmount = 3;
     private int botDifficulty = 1;
     private int selectedFlock = 0;
     private int amtOfFlocks = 2;
@@ -35,6 +35,7 @@ public class LobbyUI : MonoBehaviour
     [SerializeField] private GameObject MinionBotAmountSetting;
     [SerializeField] private GameObject LooksMaxerBotAmountSetting;
     [SerializeField] private GameObject changeFlockButtonGameobject;
+    [SerializeField] private GameObject startingGameDisplay;
 
 
 
@@ -67,6 +68,7 @@ public class LobbyUI : MonoBehaviour
 
         startGameButton.onClick.AddListener(() =>
         {
+            startingGameDisplay.SetActive(true);
             MultiplayerManager.Instance.StartGame(botDifficulty, amtOfFlocks);
         });
 
@@ -82,6 +84,7 @@ public class LobbyUI : MonoBehaviour
         });
         */
     }
+
 
     private void Start()
     {
@@ -213,18 +216,67 @@ public class LobbyUI : MonoBehaviour
 
     public void ChangeNeutralBotAmount(bool left)
     {
-        if (left)
+        if (GameDataHolder.gameMode == 1)
         {
-            neutralBotAmount -= 1;
-            if (neutralBotAmount < 0)
+            if (GameDataHolder.isSinglePlayer)
             {
-                neutralBotAmount = 0;
+                if (neutralBotAmount > 3) neutralBotAmount = 3;
+                if (left)
+                {
+                    Debug.Log(neutralBotAmount);
+                    neutralBotAmount -= 1;
+                    if (neutralBotAmount < 0)
+                    {
+                        neutralBotAmount = 0;
+                    }
+                }
+                else
+                {
+                    neutralBotAmount += 1;
+                    if (neutralBotAmount > 3)
+                    {
+                        neutralBotAmount = 3;
+                    }
+                }
             }
+            else
+            {
+                if (left)
+                {
+                    neutralBotAmount -= 1;
+                    if (neutralBotAmount < 0)
+                    {
+                        neutralBotAmount = 0;
+                    }
+                }
+                else
+                {
+                    neutralBotAmount += 1;
+                    if (neutralBotAmount > 4 - MultiplayerManager.Instance.joinedLobby.Players.Count)
+                    {
+                        neutralBotAmount = 4 - MultiplayerManager.Instance.joinedLobby.Players.Count;
+                    }
+                }
+            }
+
         }
         else
         {
-            neutralBotAmount += 1;
+            if (left)
+            {
+                neutralBotAmount -= 1;
+                if (neutralBotAmount < 0)
+                {
+                    neutralBotAmount = 0;
+                }
+            }
+            else
+            {
+                neutralBotAmount += 1;
+            }
         }
+        Debug.Log(neutralBotAmount);
+
         GameDataHolder.botsToSpawn = neutralBotAmount;
         neutralBotAmtText.text = neutralBotAmount.ToString();
         UpdateLobbySettingsAfterDelay();
@@ -348,6 +400,9 @@ public class LobbyUI : MonoBehaviour
                 neutralBotAmount = 10;
                 GameDataHolder.botsToSpawn = 10;
                 break;
+            case 1:
+                GameDataHolder.botsToSpawn = 3;
+                break;
             case 2:
                 GameDataHolder.botsFlock1 = 5;
                 GameDataHolder.botsFlock2 = 5;
@@ -355,6 +410,7 @@ public class LobbyUI : MonoBehaviour
                 GameDataHolder.botsFlock4 = 5;
                 break;
         }
+        neutralBotAmtText.text = GameDataHolder.botsToSpawn.ToString();
         selectedFlock = 0;
     }
 
@@ -374,6 +430,10 @@ public class LobbyUI : MonoBehaviour
             case 0:
                 neutralBotAmount = 10;
                 GameDataHolder.botsToSpawn = 10;
+                break;
+            case 1:
+                neutralBotAmount = 3;
+                GameDataHolder.botsToSpawn = 3;
                 break;
             case 2:
                 GameDataHolder.botsFlock1 = 5;
@@ -423,7 +483,16 @@ public class LobbyUI : MonoBehaviour
                 {
                     obj.SetActive(true);
                 }
+                if (GameDataHolder.gameMode == 1)
+                {
+                    if (lobby.Players.Count + neutralBotAmount > 4)
+                    {
+                        neutralBotAmount = 4 - lobby.Players.Count;
+                        GameDataHolder.botsToSpawn = 4 - lobby.Players.Count;
+                        UpdateLobbySettingsAfterDelay();
 
+                    }
+                }
                 //Show Other Buttons
                 AdjustLobbyButtonVisibility(int.Parse(lobby.Data[MultiplayerManager.KEY_GAMEMODE_NUMBER].Value));
             }
@@ -465,6 +534,8 @@ public class LobbyUI : MonoBehaviour
                 lobbyPlayerSingleUI.UpdatePlayer(player, lobby);
             }
 
+
+
             lobbyNameText.text = lobby.Name;
             playerCountText.text = lobby.Players.Count + "/" + lobby.MaxPlayers + " Player Pigeons";
             joinCodeText.text = lobby.LobbyCode;
@@ -488,7 +559,7 @@ public class LobbyUI : MonoBehaviour
                 neutralBotAmtText.text = GameDataHolder.botsToSpawn.ToString();
                 break;
             case 1:
-                changeBotAmountSetting.SetActive(false);
+                changeBotAmountSetting.SetActive(true);
                 changeFlockButtonGameobject.SetActive(false);
                 changeAmtOfFlocksUI.SetActive(false);
                 EnjoyerBotAmountSetting.SetActive(false);
@@ -496,7 +567,7 @@ public class LobbyUI : MonoBehaviour
                 MinionBotAmountSetting.SetActive(false);
                 LooksMaxerBotAmountSetting.SetActive(false);
                 flockBotsTitle.SetActive(false);
-
+                neutralBotAmtText.text = GameDataHolder.botsToSpawn.ToString();
                 break;
             case 2:
                 changeBotAmountSetting.SetActive(false);
@@ -563,6 +634,7 @@ public class LobbyUI : MonoBehaviour
     private void Show()
     {
         gameObject.SetActive(true);
+
     }
 
 }

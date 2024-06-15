@@ -14,6 +14,7 @@ public class AbilityCooldownIconScript : MonoBehaviour
     }
     public void StartCooldown(int cooldownTime)
     {
+        StopAllCoroutines();
         if (gameObject.activeInHierarchy)
             StartCoroutine(CoolDown(cooldownTime));
     }

@@ -94,7 +94,7 @@ public class PlayerScript : Pigeon
                     isSprinting = false;
                     StartCoroutine(StartSprintCooldown());
                 }
-                if (inPoo) MoveServerRpc((speed * Time.fixedDeltaTime * speedMod) * 0.2f, inputVector);
+                if (inPoo) MoveServerRpc((speed * Time.fixedDeltaTime * speedMod) * 0.1f, inputVector);
                 else MoveServerRpc(speed * Time.fixedDeltaTime * speedMod, inputVector);
 
                 if (stamina < maxStamina && !sprintOnCooldown)

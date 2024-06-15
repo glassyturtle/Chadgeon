@@ -230,21 +230,6 @@ public class MultiplayerManager : MonoBehaviour
 
                 joinedLobby = await LobbyService.Instance.GetLobbyAsync(joinedLobby.Id);
 
-                if (joinedLobby.Data[KEY_START_GAME].Value != "0")
-                {
-                    if (!IsLobbyHost())
-                    {
-                        //loby host already joined relay
-                        JoinRelay(joinedLobby.Data[KEY_START_GAME].Value);
-                        joinedLobby = null;
-                    }
-                    else
-                    {
-                        joinedLobby = null;
-                        return;
-                    }
-                }
-
                 if (!IsPlayerInLobby())
                 {
                     // Player was kicked out of this lobby
@@ -261,6 +246,20 @@ public class MultiplayerManager : MonoBehaviour
                     OnJoinedLobbyUpdate?.Invoke(this, new LobbyEventArgs { lobby = joinedLobby });
                 }
 
+                if (joinedLobby.Data[KEY_START_GAME].Value != "0")
+                {
+                    if (!IsLobbyHost())
+                    {
+                        //loby host already joined relay
+                        JoinRelay(joinedLobby.Data[KEY_START_GAME].Value);
+                        joinedLobby = null;
+                    }
+                    else
+                    {
+                        joinedLobby = null;
+                        return;
+                    }
+                }
 
             }
         }

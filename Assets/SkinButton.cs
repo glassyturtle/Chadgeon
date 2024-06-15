@@ -41,6 +41,10 @@ public class SkinButton : MonoBehaviour
         }
         else
         {
+            if (skinID != -1 && (type == CustomizationManager.SpriteType.body || type == CustomizationManager.SpriteType.head))
+            {
+                SteamIntegration.instance.UnlockAchivement("paul_allen");
+            }
             MainMenuManager.Instance.EquipSkin(skinID, type);
         }
     }

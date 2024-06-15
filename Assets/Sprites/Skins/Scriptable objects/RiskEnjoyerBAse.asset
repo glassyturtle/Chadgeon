@@ -12,4 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 326c80addf774684f9da7e5994c48b87, type: 3}
   m_Name: RiskEnjoyerBAse
   m_EditorClassIdentifier: 
-  sprites: []
+  sprites:
+  - {fileID: -681855797, guid: d3c380227533fb040baaa89bb13b3cbd, type: 3}
+  - {fileID: 998156471, guid: d3c380227533fb040baaa89bb13b3cbd, type: 3}
+  - {fileID: 1316272545, guid: d3c380227533fb040baaa89bb13b3cbd, type: 3}
+  - {fileID: 266509096, guid: d3c380227533fb040baaa89bb13b3cbd, type: 3}
+  - {fileID: 627438481, guid: d3c380227533fb040baaa89bb13b3cbd, type: 3}
+  - {fileID: 469690450, guid: d3c380227533fb040baaa89bb13b3cbd, type: 3}
+  - {fileID: -1694704905, guid: d3c380227533fb040baaa89bb13b3cbd, type: 3}

@@ -35,7 +35,6 @@ public class LobbyListUI : MonoBehaviour
     {
         MultiplayerManager.Instance.OnLobbyListChanged += LobbyManager_OnLobbyListChanged;
         MultiplayerManager.Instance.OnJoinedLobby += LobbyManager_OnJoinedLobby;
-        MultiplayerManager.Instance.OnKickedFromLobby += LobbyManager_OnKickedFromLobby;
         Hide();
     }
     public void CloseLobbyList()

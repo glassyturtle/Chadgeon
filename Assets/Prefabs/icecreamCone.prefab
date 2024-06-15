@@ -72,8 +72,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   interactText: {fileID: 4741066873181035072}
-  sr: {fileID: 1316698870412693047}
-  builtConeSprite: {fileID: 21300000, guid: e5e678b862d624542a0fc0d5cb0c6d6c, type: 3}
 --- !u!58 &4030378900280707927
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -281,7 +279,7 @@ TextMesh:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4741066873181035072}
-  m_Text: '[F] Interact'
+  m_Text: '[F] build'
   m_OffsetZ: 0
   m_CharacterSize: 0.08
   m_LineSpacing: 1

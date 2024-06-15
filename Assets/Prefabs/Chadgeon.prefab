@@ -411,6 +411,7 @@ MonoBehaviour:
   area: {fileID: 6989306768707830802}
   mask: {fileID: 8571630991815128293}
   sr: {fileID: 2616010936709695860}
+  pigeonRef: {fileID: 4961322488758605413}
   audioSorce: {fileID: 3834794495537260509}
   swooshSounds:
   - {fileID: 8300000, guid: d0047a4531027c94da10f568c37efa90, type: 3}
@@ -872,6 +873,7 @@ MonoBehaviour:
     m_InternalValue: 1
   isFlying: 0
   isSprinting: 0
+  isMaxing: 0
   xp: 0
   xpTillLevelUp: 30
   flock: 0
@@ -881,6 +883,8 @@ MonoBehaviour:
   isPlayer: 1
   speed: 900
   damage: 10
+  speedMod: 1
+  damageTakenModifier: 1
   inEvacsite: 0
   hasAbilityM2: 0
   hasAbilityE: 0
@@ -985,7 +989,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  UseUnreliableDeltas: 0
+  UseUnreliableDeltas: 1
   SyncPositionX: 1
   SyncPositionY: 1
   SyncPositionZ: 0
@@ -1003,7 +1007,7 @@ MonoBehaviour:
   UseHalfFloatPrecision: 0
   InLocalSpace: 0
   Interpolate: 1
-  SlerpPosition: 0
+  SlerpPosition: 1
 --- !u!114 &4503530153872696905
 MonoBehaviour:
   m_ObjectHideFlags: 0

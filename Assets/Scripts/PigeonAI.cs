@@ -175,7 +175,7 @@ public class PigeonAI : Pigeon
         }
         else
         {
-            if (inPoo) force = speed * speedMod * Time.deltaTime * 0.2f * direction;
+            if (inPoo) force = speed * speedMod * Time.deltaTime * 0.1f * direction;
             else force = speed * speedMod * Time.deltaTime * direction;
         }
         body.AddForce(force);
@@ -257,7 +257,25 @@ public class PigeonAI : Pigeon
         float angle = Mathf.Atan2(targ.y, targ.x) * Mathf.Rad2Deg;
         Quaternion theAngle = Quaternion.Euler(new Vector3(0, 0, angle));
 
-        PigeonAttack(GetBasicAttackValues(pos.x, pos.y), theAngle);
+
+        AttackProperties atkProps = GetBasicAttackValues(pos.x, pos.y);
+        if (GameDataHolder.gameMode == 1 && diesAfterDeath)
+        {
+            switch (GameDataHolder.botDifficulty)
+            {
+                case 0:
+                    damage = Mathf.RoundToInt(damage * 0.7f);
+                    break;
+                case 1:
+                    damage = Mathf.RoundToInt(damage * 0.8f);
+                    break;
+                case 2:
+                    damage = Mathf.RoundToInt(damage * 0.9f);
+                    break;
+            }
+        }
+
+        PigeonAttack(atkProps, theAngle);
     }
     private void AIThrow()
     {
@@ -329,29 +347,38 @@ public class PigeonAI : Pigeon
             }
             else
             {
-                isFleeing = false;
-                if (targetPigeon && targetFood && distanceToFood < distanceToPigeon * 2)
+                if (!inBorder)
                 {
-                    //goes to neaby food item 
-                    locationToPathfindTo = targetFood.transform.position;
-                }
-                else if (targetPigeon)
-                {
-                    if (canHit && distanceToPigeon <= 2f)
-                    {
-                        AIAttack();
-                    }
-                    else
-                    {
-                        if (canHit) AIThrow();
-                        StartSlam(targetPigeon.transform.position);
-                        locationToPathfindTo = targetPigeon.transform.position;
-                    }
+                    locationToPathfindTo = GameManager.instance.transform.position;
+
                 }
                 else
                 {
-                    locationToPathfindTo = GameManager.instance.transform.position;
+                    isFleeing = false;
+                    if (targetPigeon && targetFood && distanceToFood < distanceToPigeon * 2)
+                    {
+                        //goes to neaby food item 
+                        locationToPathfindTo = targetFood.transform.position;
+                    }
+                    else if (targetPigeon)
+                    {
+                        if (canHit && distanceToPigeon <= 2f)
+                        {
+                            AIAttack();
+                        }
+                        else
+                        {
+                            if (canHit) AIThrow();
+                            StartSlam(targetPigeon.transform.position);
+                            locationToPathfindTo = targetPigeon.transform.position;
+                        }
+                    }
+                    else
+                    {
+                        locationToPathfindTo = GameManager.instance.transform.position;
+                    }
                 }
+
             }
         }
 
@@ -402,30 +429,39 @@ public class PigeonAI : Pigeon
             }
             else
             {
-                if (targetPigeon && targetFood && distanceToFood < distanceToPigeon * 1.5f)
+                if (!inBorder)
                 {
-                    //goes to neaby food item 
-                    SummonWholeGain(transform.position);
-                    if (stamina == maxStamina) AIStartSprint();
-                    else if (stamina <= maxStamina / 2) AIStopSprinting();
-                    StartSlam(targetFood.transform.position);
-                    locationToPathfindTo = targetFood.transform.position;
+                    locationToPathfindTo = GameManager.instance.transform.position;
 
-                }
-                else if (targetPigeon)
-                {
-                    Assassinate();
-                    StartMewing();
-                    if (distanceToPigeon >= 5 && stamina == maxStamina) AIStartSprint();
-                    else if (stamina <= maxStamina / 2) AIStopSprinting();
-                    if (canHit) AIThrow();
-                    StartSlam(targetPigeon.transform.position);
-                    locationToPathfindTo = targetPigeon.transform.position;
                 }
                 else
                 {
-                    locationToPathfindTo = GameManager.instance.transform.position;
+                    if (targetPigeon && targetFood && distanceToFood < distanceToPigeon * 1.5f)
+                    {
+                        //goes to neaby food item 
+                        SummonWholeGain(transform.position);
+                        if (stamina == maxStamina) AIStartSprint();
+                        else if (stamina <= maxStamina / 2) AIStopSprinting();
+                        StartSlam(targetFood.transform.position);
+                        locationToPathfindTo = targetFood.transform.position;
+
+                    }
+                    else if (targetPigeon)
+                    {
+                        Assassinate();
+                        StartMewing();
+                        if (distanceToPigeon >= 5 && stamina == maxStamina) AIStartSprint();
+                        else if (stamina <= maxStamina / 2) AIStopSprinting();
+                        if (canHit) AIThrow();
+                        StartSlam(targetPigeon.transform.position);
+                        locationToPathfindTo = targetPigeon.transform.position;
+                    }
+                    else
+                    {
+                        locationToPathfindTo = GameManager.instance.transform.position;
+                    }
                 }
+
             }
         }
 
@@ -488,13 +524,13 @@ public class PigeonAI : Pigeon
                 }
 
 
-                if (targetPigeon && currentHP.Value > targetPigeon.currentHP.Value * 1.2f && targetPigeon.currentHP.Value - damage * 3 <= 0 && (distanceToPigeon <= 30 || distanceToFood > distanceToPigeon))
+                if ((isMaxing || (targetPigeon && currentHP.Value > targetPigeon.currentHP.Value * 1.2f && targetPigeon.currentHP.Value - damage * 3 <= 0)) && (distanceToPigeon <= 30 || distanceToFood > distanceToPigeon))
                 {
                     //Goes to the nearby pigeon if stronger than the other pigeon
                     Assassinate();
                     if (distanceToPigeon >= 6 && stamina == maxStamina) AIStartSprint();
                     else if (stamina <= maxStamina / 2 || distanceToPigeon <= 2.5f) AIStopSprinting();
-                    if (distanceToPigeon <= 16)
+                    if (distanceToPigeon <= 20)
                     {
                         StartMewing();
                         if (canHit) AIThrow();
@@ -504,31 +540,39 @@ public class PigeonAI : Pigeon
                 }
                 else
                 {
-                    if (targetPigeon && currentHP.Value < targetPigeon.currentHP.Value * 0.6f && distanceToPigeon <= 25)
+                    if (!inBorder)
                     {
-                        //Flees if can die in three hits
-                        isFleeing = true;
+                        locationToPathfindTo = GameManager.instance.transform.position;
                     }
                     else
                     {
-                        if (targetFood)
+                        if (targetPigeon && currentHP.Value < targetPigeon.currentHP.Value * 0.6f && distanceToPigeon <= 25)
                         {
-                            //goes to neaby food item 
-                            SummonWholeGain(transform.position);
-                            if (stamina == maxStamina) AIStartSprint();
-                            else if (stamina <= maxStamina / 2) AIStopSprinting();
-                            if (distanceToFood <= 20 && distanceToFood >= 10) StartSlam(targetFood.transform.position);
-                            locationToPathfindTo = targetFood.transform.position;
-                        }
-                        else if (targetPigeon)
-                        {
-                            locationToPathfindTo = targetPigeon.transform.position;
+                            //Flees if can die in three hits
+                            isFleeing = true;
                         }
                         else
                         {
-                            locationToPathfindTo = GameManager.instance.transform.position;
+                            if (targetFood)
+                            {
+                                //goes to neaby food item 
+                                SummonWholeGain(transform.position);
+                                if (stamina == maxStamina) AIStartSprint();
+                                else if (stamina <= maxStamina / 2) AIStopSprinting();
+                                if (distanceToFood <= 20 && distanceToFood >= 10) StartSlam(targetFood.transform.position);
+                                locationToPathfindTo = targetFood.transform.position;
+                            }
+                            else if (targetPigeon)
+                            {
+                                locationToPathfindTo = targetPigeon.transform.position;
+                            }
+                            else
+                            {
+                                locationToPathfindTo = GameManager.instance.transform.position;
+                            }
                         }
                     }
+
                 }
             }
         }
@@ -579,7 +623,7 @@ public class PigeonAI : Pigeon
                 if (stamina == maxStamina) AIStartSprint();
                 locationToPathfindTo = targetFood.transform.position;
             }
-            else if (targetPigeon && distanceToPigeon < distanceToIceCream * 4)
+            else if (targetPigeon && (distanceToPigeon < distanceToIceCream * 4 || pigeonName == "Patrick Bateman"))
             {
                 if (distanceToPigeon >= 6 && stamina == maxStamina) AIStartSprint();
 

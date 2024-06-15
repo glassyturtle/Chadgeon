@@ -1,6 +1,7 @@
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
+using static Pigeon;
 
 public class HitScript : NetworkBehaviour
 {
@@ -10,6 +11,7 @@ public class HitScript : NetworkBehaviour
     [SerializeField] private Collider2D area;
     [SerializeField] private GameObject mask;
     [SerializeField] private SpriteRenderer sr;
+    [SerializeField] Pigeon pigeonRef;
 
     [SerializeField] AudioSource audioSorce;
     [SerializeField] AudioClip[] swooshSounds;
@@ -93,8 +95,20 @@ public class HitScript : NetworkBehaviour
         {
             if (NetworkManager.Singleton.SpawnManager.SpawnedObjects[targetID])
             {
+
                 NetworkObject ob = NetworkManager.Singleton.SpawnManager.SpawnedObjects[targetID];
                 if (!ob) return;
+
+                if (pigeonRef.pigeonUpgrades.TryGetValue(Upgrades.critcalDamage, out bool _) && Random.Range(0, 100) <= 25)
+                {
+                    atkProp.damage *= 2;
+                    if (pigeonRef.isPlayer && pigeonRef.isMaxing && pigeonRef.pigeonUpgrades.TryGetValue(Upgrades.brawler, out _))
+                    {
+                        SteamIntegration.instance.UnlockAchivement("interstellar_punch");
+
+                    }
+                }
+
                 ob.GetComponent<Pigeon>().OnPigeonHitCLientRPC(atkProp);
             }
         }
