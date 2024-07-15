@@ -65,10 +65,37 @@ providers = {
 		priority = -10
 		defaultAction = null
 	}
+	st = {
+		active = true
+		priority = 100
+		defaultAction = null
+	}
+	at = {
+		active = true
+		priority = 100
+		defaultAction = null
+	}
 }
 objectSelectors = {
 }
 recentSearches = [
+	"unlock"
+	"option"
+	"pigeon stati"
+	"pigeon"
+	"total pigeon"
+	"total "
+	"player"
+	"powers"
+	""
+	"pigeon st"
+	"p"
+	"player pigeon"
+	"pigeon name"
+	"cancel"
+	"could "
+	"lobby code"
+	"interf"
 ]
 searchItemFavorites = [
 ]

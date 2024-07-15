@@ -130,7 +130,8 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      DirtGradualasdcorner_0: -2339551883914631583
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

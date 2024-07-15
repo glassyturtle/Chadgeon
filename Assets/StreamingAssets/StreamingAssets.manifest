@@ -1,0 +1,8 @@
+ManifestFileVersion: 0
+UnityVersion: 2023.2.19f1
+CRC: 2429124528
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: litterallyme
+      Dependencies: {}

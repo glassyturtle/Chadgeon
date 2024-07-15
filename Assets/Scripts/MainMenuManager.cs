@@ -18,7 +18,7 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private GameObject skins, skinBody, skinHead, skinBase;
     [SerializeField] private TMP_Text chadCoinsText;
     [SerializeField] private TMP_InputField nameInput;
-
+    [SerializeField] private TMP_FontAsset russianFont;
 
     [Header("Unlockables")]
     [SerializeField] SkinButton[] skinButtons;
@@ -58,9 +58,11 @@ public class MainMenuManager : MonoBehaviour
                 SteamIntegration.instance.UnlockAchivement("average_enjoyer");
             }
         }
+
     }
     private void Start()
     {
+
         MultiplayerManager.Instance.OnLeftLobby += LobbyManager_OnLeftLobby;
         MultiplayerManager.Instance.OnKickedFromLobby += LobbyManager_OnLeftLobby;
     }

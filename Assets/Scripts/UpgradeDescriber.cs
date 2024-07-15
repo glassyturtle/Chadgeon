@@ -3,15 +3,15 @@ using UnityEngine.EventSystems;
 
 public class UpgradeDescriber : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
-    public GameManager gm;
+    public bool isKtown = false;
     public int desc;
     public void OnPointerEnter(PointerEventData eventData)
     {
-        gm.ShowUpgradeDes(desc);
+        if (isKtown) KtownManager.instance.ShowUpgradeDes(desc);
+        else GameManager.instance.ShowUpgradeDes(desc);
     }
-
     public void OnPointerExit(PointerEventData eventData)
     {
-        gm.CloseUpgradeDes();
+        GameManager.instance.CloseUpgradeDes();
     }
 }

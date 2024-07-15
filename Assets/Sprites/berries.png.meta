@@ -130,7 +130,8 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      berries_0: 2408991836313283690
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -5,9 +5,6 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
   - enabled: 1
     path: Assets/Scenes/Entering Game Scene.unity
     guid: 366c5c0f0dcfced429d7ef10901121ec
@@ -20,13 +17,31 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/KTown.unity
     guid: 1175b0345e380074695fb68c3918b51c
-  - enabled: 0
-    path: 
-    guid: 00000000000000000000000000000000
   - enabled: 1
     path: Assets/Scenes/Central Park.unity
     guid: 58ddfb89dcd1fe14ca6bbc1d341f019f
   - enabled: 0
     path: Assets/Scenes/LoadingScreen.unity
     guid: 54a2aa9dc5809c6488561f361885d9a4
-  m_configObjects: {}
+  - enabled: 1
+    path: Assets/Scenes/BreakingCones.unity
+    guid: 5ff0287705e9f7b44b2077c95389d364
+  - enabled: 1
+    path: Assets/Scenes/Barbie.unity
+    guid: 588dd0524d979ae4a914ffe3736d90c1
+  - enabled: 1
+    path: Assets/Scenes/GoldenGate.unity
+    guid: 129c93045d5d3a14ea613b74255501a0
+  - enabled: 1
+    path: Assets/Scenes/Gotham.unity
+    guid: 03f1cf447c88ac740bd66f83894466a6
+  - enabled: 1
+    path: Assets/Scenes/WallStreet.unity
+    guid: d0e2ed59d6f72aa4192d211cb2fa0439
+  - enabled: 1
+    path: Assets/Scenes/RyanGosling2049.unity
+    guid: 5a2504920cad86f4db37ae910db287b8
+  m_configObjects:
+    com.unity.addressableassets: {fileID: 11400000, guid: 39204b5c9b963a047869b070f6c1f39b, type: 2}
+    com.unity.localization.settings: {fileID: 11400000, guid: f25f3c132748bcf4198fd98f291ac980, type: 2}
+  m_UseUCBPForAssetBundles: 0

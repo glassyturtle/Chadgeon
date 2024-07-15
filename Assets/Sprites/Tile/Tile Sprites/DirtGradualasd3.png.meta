@@ -130,7 +130,8 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      DirtGradualasd3_0: 5534692240887418010
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

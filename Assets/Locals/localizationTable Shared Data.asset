@@ -1,0 +1,300 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: localizationTable Shared Data
+  m_EditorClassIdentifier: 
+  m_TableCollectionName: localizationTable
+  m_TableCollectionNameGuidString: 74285466b7ffc2142a0950be9898eb8c
+  m_Entries:
+  - m_Id: 46797870559232
+    m_Key: slots
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44942121725952
+    m_Key: audio
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46140304355328
+    m_Key: back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44788308209664
+    m_Key: bots
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45682194083840
+    m_Key: cancel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44925579390976
+    m_Key: change flock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45140495527936
+    m_Key: close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45548714553344
+    m_Key: could not locate game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43770841362432
+    m_Key: credits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43250814775296
+    m_Key: customize
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44599665192960
+    m_Key: difficulty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44827365568512
+    m_Key: flock bots
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43947572555776
+    m_Key: flock supremacy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44808071770112
+    m_Key: flocks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45924821987328
+    m_Key: 'food collected:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247127318528
+    m_Key: fullscreen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43981160542208
+    m_Key: game browser
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46284185759744
+    m_Key: gamemode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45772686192640
+    m_Key: 'games played:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46336564228096
+    m_Key: host
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47374566387712
+    m_Key: host game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47695816519680
+    m_Key: host new game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44017902645248
+    m_Key: ice-cream operations
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45121835069440
+    m_Key: interface
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46311868166144
+    m_Key: is private
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46555540451328
+    m_Key: join
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44856822165504
+    m_Key: join code
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47596327628800
+    m_Key: join with code
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44913365577728
+    m_Key: leave
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46576813961216
+    m_Key: 'lobby code:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47550156730368
+    m_Key: lobby name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46400284094464
+    m_Key: 'lobby name:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47275916357632
+    m_Key: locating game...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44569331986432
+    m_Key: map
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45072006737920
+    m_Key: master
+    m_Metadata:
+      m_Items: []
+  - m_Id: 84350824448
+    m_Key: multiplayer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47510898044928
+    m_Key: multiplayer game browser
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45088586821632
+    m_Key: music
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47611427123200
+    m_Key: refresh
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53272932216832
+    m_Key: start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53323666518016
+    m_Key: pigeon stats
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53341987237888
+    m_Key: options
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53385905795072
+    m_Key: quit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 54559098761216
+    m_Key: sound effects
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56079844339712
+    m_Key: supremacy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59716750503936
+    m_Key: save
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59757821128704
+    m_Key: skins
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59788724760576
+    m_Key: outfits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59811709546496
+    m_Key: pigeon customizer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59841405218816
+    m_Key: 'pigeon name:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61970991771648
+    m_Key: Pigeon statistics
+    m_Metadata:
+      m_Items: []
+  - m_Id: 62027598098432
+    m_Key: 'Pigeons knocked out:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 62173392105472
+    m_Key: 'Player Pigeons knocked out:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 62287946936320
+    m_Key: 'times knocked out:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 62486652088320
+    m_Key: 'Total Experience Gained:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 62834410221568
+    m_Key: 'Powers Gained:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 71434427920384
+    m_Key: Unlocked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 71628435451904
+    m_Key: Unlock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 71920656805888
+    m_Key: base
+    m_Metadata:
+      m_Items: []
+  - m_Id: 71968035663872
+    m_Key: body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 72004173787136
+    m_Key: head
+    m_Metadata:
+      m_Items: []
+  - m_Id: 75439828856832
+    m_Key: Starting Game...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 557535424512
+    m_Key: New Entry
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43153951518720
+    m_Key: New Entry 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43301620379648
+    m_Key: New Entry 2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43286420221952
+    m_Key: New Entry 3
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43268636372992
+    m_Key: New Entry 4
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43909387612160
+    m_Key: New Entry 5
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 2859879706446791185
+  references:
+    version: 2
+    RefIds:
+    - rid: 2859879706446791185
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1718962966960

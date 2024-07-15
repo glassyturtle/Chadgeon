@@ -5,6 +5,7 @@ using TMPro;
 using Unity.Cinemachine;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Localization.Components;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using static Pigeon;
@@ -23,7 +24,7 @@ public class GameManager : NetworkBehaviour
     public List<Pigeon> allpigeons = new List<Pigeon>();
     public GameObject pigeonPrefab;
     public CinemachineCamera mainCamera;
-
+    public bool isSpectating = false;
     public bool gracePeriod = false;
     private bool lookingForConeToBuild = true;
     [SerializeField] AudioSource audioSource, mewingSorce;
@@ -54,6 +55,7 @@ public class GameManager : NetworkBehaviour
     [SerializeField] Sprite[] repeatableUpgradeButtonSprites;
     [SerializeField] string[] repeatableUpgradeNames;
     [SerializeField] string[] repeatableUpgradeDesc;
+    [SerializeField] GameObject[] specialDialougeObjects;
     public bool gameover = false;
     public bool canSpawnFood = true;
     bool pauseMenuOpen = false;
@@ -63,6 +65,8 @@ public class GameManager : NetworkBehaviour
     Vector3 iceCreamPos = Vector2.zero;
     private bool hasOpenedChurch = false;
     private List<GameObject> unbuiltConeGameobjects = new();
+    private bool isSwapingTracks = false;
+    [SerializeField] LocalizeStringEvent upgradeDesLocalization;
 
     public List<PigeonInitializeProperties> pigeonStartData = new();
     public struct PigeonInitializeProperties : INetworkSerializable
@@ -87,7 +91,11 @@ public class GameManager : NetworkBehaviour
 
     private void Awake()
     {
-        if (GameDataHolder.gameMode == 2) GameDataHolder.gameMode = 0;
+        if (GameDataHolder.gameMode == 2)
+        {
+            GameDataHolder.botsToSpawn = 0;
+            GameDataHolder.gameMode = 0;
+        }
         instance = this;
         endScreenMainMenuButton.onClick.AddListener(() =>
         {
@@ -203,8 +211,9 @@ public class GameManager : NetworkBehaviour
 
 
 
-        if (!audioSource.isPlaying)
+        if (!isSwapingTracks && !audioSource.isPlaying)
         {
+            audioSource.Stop();
             audioSource.clip = musicTracks[currentTrack];
             if (currentTrack >= musicTracks.Length - 1) currentTrack = 0;
             else
@@ -384,10 +393,10 @@ public class GameManager : NetworkBehaviour
         iceCreamUI.SetActive(false);
         if (GameDataHolder.gameMode == 1)
         {
-            StartCoroutine(StartEvacCountDown(40));
             evacZone.SetActive(true);
             if (IsServer)
             {
+                StartCoroutine(StartEvacCountDown(40));
                 for (int i = 0; i < 5; i++)
                 {
                     Vector3 pos = new Vector2(Random.Range(-2f, 2f), Random.Range(-2f, 2f));
@@ -493,8 +502,14 @@ public class GameManager : NetworkBehaviour
 
 
     }
-    public void OpenDialouge(Sprite talkingImage, string textToSay, string nameRee)
+    public void OpenDialouge(Sprite talkingImage, string textToSay, string nameRee, int specialDialouge)
     {
+        foreach (GameObject ree in specialDialougeObjects)
+        {
+            ree.SetActive(false);
+        }
+        specialDialougeObjects[specialDialouge].SetActive(true);
+
         upgradeUi.SetActive(false);
         dialougeUI.SetActive(true);
         dialougeText.text = textToSay;
@@ -562,6 +577,15 @@ public class GameManager : NetworkBehaviour
     {
         upgradeHolder.SetActive(true);
         if (upgrade >= 0) upgradeDisplays[upgrade].SetActive(true);
+        else
+        {
+            Pigeon.Upgrades ree = (Pigeon.Upgrades)upgrade;
+            if (ree == Upgrades.minionHelmet || ree == Upgrades.minionScript || ree == Upgrades.minionGoggles || ree == Upgrades.theChosen)
+            {
+                KtownManager.instance.AddUpgradeToDisply(ree);
+            }
+        }
+
 
     }
     public void ShowUpgradeDes(int desc)
@@ -607,6 +631,7 @@ public class GameManager : NetworkBehaviour
     }
     public void StartSpectating()
     {
+        isSpectating = true;
         respawnTimer.gameObject.SetActive(false);
         for (int i = 0; i < allpigeons.Count; i++)
         {
@@ -627,7 +652,7 @@ public class GameManager : NetworkBehaviour
     public void StartSpectating(int second)
     {
         if (GameDataHolder.gameMode == 0) playerUI.SetActive(false);
-
+        isSpectating = true;
         spectateScreen.SetActive(true);
         for (int i = 0; i < allpigeons.Count; i++)
         {
@@ -646,6 +671,7 @@ public class GameManager : NetworkBehaviour
     }
     public void StopSpectating()
     {
+        isSpectating = false;
         playerUI.SetActive(true);
         spectateScreen.SetActive(false);
         mainCamera.Follow = player.transform;
@@ -739,7 +765,12 @@ public class GameManager : NetworkBehaviour
     public void AddExtraUpgradePick()
     {
         extraUpgradeSelectionGameobject.SetActive(true);
-        mainCamera.Lens.OrthographicSize = 8;
+        mainCamera.Lens.OrthographicSize += 1;
+    }
+    public void IncreaseVeiwRange()
+    {
+        mainCamera.Lens.OrthographicSize += 1;
+
     }
     public void SelectUpgrade(int selected)
     {
@@ -902,6 +933,7 @@ public class GameManager : NetworkBehaviour
         StartCoroutine(SpawnWave());
     }
 
+
     IEnumerator StartGracePeriod(int seconds)
     {
         gracePeriod = true;
@@ -987,7 +1019,17 @@ public class GameManager : NetworkBehaviour
                         Vector3 spawnPos = GetSpawnPos();
                         GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
                         PigeonAI ai = pigeon.GetComponent<PigeonAI>();
-                        ai.SetAI(GameDataHolder.botDifficulty);
+
+                        if (GameDataHolder.botDifficulty == -1)
+                        {
+                            ai.SetAI(Random.Range(0, 3));
+
+                        }
+                        else
+                        {
+                            ai.SetAI(GameDataHolder.botDifficulty);
+
+                        }
                         pigeon.GetComponent<NetworkObject>().Spawn();
                     }
                     for (int i = 0; i < GameDataHolder.botsFlock1; i++)
@@ -996,7 +1038,17 @@ public class GameManager : NetworkBehaviour
                         GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
                         PigeonAI ai = pigeon.GetComponent<PigeonAI>();
                         ai.flock = 1;
-                        ai.SetAI(GameDataHolder.botDifficulty);
+
+                        if (GameDataHolder.botDifficulty == -1)
+                        {
+                            ai.SetAI(Random.Range(0, 3));
+
+                        }
+                        else
+                        {
+                            ai.SetAI(GameDataHolder.botDifficulty);
+
+                        }
                         pigeon.GetComponent<NetworkObject>().Spawn();
                     }
                     for (int i = 0; i < GameDataHolder.botsFlock2; i++)
@@ -1005,7 +1057,17 @@ public class GameManager : NetworkBehaviour
                         GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
                         PigeonAI ai = pigeon.GetComponent<PigeonAI>();
                         ai.flock = 2;
-                        ai.SetAI(GameDataHolder.botDifficulty);
+
+                        if (GameDataHolder.botDifficulty == -1)
+                        {
+                            ai.SetAI(Random.Range(0, 3));
+
+                        }
+                        else
+                        {
+                            ai.SetAI(GameDataHolder.botDifficulty);
+
+                        }
                         pigeon.GetComponent<NetworkObject>().Spawn();
                     }
                     for (int i = 0; i < GameDataHolder.botsFlock3; i++)
@@ -1014,7 +1076,17 @@ public class GameManager : NetworkBehaviour
                         GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
                         PigeonAI ai = pigeon.GetComponent<PigeonAI>();
                         ai.flock = 3;
-                        ai.SetAI(GameDataHolder.botDifficulty);
+
+                        if (GameDataHolder.botDifficulty == -1)
+                        {
+                            ai.SetAI(Random.Range(0, 3));
+
+                        }
+                        else
+                        {
+                            ai.SetAI(GameDataHolder.botDifficulty);
+
+                        }
                         pigeon.GetComponent<NetworkObject>().Spawn();
                     }
                     for (int i = 0; i < GameDataHolder.botsFlock4; i++)
@@ -1023,7 +1095,17 @@ public class GameManager : NetworkBehaviour
                         GameObject pigeon = Instantiate(pigeonPrefab, spawnPos, transform.rotation);
                         PigeonAI ai = pigeon.GetComponent<PigeonAI>();
                         ai.flock = 4;
-                        ai.SetAI(GameDataHolder.botDifficulty);
+
+                        if (GameDataHolder.botDifficulty == -1)
+                        {
+                            ai.SetAI(Random.Range(0, 3));
+
+                        }
+                        else
+                        {
+                            ai.SetAI(GameDataHolder.botDifficulty);
+
+                        }
                         pigeon.GetComponent<NetworkObject>().Spawn();
                     }
                 }
@@ -1133,11 +1215,28 @@ public class GameManager : NetworkBehaviour
 
         canSpawnFood = false;
 
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(2f);
         Vector3 pos = GetSpawnPos();
 
-        GameObject food = Instantiate(FoodPrefab, pos, transform.rotation);
-        food.GetComponent<NetworkObject>().Spawn();
+        if (GameDataHolder.gameMode != 1)
+        {
+            for (int i = 0; i < 1 + Mathf.RoundToInt(allpigeons.Count / 4); i++)
+            {
+                pos = GetSpawnPos();
+                GameObject food = Instantiate(FoodPrefab, pos, transform.rotation);
+                food.GetComponent<NetworkObject>().Spawn();
+            }
+        }
+        else
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                pos = GetSpawnPos();
+                GameObject food = Instantiate(FoodPrefab, pos, transform.rotation);
+                food.GetComponent<NetworkObject>().Spawn();
+            }
+        }
+
         canSpawnFood = true;
     }
     IEnumerator DepreciateIceCream()
@@ -1163,6 +1262,7 @@ public class GameManager : NetworkBehaviour
             yield return null;
         }
     }
+
     IEnumerator SetupicecreamHealth()
     {
         yield return new WaitForSeconds(0.1f);
@@ -1174,14 +1274,7 @@ public class GameManager : NetworkBehaviour
     IEnumerator SpawnWave()
     {
         waveNumber.Value++;
-        if (waveNumber.Value >= 4)
-        {
-            enemiesRemaining.Value = Mathf.RoundToInt(12 * allpigeons.Count) + 2;
-        }
-        else
-        {
-            enemiesRemaining.Value = Mathf.RoundToInt(waveNumber.Value * 3 * allpigeons.Count) + 2;
-        }
+        enemiesRemaining.Value = Mathf.RoundToInt(waveNumber.Value * allpigeons.Count);
         int specialWaveType = Random.Range(0, 2);
         int amtofEnemies = enemiesRemaining.Value;
 
@@ -1193,20 +1286,36 @@ public class GameManager : NetworkBehaviour
             enemiesRemaining.Value += 3;
         }
 
+        int bestSpawnLocation = 0;
+        float overallBestDistance = 0;
+        for (int y = 0; y < 10; y++)
+        {
+            int currentSpawnLocation = Random.Range(0, spawnLocations.Count);
+            float bestDis = (coneToDefend.transform.position - spawnLocations[currentSpawnLocation].transform.position).sqrMagnitude;
+            foreach (Pigeon pigeon in allpigeons)
+            {
+                //calculateDist
+                float distance = (pigeon.transform.position - spawnLocations[currentSpawnLocation].transform.position).sqrMagnitude;
+                if (distance < bestDis)
+                {
+                    bestDis = distance;
+                }
+            }
+            if (bestDis > overallBestDistance)
+            {
+                overallBestDistance = bestDis;
+                bestSpawnLocation = currentSpawnLocation;
+            }
+        }
 
 
         for (int i = 0; i < amtofEnemies; i++)
         {
             yield return new WaitForSeconds(0.5f);
 
-            Vector3 spawnPos = GetSpawnPos();
+            Vector3 spawnPos = GetSpawnPos(bestSpawnLocation);
 
-            for (int y = 0; y < 10; y++)
-            {
-                if ((spawnPos - iceCreamPos).sqrMagnitude >= 100) break;
-                spawnPos = GetSpawnPos();
 
-            }
             GameObject pigeon = Instantiate(goonPrefab, spawnPos, transform.rotation);
             PigeonAI ai = pigeon.GetComponent<PigeonAI>();
             ai.SetAI(3);
@@ -1242,6 +1351,7 @@ public class GameManager : NetworkBehaviour
                 else if (Random.Range(0, 1000) <= 5)
                 {
                     ai.pigeonName = "Patrick Bateman";
+                    ai.goonPriority = PigeonAI.GoonPriority.player;
                     ai.skinBase = 7;
                     ai.skinHead = 1;
                     ai.skinBody = 1;
@@ -1255,9 +1365,8 @@ public class GameManager : NetworkBehaviour
                 }
             }
 
-
-
             ai.diesAfterDeath = true;
+
             if (waveNumber.Value == 5 || waveNumber.Value == 8 || waveNumber.Value == 3 || waveNumber.Value == 10)
             {
                 switch (specialWaveType)
@@ -1287,25 +1396,25 @@ public class GameManager : NetworkBehaviour
             switch (GameDataHolder.botDifficulty)
             {
                 case 0:
-                    for (int x = 0; x < waveNumber.Value; x++)
+                    for (int x = 0; x < Mathf.RoundToInt(waveNumber.Value * 0.5f); x++)
                     {
                         ai.LevelUP();
                     }
                     break;
                 case 1:
-                    for (int x = 0; x < Mathf.RoundToInt(waveNumber.Value * 2f); x++)
+                    for (int x = 0; x < Mathf.RoundToInt(waveNumber.Value * 1f); x++)
                     {
                         ai.LevelUP();
                     }
                     break;
                 case 2:
-                    for (int x = 0; x < Mathf.RoundToInt(waveNumber.Value * 3f); x++)
+                    for (int x = 0; x < Mathf.RoundToInt(waveNumber.Value * 1.5f); x++)
                     {
                         ai.LevelUP();
                     }
                     break;
                 case 3:
-                    for (int x = 0; x < Mathf.RoundToInt(waveNumber.Value * 4f); x++)
+                    for (int x = 0; x < Mathf.RoundToInt(waveNumber.Value * 2f); x++)
                     {
                         ai.LevelUP();
                     }
@@ -1328,6 +1437,25 @@ public class GameManager : NetworkBehaviour
         pigeon.GetComponent<NetworkObject>().Spawn();
 
 
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void SpawnMinionDuringGameplayServerRpc(Vector3 pos)
+    {
+        GameObject pigeon = Instantiate(pigeonPrefab, pos, transform.rotation);
+        PigeonAI ai = pigeon.GetComponent<PigeonAI>();
+        ai.SetAI(2);
+        ai.flock = 3;
+        ai.pigeonName = "Minion";
+        ai.skinBase = 5;
+        ai.skinBody = 0;
+        ai.skinHead = 0;
+        ai.diesAfterDeath = true;
+        pigeon.GetComponent<NetworkObject>().Spawn();
+        for (int x = 0; x < 30; x++)
+        {
+            ai.LevelUP();
+        }
     }
 }
 

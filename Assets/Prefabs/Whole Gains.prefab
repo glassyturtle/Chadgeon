@@ -49,6 +49,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 503669502887296588, guid: b46e80601aa860948b93f3c791c55725, type: 3}
+      propertyPath: isCone
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 503669502887296588, guid: b46e80601aa860948b93f3c791c55725, type: 3}
       propertyPath: xpGained
       value: 20
       objectReference: {fileID: 0}

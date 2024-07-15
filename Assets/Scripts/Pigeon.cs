@@ -24,7 +24,6 @@ public class Pigeon : NetworkBehaviour
     protected bool isAssassinating;
     protected bool isBleeding;
     protected bool inPoo = false;
-    protected bool isTurtle;
 
     //Pigeon Properties
     public int xp;
@@ -34,19 +33,21 @@ public class Pigeon : NetworkBehaviour
     public float stamina;
     public float maxStamina;
     public bool isPlayer = false;
-    [SerializeField] protected float speed;
-    [SerializeField] protected int damage;
+    public float speed;
+    public int damage;
     public float speedMod = 1;
     public float damageTakenModifier = 1;
+    public float damgeReductionEnchantableModifier = 1;
     protected float staminaRecoveryRate = 1;
     protected float hitColldown = 0.3f;
     protected bool canSwitchAttackSprites = true;
     protected bool inBorder = true;
     public bool inEvacsite = false;
     private float knockbackMod = 1;
-    private float regen = 0.02f;
+    private float regen = 0.08f;
     private int currentPigeonAttackSprite;
     private int secondsToRespawn = 3;
+    private int secondsTillRegen = 0;
 
     //Upgrades and abilities
     public Dictionary<Upgrades, bool> pigeonUpgrades = new();
@@ -194,7 +195,7 @@ public class Pigeon : NetworkBehaviour
         else
         {
             //Stops calculating if successufly dodged
-            if (!atkProp.isEnchanted && pigeonUpgrades.ContainsKey(Upgrades.evasive) && Random.Range(0, 100) <= 25) return;
+            if (!atkProp.isEnchanted && pigeonUpgrades.ContainsKey(Upgrades.evasive) && Random.Range(0, 100) <= 30) return;
 
             //Gets the knockback direction of the hit
             Vector2 direction = transform.position - new Vector3(atkProp.posX, atkProp.posY);
@@ -206,8 +207,8 @@ public class Pigeon : NetworkBehaviour
 
             if (isSlaming) totalDamageTaking /= 2;
 
-            if (atkProp.isAssassin && ((float)currentHP.Value / maxHp.Value) <= 0.33f) totalDamageTaking *= 2;
-            if (!atkProp.isEnchanted && pigeonUpgrades.ContainsKey(Upgrades.tough)) totalDamageTaking = Mathf.RoundToInt(totalDamageTaking * 0.7f);
+            if (atkProp.isAssassin && ((float)currentHP.Value / maxHp.Value) <= 0.30f) totalDamageTaking *= 2;
+            if (!atkProp.isEnchanted) totalDamageTaking = Mathf.RoundToInt(totalDamageTaking * damgeReductionEnchantableModifier);
             if (isMaxing) totalDamageTaking = Mathf.RoundToInt(totalDamageTaking * 0.5f);
             totalDamageTaking = Mathf.RoundToInt(totalDamageTaking * damageTakenModifier);
             if (atkProp.hasBleed && !isBleeding)
@@ -229,7 +230,7 @@ public class Pigeon : NetworkBehaviour
 
         //Sound Effects and Blood
         SpawnBloodServerRpc();
-
+        CancelRegeneration();
 
         //Logic when pigeon has no health and is not already knocked out
         bool hasBeenKO = false;
@@ -321,7 +322,7 @@ public class Pigeon : NetworkBehaviour
     public void ReciveCatchupXPClientRpc(float levelPercent)
     {
         if (!IsOwner) return;
-        GainXP(Mathf.RoundToInt(levelPercent * xpTillLevelUp));
+        GainXPCatchup(Mathf.RoundToInt(levelPercent * xpTillLevelUp));
     }
 
 
@@ -410,12 +411,23 @@ public class Pigeon : NetworkBehaviour
     public void GainXP(int amnt)
     {
         if (isKnockedOut.Value) return;
+
+        if (GameDataHolder.gameMode == 1)
+        {
+            amnt = Mathf.RoundToInt(amnt * 0.2f);
+        }
         if (pigeonUpgrades.TryGetValue(Upgrades.psionic, out _)) amnt = Mathf.RoundToInt(amnt * 1.2f);
         if (isPlayer) SaveDataManager.totalPigeonXPEarned += amnt;
-        else if (pigeonAI)
+
+        xp += amnt;
+        if (xp >= xpTillLevelUp)
         {
-            if (pigeonName == "Sigma") amnt = Mathf.RoundToInt(amnt * 1.2f);
+            LevelUP();
+            LevelUP();
         }
+    }
+    public void GainXPCatchup(int amnt)
+    {
         xp += amnt;
         if (xp >= xpTillLevelUp)
         {
@@ -426,21 +438,21 @@ public class Pigeon : NetworkBehaviour
     {
 
         if (isKnockedOut.Value) return;
-        if (pigeonUpgrades.TryGetValue(Upgrades.psionic, out _)) amnt = Mathf.RoundToInt(amnt * 1.2f);
         if (isCone == true && isPlayer)
         {
             GameDataHolder.conesCollected++;
             SaveDataManager.totalConesCollected++;
+            if (pigeonUpgrades.TryGetValue(Upgrades.theChosen, out _)) amnt = Mathf.RoundToInt(amnt * KtownManager.instance.chosenModifier);
         }
+
+
+        if (pigeonUpgrades.TryGetValue(Upgrades.psionic, out _)) amnt = Mathf.RoundToInt(amnt * 1.2f);
+
         if (isPlayer)
         {
             SaveDataManager.totalPigeonXPEarned += amnt;
+        }
 
-        }
-        else if (pigeonAI)
-        {
-            if (pigeonName == "Sigma") amnt = Mathf.RoundToInt(amnt * 1.3f);
-        }
         xp += amnt;
 
         if (xp >= xpTillLevelUp)
@@ -457,7 +469,6 @@ public class Pigeon : NetworkBehaviour
     }
     public void AddUpgrade(Upgrades upgrade)
     {
-
         bool hasAbilitySlotUnlocked = false;
         switch (upgrade)
         {
@@ -481,21 +492,19 @@ public class Pigeon : NetworkBehaviour
         switch (upgrade)
         {
             case Upgrades.pigeonOfGrowth:
-                maxHp.Value += 20;
-                currentHP.Value += 20;
+                maxHp.Value += 15;
+                currentHP.Value += 15;
                 break;
             case Upgrades.pigeonOfViolence:
-                damage += 9;
+                damage += 6;
                 break;
             case Upgrades.pigeonOfMomentum:
                 speed += 30;
                 break;
-            case Upgrades.regen:
-                regen = 0.1f;
-                break;
             case Upgrades.tough:
                 speedMod -= .1f;
                 knockbackMod -= .4f;
+                damgeReductionEnchantableModifier -= .3f;
                 break;
             case Upgrades.brawler:
                 knockbackMod -= .4f;
@@ -503,6 +512,8 @@ public class Pigeon : NetworkBehaviour
             case Upgrades.swiftness:
                 speedMod += .1f;
                 staminaRecoveryRate *= 1.5f;
+                maxStamina *= 1.5f;
+                stamina = maxStamina;
                 break;
             case Upgrades.evasive:
                 speedMod += .1f;
@@ -571,6 +582,12 @@ public class Pigeon : NetworkBehaviour
                     qAbilityCooldown = 0;
                     if (isPlayer) GameManager.instance.StartCooldown(Upgrades.hiddinTalon, 0);
                 }
+                break;
+            case Upgrades.minionHelmet:
+                damgeReductionEnchantableModifier -= .1f;
+                break;
+            case Upgrades.minionGoggles:
+                if (isPlayer) GameManager.instance.IncreaseVeiwRange();
                 break;
         }
 
@@ -860,7 +877,7 @@ public class Pigeon : NetworkBehaviour
         }
 
         body.freezeRotation = true;
-        if ((pigeonAI && !pigeonAI.diesAfterDeath) || isPlayer) GameManager.instance.allpigeons.Add(this);
+        if ((pigeonAI && !pigeonAI.diesAfterDeath && pigeonName != "Goon" && pigeonName != "Patrick Bateman" && pigeonName != "Minion" && pigeonName != "Ryan Gosling") || isPlayer) GameManager.instance.allpigeons.Add(this);
     }
     protected void CheckDirection(Vector2 direction)
     {
@@ -937,12 +954,12 @@ public class Pigeon : NetworkBehaviour
         if (pigeonUpgrades.ContainsKey(Upgrades.overclock))
         {
             if (isPlayer) GameManager.instance.StartCooldown(Upgrades.hiddinTalon, 45);
-            qAbilityCooldown = 67;
+            qAbilityCooldown = 45;
         }
         else
         {
             if (isPlayer) GameManager.instance.StartCooldown(Upgrades.hiddinTalon, 60);
-            qAbilityCooldown = 90;
+            qAbilityCooldown = 60;
         }
 
 
@@ -1172,7 +1189,7 @@ public class Pigeon : NetworkBehaviour
         xp -= xpTillLevelUp;
         xpTillLevelUp += 10;
         level.Value++;
-        damage += 3;
+        damage += 2;
         if (pigeonUpgrades.TryGetValue(Upgrades.hearty, out bool _))
         {
             maxHp.Value += 7;
@@ -1341,11 +1358,11 @@ public class Pigeon : NetworkBehaviour
     }
     private IEnumerator Respawn()
     {
-        if (pigeonAI && pigeonAI.diesAfterDeath)
+        if (pigeonAI && pigeonAI.diesAfterDeath && pigeonName != "Worm")
         {
             GameManager.instance.enemiesRemaining.Value--;
         }
-        if (GameDataHolder.gameMode != 0 && isPlayer)
+        if (GameDataHolder.gameMode == 1 && isPlayer)
         {
 
             GameManager.instance.StartSpectating(secondsToRespawn);
@@ -1372,7 +1389,7 @@ public class Pigeon : NetworkBehaviour
         }
         else
         {
-            if (GameDataHolder.gameMode != 0)
+            if (GameDataHolder.gameMode == 1)
             {
                 secondsToRespawn += 3;
                 if (isPlayer) GameManager.instance.StopSpectating();
@@ -1455,29 +1472,45 @@ public class Pigeon : NetworkBehaviour
         while (true)
         {
             yield return new WaitForSeconds(1);
-            if (!inBorder && !isKnockedOut.Value && !isBleeding)
+            if (!inBorder && !isKnockedOut.Value)
             {
                 currentHP.Value -= 5;
-
+                CancelRegeneration();
                 if (currentHP.Value <= 0)
                 {
                     currentHP.Value = 0;
                     isSlaming = false;
                     StopCoroutine(StopSlam());
                     isKnockedOut.Value = true;
-                    GameManager.instance.StartSpectating();
+                    if (isPlayer) GameManager.instance.StartSpectating();
                 }
             }
-            else if (inPoo)
+            else if (isBleeding && isKnockedOut.Value == false)
             {
-                currentHP.Value -= 3;
+                currentHP.Value -= Mathf.RoundToInt(maxHp.Value * 0.05f);
+
+                if (currentHP.Value <= 0)
+                {
+                    isKnockedOut.Value = true;
+                    StartCoroutine(Respawn());
+                }
 
             }
-            else
+            else if (!inPoo && secondsTillRegen <= 0)
             {
                 HealServer(regen * maxHp.Value);
             }
+            else if (secondsTillRegen > 0)
+            {
+                secondsTillRegen--;
+            }
         }
+    }
+
+    private void CancelRegeneration()
+    {
+        if (pigeonUpgrades.ContainsKey(Upgrades.regen)) secondsTillRegen = 0;
+        else secondsTillRegen = 5;
     }
     private IEnumerator StopSlam()
     {

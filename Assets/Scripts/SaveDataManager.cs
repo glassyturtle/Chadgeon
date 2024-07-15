@@ -47,6 +47,11 @@ public static class SaveDataManager
         risk = 14,
         ice = 15,
         worm = 16,
+        driver = 17,
+        joker = 18,
+        hisenBurg = 19,
+        ken = 20,
+        sigmaRule = 21,
     }
 
 

@@ -9,7 +9,7 @@ public class food : NetworkBehaviour
     [SerializeField] CircleCollider2D area;
     [SerializeField] private int healModifier;
     [SerializeField] private int xpGained;
-
+    [SerializeField] private bool isCone = true;
 
 
     private void Start()
@@ -31,7 +31,7 @@ public class food : NetworkBehaviour
         {
             if (hitPigeon.IsOwner)
             {
-                hitPigeon.GainXP(xpGained, true);
+                hitPigeon.GainXP(xpGained, isCone);
                 hitPigeon.stamina++;
                 if (hitPigeon.stamina >= hitPigeon.maxStamina) hitPigeon.stamina = hitPigeon.maxStamina;
                 hitPigeon.HealServer(hitPigeon.maxHp.Value / healModifier);

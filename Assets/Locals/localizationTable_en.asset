@@ -1,0 +1,295 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: localizationTable_en
+  m_EditorClassIdentifier: 
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: 74285466b7ffc2142a0950be9898eb8c, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 84350824448
+    m_Localized: Multiplayer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 557535424512
+    m_Localized: Singleplayer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43153951518720
+    m_Localized: start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43301620379648
+    m_Localized: quit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43286420221952
+    m_Localized: options
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43268636372992
+    m_Localized: pigeon stats
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43250814775296
+    m_Localized: customize
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43770841362432
+    m_Localized: credits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43909387612160
+    m_Localized: supremacy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43947572555776
+    m_Localized: flock supremacy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43981160542208
+    m_Localized: game browser
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44017902645248
+    m_Localized: ice-cream operations
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44569331986432
+    m_Localized: map
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44942121725952
+    m_Localized: audio
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46140304355328
+    m_Localized: back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44788308209664
+    m_Localized: bots
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45682194083840
+    m_Localized: cancel
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44925579390976
+    m_Localized: change flock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45140495527936
+    m_Localized: close
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45548714553344
+    m_Localized: could not locate game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44599665192960
+    m_Localized: difficulty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44827365568512
+    m_Localized: flock bots
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44808071770112
+    m_Localized: flocks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45924821987328
+    m_Localized: 'food collected: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247127318528
+    m_Localized: fullscreen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45772686192640
+    m_Localized: 'games played: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46284185759744
+    m_Localized: gamemode
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46336564228096
+    m_Localized: host
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47374566387712
+    m_Localized: host game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47695816519680
+    m_Localized: host new game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45121835069440
+    m_Localized: interface
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46311868166144
+    m_Localized: is private
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46555540451328
+    m_Localized: join
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44856822165504
+    m_Localized: join code
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47596327628800
+    m_Localized: join with code
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44913365577728
+    m_Localized: leave
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46576813961216
+    m_Localized: 'lobby code:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47550156730368
+    m_Localized: lobby name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46400284094464
+    m_Localized: 'lobby name: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47275916357632
+    m_Localized: locating game...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45072006737920
+    m_Localized: master
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47510898044928
+    m_Localized: multiplayer game browser
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45088586821632
+    m_Localized: music
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47611427123200
+    m_Localized: refresh
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46797870559232
+    m_Localized: slots
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53385905795072
+    m_Localized: quit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53341987237888
+    m_Localized: options
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53323666518016
+    m_Localized: pigeon stats
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53272932216832
+    m_Localized: start
+    m_Metadata:
+      m_Items: []
+  - m_Id: 54559098761216
+    m_Localized: sound effects
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56079844339712
+    m_Localized: supremacy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59716750503936
+    m_Localized: save
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59757821128704
+    m_Localized: skins
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59788724760576
+    m_Localized: outfits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59811709546496
+    m_Localized: pigeon customizer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59841405218816
+    m_Localized: 'pigeon name:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61970991771648
+    m_Localized: Pigeon statistics
+    m_Metadata:
+      m_Items: []
+  - m_Id: 62027598098432
+    m_Localized: 'Pigeons knocked out: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 62173392105472
+    m_Localized: 'Player Pigeons knocked out: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 62287946936320
+    m_Localized: 'times knocked out: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 62486652088320
+    m_Localized: 'Total xp Earned: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 62834410221568
+    m_Localized: 'Powers Gained:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 71434427920384
+    m_Localized: Unlocked
+    m_Metadata:
+      m_Items: []
+  - m_Id: 71628435451904
+    m_Localized: Unlock
+    m_Metadata:
+      m_Items: []
+  - m_Id: 71920656805888
+    m_Localized: base
+    m_Metadata:
+      m_Items: []
+  - m_Id: 71968035663872
+    m_Localized: body
+    m_Metadata:
+      m_Items: []
+  - m_Id: 72004173787136
+    m_Localized: head
+    m_Metadata:
+      m_Items: []
+  - m_Id: 75439828856832
+    m_Localized: Starting Game...
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

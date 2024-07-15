@@ -1,0 +1,275 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: localizationTable_es
+  m_EditorClassIdentifier: 
+  m_LocaleId:
+    m_Code: es
+  m_SharedData: {fileID: 11400000, guid: 74285466b7ffc2142a0950be9898eb8c, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 84350824448
+    m_Localized: multijugador
+    m_Metadata:
+      m_Items: []
+  - m_Id: 557535424512
+    m_Localized: un solo jugador
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46797870559232
+    m_Localized: tragamonedas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44942121725952
+    m_Localized: audio
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46140304355328
+    m_Localized: "atr\xE1s"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44788308209664
+    m_Localized: robots
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44925579390976
+    m_Localized: "cambiar reba\xF1o"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45682194083840
+    m_Localized: Cancelar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45140495527936
+    m_Localized: cerca
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45548714553344
+    m_Localized: no pude localizar el juego
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43770841362432
+    m_Localized: "cr\xE9ditos"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43250814775296
+    m_Localized: personalizar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44599665192960
+    m_Localized: dificultad
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44827365568512
+    m_Localized: robots en bandada
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43947572555776
+    m_Localized: "supremac\xEDa del reba\xF1o"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44808071770112
+    m_Localized: "reba\xF1os"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45924821987328
+    m_Localized: 'alimentos recogidos: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45247127318528
+    m_Localized: pantalla completa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 43981160542208
+    m_Localized: navegador de juegos
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46284185759744
+    m_Localized: modo de juego
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46336564228096
+    m_Localized: "anfitri\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45772686192640
+    m_Localized: 'juegos jugados: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47374566387712
+    m_Localized: juego de acogida
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47695816519680
+    m_Localized: albergar un nuevo juego
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44017902645248
+    m_Localized: operaciones de helados
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45121835069440
+    m_Localized: interfaz
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46311868166144
+    m_Localized: es privado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46555540451328
+    m_Localized: unirse
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44856822165504
+    m_Localized: "c\xF3digo de uni\xF3n"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47596327628800
+    m_Localized: "unirse con c\xF3digo"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44913365577728
+    m_Localized: dejar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46576813961216
+    m_Localized: "c\xF3digo de lobby:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47550156730368
+    m_Localized: nombre del lobby
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46400284094464
+    m_Localized: "nombre del vest\xEDbulo: "
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47275916357632
+    m_Localized: "juego de localizaci\xF3n..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 44569331986432
+    m_Localized: mapa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45072006737920
+    m_Localized: maestro
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47510898044928
+    m_Localized: navegador de juegos multijugador
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45088586821632
+    m_Localized: "m\xFAsica"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47611427123200
+    m_Localized: actualizar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53272932216832
+    m_Localized: comenzar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53323666518016
+    m_Localized: "estad\xEDsticas de palomas"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53341987237888
+    m_Localized: opciones
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53385905795072
+    m_Localized: abandonar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 54559098761216
+    m_Localized: efectos de sonido
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56079844339712
+    m_Localized: "supremac\xEDa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59716750503936
+    m_Localized: ahorrar
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59757821128704
+    m_Localized: Pieles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59788724760576
+    m_Localized: trajes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59811709546496
+    m_Localized: personalizador de palomas
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59841405218816
+    m_Localized: 'nombre de la paloma:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61970991771648
+    m_Localized: "Estad\xEDsticas de palomas"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 62027598098432
+    m_Localized: 'Palomas noqueadas: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 62173392105472
+    m_Localized: 'Palomas jugadoras eliminadas: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 62287946936320
+    m_Localized: 'veces noqueados: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 62486652088320
+    m_Localized: 'xp total obtenida: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 62834410221568
+    m_Localized: 'Poderes obtenidos:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 71434427920384
+    m_Localized: Desbloqueado
+    m_Metadata:
+      m_Items: []
+  - m_Id: 71628435451904
+    m_Localized: desbloquear
+    m_Metadata:
+      m_Items: []
+  - m_Id: 71920656805888
+    m_Localized: base
+    m_Metadata:
+      m_Items: []
+  - m_Id: 71968035663872
+    m_Localized: cuerpo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 72004173787136
+    m_Localized: cabeza
+    m_Metadata:
+      m_Items: []
+  - m_Id: 75439828856832
+    m_Localized: Empieza el juego...
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

@@ -81,40 +81,45 @@ public class MultiplayerManager : MonoBehaviour
 
     public async void CreateLobby(string lobbyName, int maxPlayers, bool isPrivate, int gameMode)
     {
-        if (GameDataHolder.isSinglePlayer)
+        try
         {
-            OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = null });
-            return;
-        }
-        Player player = GetPlayer();
+            Debug.Log(gameMode);
+            if (GameDataHolder.isSinglePlayer)
+            {
+                OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = null });
+                return;
+            }
+            Player player = GetPlayer();
 
 
-        string gamemodeName = "Supremacy";
+            string gamemodeName = "Supremacy";
+            string difficulty = "Chad";
+            switch (gameMode)
+            {
+                case 0:
+                    gamemodeName = "Supremacy";
+                    difficulty = "Mixed";
+                    break;
+                case 1:
+                    gamemodeName = "Ice-cream Ops";
+                    break;
+                case 2:
+                    difficulty = "Mixed";
+                    gamemodeName = "Flock Supremacy";
+                    break;
 
-        switch (gameMode)
-        {
-            case 0:
-                gamemodeName = "Supremacy";
-                break;
-            case 1:
-                gamemodeName = "Ice-cream Ops";
-                break;
-            case 2:
-                gamemodeName = "Flock Supremacy";
-                break;
-
-        }
+            }
 
 
-        CreateLobbyOptions options = new CreateLobbyOptions
-        {
-            Player = player,
-            IsPrivate = isPrivate,
+            CreateLobbyOptions options = new CreateLobbyOptions
+            {
+                Player = player,
+                IsPrivate = isPrivate,
 
-            Data = new Dictionary<string, DataObject> {
+                Data = new Dictionary<string, DataObject> {
                 {KEY_START_GAME, new DataObject(DataObject.VisibilityOptions.Member, "0")},
                 {KEY_BOT_AMT, new DataObject(DataObject.VisibilityOptions.Member, "5")},
-                {KEY_DIFFICULTY, new DataObject(DataObject.VisibilityOptions.Public, "Chad")},
+                {KEY_DIFFICULTY, new DataObject(DataObject.VisibilityOptions.Public, difficulty)},
                 {KEY_GAMEMODE, new DataObject(DataObject.VisibilityOptions.Public, gamemodeName)},
                 {KEY_MAP_NAME, new DataObject(DataObject.VisibilityOptions.Member, "Kaiserslautern")},
                 {KEY_FLOCK_AMT, new DataObject(DataObject.VisibilityOptions.Member, "2")},
@@ -125,15 +130,20 @@ public class MultiplayerManager : MonoBehaviour
                 {KEY_GAMEMODE_NUMBER, new DataObject(DataObject.VisibilityOptions.Public, gameMode.ToString(), DataObject.IndexOptions.S1)},
 
             }
-        };
+            };
 
-        Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, options);
+            Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, options);
 
-        joinedLobby = lobby;
+            joinedLobby = lobby;
 
-        OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = lobby });
+            OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = lobby });
 
-        Debug.Log("Created Lobby " + lobby.Name);
+            Debug.Log("Created Lobby " + lobby.Name);
+        }
+        catch (Exception)
+        {
+            OnLeftLobby?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     private async void HandleLobbyHeartbeat()
@@ -431,18 +441,8 @@ public class MultiplayerManager : MonoBehaviour
         {
             NetworkManager.Singleton.StartHost();
 
-            switch (GameDataHolder.map)
-            {
-                case 0:
-                    NetworkManager.Singleton.SceneManager.LoadScene("KTown", LoadSceneMode.Single);
-                    break;
-                case 1:
-                    NetworkManager.Singleton.SceneManager.LoadScene("Yu Gardens", LoadSceneMode.Single);
-                    break;
-                case 2:
-                    NetworkManager.Singleton.SceneManager.LoadScene("Central Park", LoadSceneMode.Single);
-                    break;
-            }
+            LoadScene();
+
             GameDataHolder.playerCount = 1;
         }
         if (IsLobbyHost())
@@ -460,18 +460,7 @@ public class MultiplayerManager : MonoBehaviour
                     }
                 });
 
-                switch (GameDataHolder.map)
-                {
-                    case 0:
-                        NetworkManager.Singleton.SceneManager.LoadScene("KTown", LoadSceneMode.Single);
-                        break;
-                    case 1:
-                        NetworkManager.Singleton.SceneManager.LoadScene("Yu Gardens", LoadSceneMode.Single);
-                        break;
-                    case 2:
-                        NetworkManager.Singleton.SceneManager.LoadScene("Central Park", LoadSceneMode.Single);
-                        break;
-                }
+                LoadScene();
                 GameDataHolder.playerCount = lobby.Players.Count;
                 joinedLobby = null;
             }
@@ -479,6 +468,39 @@ public class MultiplayerManager : MonoBehaviour
             {
                 Debug.Log(e);
             }
+        }
+    }
+    public void LoadScene()
+    {
+        switch (GameDataHolder.map)
+        {
+            case 0:
+                NetworkManager.Singleton.SceneManager.LoadScene("KTown", LoadSceneMode.Single);
+                break;
+            case 1:
+                NetworkManager.Singleton.SceneManager.LoadScene("Yu Gardens", LoadSceneMode.Single);
+                break;
+            case 2:
+                NetworkManager.Singleton.SceneManager.LoadScene("Central Park", LoadSceneMode.Single);
+                break;
+            case 3:
+                NetworkManager.Singleton.SceneManager.LoadScene("GoldenGate", LoadSceneMode.Single);
+                break;
+            case 4:
+                NetworkManager.Singleton.SceneManager.LoadScene("BreakingCones", LoadSceneMode.Single);
+                break;
+            case 5:
+                NetworkManager.Singleton.SceneManager.LoadScene("WallStreet", LoadSceneMode.Single);
+                break;
+            case 6:
+                NetworkManager.Singleton.SceneManager.LoadScene("Gotham", LoadSceneMode.Single);
+                break;
+            case 7:
+                NetworkManager.Singleton.SceneManager.LoadScene("Barbie", LoadSceneMode.Single);
+                break;
+            case 8:
+                NetworkManager.Singleton.SceneManager.LoadScene("RyanGosling2049", LoadSceneMode.Single);
+                break;
         }
     }
     public async void QuickJoinLobby(int mode)
