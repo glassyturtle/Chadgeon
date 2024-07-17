@@ -62,8 +62,8 @@ public class GameManager : NetworkBehaviour
     private Pigeon.Upgrades[] upgradesThatCanBeSelected = new Pigeon.Upgrades[4];
     private int currentSpectate = 0;
     bool uiOpen = true;
-    Vector3 iceCreamPos = Vector2.zero;
     private bool hasOpenedChurch = false;
+    private bool selectingUpgrades = false;
     private List<GameObject> unbuiltConeGameobjects = new();
     private bool isSwapingTracks = false;
     [SerializeField] LocalizeStringEvent upgradeDesLocalization;
@@ -268,6 +268,26 @@ public class GameManager : NetworkBehaviour
             minimapUI.SetActive(false);
         }
 
+        if (selectingUpgrades)
+        {
+            if (Input.GetKey(KeyCode.Alpha1) || Input.GetKey(KeyCode.Keypad1))
+            {
+                SelectUpgrade(0);
+            }
+            if (Input.GetKey(KeyCode.Alpha2) || Input.GetKey(KeyCode.Keypad2))
+            {
+                SelectUpgrade(1);
+            }
+            if (Input.GetKey(KeyCode.Alpha3) || Input.GetKey(KeyCode.Keypad3))
+            {
+                SelectUpgrade(2);
+            }
+            if (player.pigeonUpgrades.ContainsKey(Upgrades.psionic) && (Input.GetKey(KeyCode.Alpha4) || Input.GetKey(KeyCode.Keypad4)))
+            {
+                SelectUpgrade(3);
+            }
+        }
+
         if (player.isSprinting == true)
         {
             sprintUI.SetActive(true);
@@ -281,9 +301,9 @@ public class GameManager : NetworkBehaviour
 
         featherChargeCounter.text = player.chargedFeathers.ToString();
 
-        healthBar.fillAmount = (float)player.currentHP.Value / player.maxHp.Value;
+        healthBar.fillAmount = player.currentHP.Value / (float)player.maxHp.Value;
         hpText.text = (float)player.currentHP.Value + "/" + player.maxHp.Value;
-        xpBar.fillAmount = (float)player.xp / player.xpTillLevelUp;
+        xpBar.fillAmount = player.xp / (float)player.xpTillLevelUp;
         levelText.text = player.level.Value.ToString();
 
         if (IsServer && canSpawnFood && !isSuddenDeath.Value && gracePeriod)
@@ -321,7 +341,6 @@ public class GameManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     public void ConstructIceCreamConeServerRpc(Vector3 pos)
     {
-        iceCreamPos = pos;
         GameObject cone = Instantiate(builtConePrefab, pos, transform.rotation);
         cone.GetComponent<NetworkObject>().Spawn();
         coneToDefend = cone;
@@ -686,7 +705,7 @@ public class GameManager : NetworkBehaviour
     {
         //when the player achives lvl 5 
         upgradeScreen.SetActive(true);
-
+        selectingUpgrades = true;
         Dictionary<Pigeon.Upgrades, int> upgradesUsed = new Dictionary<Pigeon.Upgrades, int>();
 
         for (int i = 0; i < upgradesThatCanBeSelected.Length; i++)
@@ -776,6 +795,7 @@ public class GameManager : NetworkBehaviour
     {
         upgradeScreen.SetActive(false);
         upgradeDescUI.SetActive(false);
+        selectingUpgrades = false;
         player.AddUpgrade(upgradesThatCanBeSelected[selected]);
     }
     public void StartCooldown(Pigeon.Upgrades ability, int seconds)
@@ -1030,6 +1050,10 @@ public class GameManager : NetworkBehaviour
                             ai.SetAI(GameDataHolder.botDifficulty);
 
                         }
+                        if (GameDataHolder.map == 6)
+                        {
+                            ai.skinHead = 12;
+                        }
                         pigeon.GetComponent<NetworkObject>().Spawn();
                     }
                     for (int i = 0; i < GameDataHolder.botsFlock1; i++)
@@ -1048,6 +1072,10 @@ public class GameManager : NetworkBehaviour
                         {
                             ai.SetAI(GameDataHolder.botDifficulty);
 
+                        }
+                        if (GameDataHolder.map == 6)
+                        {
+                            ai.skinHead = 12;
                         }
                         pigeon.GetComponent<NetworkObject>().Spawn();
                     }
@@ -1068,6 +1096,12 @@ public class GameManager : NetworkBehaviour
                             ai.SetAI(GameDataHolder.botDifficulty);
 
                         }
+
+
+                        if (GameDataHolder.map == 6)
+                        {
+                            ai.skinHead = 12;
+                        }
                         pigeon.GetComponent<NetworkObject>().Spawn();
                     }
                     for (int i = 0; i < GameDataHolder.botsFlock3; i++)
@@ -1087,6 +1121,11 @@ public class GameManager : NetworkBehaviour
                             ai.SetAI(GameDataHolder.botDifficulty);
 
                         }
+                        ai.skinBase = 5;
+                        if (GameDataHolder.map == 6)
+                        {
+                            ai.skinHead = 12;
+                        }
                         pigeon.GetComponent<NetworkObject>().Spawn();
                     }
                     for (int i = 0; i < GameDataHolder.botsFlock4; i++)
@@ -1105,6 +1144,10 @@ public class GameManager : NetworkBehaviour
                         {
                             ai.SetAI(GameDataHolder.botDifficulty);
 
+                        }
+                        if (GameDataHolder.map == 6)
+                        {
+                            ai.skinHead = 12;
                         }
                         pigeon.GetComponent<NetworkObject>().Spawn();
                     }
@@ -1127,6 +1170,10 @@ public class GameManager : NetworkBehaviour
                         PigeonAI ai = pigeon.GetComponent<PigeonAI>();
                         ai.SetAI(2);
                         ai.flock = 1;
+                        if (GameDataHolder.map == 6)
+                        {
+                            ai.skinHead = 12;
+                        }
                         pigeon.GetComponent<NetworkObject>().Spawn();
                     }
 
@@ -1387,7 +1434,10 @@ public class GameManager : NetworkBehaviour
 
                 }
             }
-
+            if (GameDataHolder.map == 6)
+            {
+                ai.skinHead = 12;
+            }
             pigeon.GetComponent<NetworkObject>().Spawn();
 
 

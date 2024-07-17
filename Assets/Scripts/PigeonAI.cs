@@ -494,7 +494,7 @@ public class PigeonAI : Pigeon
     }
     private void SigmaBehavior(float distanceToPigeon, float distanceToFood)
     {
-        if (distanceToPigeon <= 20 && targetPigeon.currentHP.Value - damage <= 0)
+        if ((GameManager.instance.isSuddenDeath.Value == false && GameDataHolder.gameMode != 1) && distanceToPigeon <= 20 && targetPigeon.currentHP.Value - damage <= 0)
         {
             //Focuses nearby pigeon if 1 hit
             isFleeing = false;

@@ -80,6 +80,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c51f3df6c694e244288420880adbe3db, type: 2}
   - {fileID: 11400000, guid: e20663facc3a723448afebf969e54057, type: 2}
   - {fileID: 11400000, guid: e0f070bf1b034c541906d4ae433729c4, type: 2}
+  - {fileID: 11400000, guid: d6cd2ccfd9eb6a9469caef73b663ca8a, type: 2}
   bodySkinSOs:
   - {fileID: 11400000, guid: 66b1ab21001793e48be233eb9820fd6a, type: 2}
   - {fileID: 11400000, guid: 2ee41b251c47e7548818e2a7812aab5e, type: 2}
