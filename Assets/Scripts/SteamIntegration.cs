@@ -1,3 +1,4 @@
+using Steamworks;
 using UnityEngine;
 
 public class SteamIntegration : MonoBehaviour
@@ -8,10 +9,26 @@ public class SteamIntegration : MonoBehaviour
     private void Start()
     {
 
+
+
         instance = this;
         try
         {
             Steamworks.SteamClient.Init(2850650);
+
+            // Check if the DLC is owned
+            if (SteamApps.IsDlcInstalled(3070680))
+            {
+                // DLC is owned, unlock the maps
+                Debug.Log("DLC is owned, unlock the maps");
+                GameDataHolder.hasLiterallyMeDLC = true;
+            }
+            else
+            {
+                // DLC is not owned, do not unlock the maps
+                Debug.Log("DLC is not owned");
+                GameDataHolder.hasLiterallyMeDLC = false;
+            }
         }
         catch (System.Exception e)
         {
@@ -51,5 +68,4 @@ public class SteamIntegration : MonoBehaviour
         }
 
     }
-
 }

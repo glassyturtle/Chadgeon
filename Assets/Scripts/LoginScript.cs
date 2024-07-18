@@ -5,6 +5,7 @@ using Unity.Services.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+
 public class LoginScript : MonoBehaviour
 {
     [SerializeField] GameObject playButtons;
@@ -18,7 +19,6 @@ public class LoginScript : MonoBehaviour
         SaveDataManager.LoadGameData();
 
     }
-
 
     public void GoBackToPlayButtons()
     {

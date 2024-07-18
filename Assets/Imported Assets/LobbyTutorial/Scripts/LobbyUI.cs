@@ -56,7 +56,7 @@ public class LobbyUI : MonoBehaviour
     [SerializeField] private Button startGameButton;
     [SerializeField] private Button openBotMenu;
 
-
+    [SerializeField] private GameObject[] literallyMeMaps;
 
 
     private void Awake()
@@ -87,6 +87,15 @@ public class LobbyUI : MonoBehaviour
 
     private void Start()
     {
+        if (GameDataHolder.hasLiterallyMeDLC)
+        {
+            GameDataHolder.map = Random.Range(0, 9);
+            if (GameDataHolder.map == 3) GameDataHolder.map = 0;
+        }
+        else
+        {
+            GameDataHolder.map = Random.Range(0, 3);
+        }
         MultiplayerManager.Instance.OnJoinedLobby += ResetLobbyDefaultValues;
         MultiplayerManager.Instance.OnJoinedLobby += UpdateLobby_Event;
         MultiplayerManager.Instance.OnJoinedLobbyUpdate += UpdateLobby_Event;
@@ -99,14 +108,35 @@ public class LobbyUI : MonoBehaviour
     public void OpenMapMenu()
     {
         mapSelectUI.SetActive(true);
+        if (GameDataHolder.hasLiterallyMeDLC)
+        {
+            for (int i = 0; i < literallyMeMaps.Length; i++)
+            {
+                literallyMeMaps[i].SetActive(false);
+            }
+        }
     }
     public void SelectMap(int mapSelected)
     {
+        if (!GameDataHolder.hasLiterallyMeDLC && (mapSelected == 4 || mapSelected == 5 || mapSelected == 6 || mapSelected == 7 || mapSelected == 8))
+        {
+            return;
+        }
+
         selectedMap = mapSelected;
         GameDataHolder.map = selectedMap;
         if (selectedMap == -1)
         {
-            GameDataHolder.map = Random.Range(0, 3);
+            if (GameDataHolder.hasLiterallyMeDLC)
+            {
+                GameDataHolder.map = Random.Range(0, 9);
+                if (GameDataHolder.map == 3) GameDataHolder.map = 0;
+            }
+            else
+            {
+                GameDataHolder.map = Random.Range(0, 3);
+
+            }
             lobbyMapText.text = "Random";
         }
         else
@@ -388,7 +418,15 @@ public class LobbyUI : MonoBehaviour
     private void ResetLobbyDefaultValues(object sender, MultiplayerManager.LobbyEventArgs e)
     {
         selectedMap = 1;
-        GameDataHolder.map = Random.Range(0, 3);
+        if (GameDataHolder.hasLiterallyMeDLC)
+        {
+            GameDataHolder.map = Random.Range(0, 9);
+            if (GameDataHolder.map == 3) GameDataHolder.map = 0;
+        }
+        else
+        {
+            GameDataHolder.map = Random.Range(0, 3);
+        }
         lobbyMapText.text = "Random";
         botDifficulty = 1;
         botDifficultyText.text = "Chad";

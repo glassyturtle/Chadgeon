@@ -7,17 +7,7 @@ public class LocaleSelector : MonoBehaviour
     private bool isActive = false;
     [SerializeField] GameObject localizationMenu;
     [SerializeField] GameObject mainMenu;
-    private void Start()
-    {
-        int ID = PlayerPrefs.GetInt("LocaleKey", 0);
-        ChangeLocale(ID);
-    }
-    public void ChangeLocale(int localeID)
-    {
-        Debug.Log(isActive);
-        if (isActive == true) return;
-        StartCoroutine(SetLocal(localeID));
-    }
+
 
     IEnumerator SetLocal(int _localID)
     {

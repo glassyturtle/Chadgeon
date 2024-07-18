@@ -6,6 +6,6 @@ public class CreditsScrollScript : MonoBehaviour
     {
         LeanTween.cancel(gameObject);
         transform.localPosition = new Vector3(0, -1100, 0);
-        LeanTween.moveLocalY(gameObject, 12800, 147);
+        LeanTween.moveLocalY(gameObject, 14200, 190);
     }
 }

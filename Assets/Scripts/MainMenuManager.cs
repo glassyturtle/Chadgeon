@@ -308,6 +308,11 @@ public class MainMenuManager : MonoBehaviour
 
         Application.OpenURL("https://www.youtube.com/channel/UCQdwhf-zvwglBAa761oexWQ");
     }
+    public void OpenSongs()
+    {
+
+        Application.OpenURL("https://youtube.com/playlist?list=PLUYNLp0A5I3PStgzZdJwoqV9LUWLZl9Id&si=clO00wd0pqjOSIDk");
+    }
     public void OpenDiscord()
     {
 
