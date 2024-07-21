@@ -1,5 +1,6 @@
 public static class GameDataHolder
 {
+
     public static bool hasLiterallyMeDLC = false;
     public static bool isSinglePlayer = true;
     public static bool expirimentalMode = false;

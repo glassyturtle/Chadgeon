@@ -12,6 +12,7 @@ public static class SaveDataManager
     public static float musicVolume = -15;
     public static float soundEffectVolume = 0;
     public static string playerName = "Chadgeon";
+    public static bool hasLiterallyMeDLCMessageRead = false;
 
     //Player Skin
     public static int selectedSkinBase = 1;
@@ -52,6 +53,7 @@ public static class SaveDataManager
         hisenBurg = 19,
         ken = 20,
         sigmaRule = 21,
+        turtle = 22,
     }
 
 
@@ -64,6 +66,7 @@ public static class SaveDataManager
             //Loading Game Data
             chadCoins = (int)ES3.Load("chadCoins", path);
             unlockedSkins = (List<Skins>)ES3.Load("unlockedSkins", path);
+            hasLiterallyMeDLCMessageRead = (bool)ES3.Load("dlcMessage", path);
 
 
             //Loading Player Prefs
@@ -100,6 +103,8 @@ public static class SaveDataManager
         //Game Data
         ES3.Save("chadCoins", chadCoins, path);
         ES3.Save("unlockedSkins", unlockedSkins, path);
+        ES3.Save("dlcMessage", hasLiterallyMeDLCMessageRead, path);
+
 
         //Player Prefs
         ES3.Save("playerVolume", playerVolume, path);

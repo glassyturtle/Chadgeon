@@ -3,13 +3,11 @@ using UnityEngine;
 
 public class SteamIntegration : MonoBehaviour
 {
-
+    [SerializeField] GameObject dlcMessage;
     public static SteamIntegration instance;
 
     private void Start()
     {
-
-
 
         instance = this;
         try
@@ -21,7 +19,12 @@ public class SteamIntegration : MonoBehaviour
             {
                 // DLC is owned, unlock the maps
                 Debug.Log("DLC is owned, unlock the maps");
+
                 GameDataHolder.hasLiterallyMeDLC = true;
+                if (!SaveDataManager.hasLiterallyMeDLCMessageRead)
+                {
+                    OpenMessage();
+                }
             }
             else
             {
@@ -36,6 +39,21 @@ public class SteamIntegration : MonoBehaviour
         }
     }
 
+    private void OpenMessage()
+    {
+        dlcMessage.SetActive(true);
+
+    }
+    public void Close()
+    {
+        SaveDataManager.LoadGameData();
+
+        dlcMessage.SetActive(false);
+        SaveDataManager.hasLiterallyMeDLCMessageRead = true;
+        SaveDataManager.chadCoins += 2049;
+        SaveDataManager.unlockedSkins.Add(SaveDataManager.Skins.turtle);
+        SaveDataManager.SaveGameData();
+    }
     private void OnApplicationQuit()
     {
         Steamworks.SteamClient.Shutdown();
