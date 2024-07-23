@@ -67,6 +67,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: a504b73947aed374a982020cea04a8bd, type: 2}
   - {fileID: 11400000, guid: 1c773dbc13d8d9f4391ee76d55daea16, type: 2}
   - {fileID: 11400000, guid: 9ad20efa14001bb44bb4e2eab68df9e1, type: 2}
+  - {fileID: 11400000, guid: 8a6803a52bc75c143ab5066f14ccf535, type: 2}
   headSkinSOs:
   - {fileID: 11400000, guid: 221b2343b9ac1d44780a241a399edb25, type: 2}
   - {fileID: 11400000, guid: 3e47337e8154e9d4182bfa3fff9573ad, type: 2}
@@ -81,6 +82,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e20663facc3a723448afebf969e54057, type: 2}
   - {fileID: 11400000, guid: e0f070bf1b034c541906d4ae433729c4, type: 2}
   - {fileID: 11400000, guid: d6cd2ccfd9eb6a9469caef73b663ca8a, type: 2}
+  - {fileID: 11400000, guid: e8b2dddc533f6784e9ee3efa5728ac58, type: 2}
   bodySkinSOs:
   - {fileID: 11400000, guid: 66b1ab21001793e48be233eb9820fd6a, type: 2}
   - {fileID: 11400000, guid: 2ee41b251c47e7548818e2a7812aab5e, type: 2}
@@ -93,3 +95,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 12169e3db4a8c5b4d9f18240b9eaf595, type: 2}
   - {fileID: 11400000, guid: 1687a9e4a28291d4a8184e10da925631, type: 2}
   - {fileID: 11400000, guid: edc6b0044a2e12644ad03b4c9e5121a9, type: 2}
+  - {fileID: 11400000, guid: 042f8e959aea48442add11e1745d59eb, type: 2}

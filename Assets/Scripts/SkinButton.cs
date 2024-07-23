@@ -8,7 +8,7 @@ public class SkinButton : MonoBehaviour
     public int skinID;
     public bool isLocked;
     public CustomizationManager.SpriteType type;
-
+    public bool isTurtleSkin = false;
 
     //-1 is a normal skin this is used for clothes and hats that are unlocked with skins
     public int skinIDtoUnlock = -1;
@@ -27,7 +27,7 @@ public class SkinButton : MonoBehaviour
     }
     public void SelectSkin()
     {
-        if (isLocked)
+        if (isLocked && !isTurtleSkin)
         {
             if (type != CustomizationManager.SpriteType.baseSkin)
             {
@@ -41,6 +41,7 @@ public class SkinButton : MonoBehaviour
         }
         else
         {
+            Debug.Log(type);
             if (skinID != -1 && (type == CustomizationManager.SpriteType.body || type == CustomizationManager.SpriteType.head))
             {
                 SteamIntegration.instance.UnlockAchivement("paul_allen");
@@ -60,7 +61,16 @@ public class SkinButton : MonoBehaviour
         isLocked = true;
 
         costObject.gameObject.SetActive(true);
-        costText.text = skinCost.ToString();
+        if (isTurtleSkin)
+        {
+            costText.text = "?????";
+
+        }
+        else
+        {
+            costText.text = skinCost.ToString();
+
+        }
         unlockedText.SetActive(false);
     }
 }

@@ -58,6 +58,14 @@ public class MainMenuManager : MonoBehaviour
                 SteamIntegration.instance.UnlockAchivement("average_enjoyer");
             }
         }
+        if (SaveDataManager.totalPigeonXPEarned >= 1000000)
+        {
+            SteamIntegration.instance.UnlockAchivement("grandmaster");
+        }
+        if (SaveDataManager.unlockedSkins.Count >= 10)
+        {
+            SteamIntegration.instance.UnlockAchivement("skin");
+        }
 
     }
     private void Start()
@@ -135,7 +143,10 @@ public class MainMenuManager : MonoBehaviour
     {
         if (SaveDataManager.chadCoins < skinCost) return;
         SaveDataManager.unlockedSkins.Add(skinTryingToUnlock);
-        Debug.Log(skinTryingToUnlock);
+        if (SaveDataManager.unlockedSkins.Count >= 10)
+        {
+            SteamIntegration.instance.UnlockAchivement("skin");
+        }
         SaveDataManager.chadCoins -= skinCost;
         chadCoinsText.text = SaveDataManager.chadCoins.ToString();
         purchaseMenu.SetActive(false);

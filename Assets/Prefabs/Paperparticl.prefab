@@ -4928,9 +4928,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   soundEffects:
-  - {fileID: 8300000, guid: 959f798f27464fc449c94df6545d4b14, type: 3}
-  - {fileID: 8300000, guid: ad7d51fcc8d0ac344951b12d883dad03, type: 3}
-  - {fileID: 8300000, guid: 7b1a87af6f7e6d44fa3fffff8bba38c3, type: 3}
+  - {fileID: 8300000, guid: 4cb5a51d26143bc4291855354a221108, type: 3}
+  - {fileID: 8300000, guid: 4fa909d22f1c89e4ea10ed8952208b60, type: 3}
   sorce: {fileID: 6563610750405146683}
 --- !u!114 &-4004204573748125338
 MonoBehaviour:

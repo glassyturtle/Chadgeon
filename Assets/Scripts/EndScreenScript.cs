@@ -69,6 +69,10 @@ public class EndScreenScript : MonoBehaviour
 
                 if (GameDataHolder.botDifficulty == 3)
                 {
+                    if (GameManager.instance.allpigeons.Count == 1)
+                    {
+                        SteamIntegration.instance.UnlockAchivement("wick");
+                    }
                     switch (GameDataHolder.map)
                     {
                         case 0:
@@ -79,6 +83,24 @@ public class EndScreenScript : MonoBehaviour
                             break;
                         case 2:
                             SteamIntegration.instance.UnlockAchivement("central_park_mastery");
+                            break;
+                        case 3:
+                            SteamIntegration.instance.UnlockAchivement("golden_gate");
+                            break;
+                        case 4:
+                            SteamIntegration.instance.UnlockAchivement("breakingbad");
+                            break;
+                        case 5:
+                            SteamIntegration.instance.UnlockAchivement("wall_street");
+                            break;
+                        case 6:
+                            SteamIntegration.instance.UnlockAchivement("joker");
+                            break;
+                        case 7:
+                            SteamIntegration.instance.UnlockAchivement("ken");
+                            break;
+                        case 8:
+                            SteamIntegration.instance.UnlockAchivement("2049");
                             break;
                     }
                 }

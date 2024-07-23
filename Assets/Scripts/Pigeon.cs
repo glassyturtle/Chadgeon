@@ -494,6 +494,10 @@ public class Pigeon : NetworkBehaviour
             case Upgrades.pigeonOfGrowth:
                 maxHp.Value += 15;
                 currentHP.Value += 15;
+                if (isPlayer && maxHp.Value >= 300)
+                {
+                    SteamIntegration.instance.UnlockAchivement("large");
+                }
                 break;
             case Upgrades.pigeonOfViolence:
                 damage += 6;
@@ -524,6 +528,10 @@ public class Pigeon : NetworkBehaviour
             case Upgrades.hearty:
                 maxHp.Value += level.Value * 2;
                 currentHP.Value += level.Value * 2;
+                if (isPlayer && maxHp.Value >= 300)
+                {
+                    SteamIntegration.instance.UnlockAchivement("large");
+                }
                 break;
             case Upgrades.slam:
                 if (isPlayer) GameManager.instance.ActivateAbility(Upgrades.slam);
@@ -591,10 +599,17 @@ public class Pigeon : NetworkBehaviour
                 break;
         }
 
-        if (isPlayer && hasAbilityQ && hasAbilityM2 && hasAbilityE && pigeonUpgrades.ContainsKey(Upgrades.overclock))
+        if (isPlayer)
         {
-            SteamIntegration.instance.UnlockAchivement("cybernetic_enhancements");
+            SteamIntegration.instance.UnlockAchivement("mewing");
+
+            if (hasAbilityQ && hasAbilityM2 && hasAbilityE && pigeonUpgrades.ContainsKey(Upgrades.overclock))
+            {
+                SteamIntegration.instance.UnlockAchivement("cybernetic_enhancements");
+            }
         }
+
+
     }
     public void UpatePigeonInitialValues(GameManager.PigeonInitializeProperties data)
     {
@@ -777,6 +792,14 @@ public class Pigeon : NetworkBehaviour
         {
             if (isPlayer) GameManager.instance.StartCooldown(Upgrades.wholeGains, 20);
             eAbilityCooldown = 20;
+        }
+        if (isPlayer)
+        {
+            GameDataHolder.wholeGainsSpawned++;
+            if (GameDataHolder.wholeGainsSpawned >= 10)
+            {
+                SteamIntegration.instance.UnlockAchivement("gains");
+            }
         }
         SpawnWholeGainsServerRpc(pos);
     }
@@ -964,6 +987,7 @@ public class Pigeon : NetworkBehaviour
 
 
         isAssassinating = true;
+        if (isPlayer) StartCoroutine(RKOAchivementCheck());
         canSwitchAttackSprites = false;
         currentPigeonState.Value = 4;
 
@@ -1177,15 +1201,7 @@ public class Pigeon : NetworkBehaviour
     }
     public void LevelUP()
     {
-        if (isPlayer)
-        {
-            audioSorce.clip = levelUp;
-            audioSorce.Play();
-            if (GameDataHolder.gameMode == 0 && level.Value >= 30)
-            {
-                SteamIntegration.instance.UnlockAchivement("mogging");
-            }
-        }
+
         xp -= xpTillLevelUp;
         xpTillLevelUp += 10;
         level.Value++;
@@ -1202,6 +1218,20 @@ public class Pigeon : NetworkBehaviour
         }
 
         speed += 10;
+
+        if (isPlayer)
+        {
+            audioSorce.clip = levelUp;
+            audioSorce.Play();
+            if (GameDataHolder.gameMode == 0 && level.Value >= 30)
+            {
+                SteamIntegration.instance.UnlockAchivement("mogging");
+            }
+            if (maxHp.Value >= 300)
+            {
+                SteamIntegration.instance.UnlockAchivement("large");
+            }
+        }
 
         if (0 == level.Value % 5)
         {
@@ -1349,6 +1379,11 @@ public class Pigeon : NetworkBehaviour
 
 
     //Enumerators
+    private IEnumerator RKOAchivementCheck()
+    {
+        yield return new WaitForSeconds(3);
+        if (isAssassinating) SteamIntegration.instance.UnlockAchivement("rko");
+    }
     protected IEnumerator StartSprintCooldown()
     {
         if (pigeonUpgrades.TryGetValue(Upgrades.overclock, out _)) yield return new WaitForSeconds(0.5f);

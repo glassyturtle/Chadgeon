@@ -676,10 +676,6 @@ public class PigeonAI : Pigeon
                     AIAttack();
                 }
             }
-            else if (targetFood && distanceToFood <= 20)
-            {
-                locationToPathfindTo = targetFood.transform.position;
-            }
             else if (distanceToIceCream <= 20)
             {
                 locationToPathfindTo = iceCreamLocation;
@@ -689,6 +685,10 @@ public class PigeonAI : Pigeon
                     AIAttack(iceCreamLocation);
                     GameManager.instance.DamageCone();
                 }
+            }
+            else if (targetFood && distanceToFood <= 20)
+            {
+                locationToPathfindTo = targetFood.transform.position;
             }
             else
             {

@@ -83,7 +83,6 @@ public class MultiplayerManager : MonoBehaviour
     {
         try
         {
-            Debug.Log(gameMode);
             if (GameDataHolder.isSinglePlayer)
             {
                 OnJoinedLobby?.Invoke(this, new LobbyEventArgs { lobby = null });

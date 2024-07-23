@@ -1050,9 +1050,39 @@ public class GameManager : NetworkBehaviour
                             ai.SetAI(GameDataHolder.botDifficulty);
 
                         }
-                        if (GameDataHolder.map == 6)
+                        switch (GameDataHolder.map)
                         {
-                            ai.skinHead = 12;
+                            case 6:
+                                ai.skinHead = 12;
+                                break;
+                            case 5:
+                                if (Random.Range(0, 100) <= 50)
+                                {
+                                    ai.skinBody = 1;
+                                }
+                                else
+                                {
+                                    if (Random.Range(0, 100) <= 50)
+                                    {
+                                        ai.skinBody = 3;
+                                    }
+                                    else
+                                    {
+                                        ai.skinBody = 10;
+                                    }
+                                }
+                                if (Random.Range(0, 100) <= 25)
+                                {
+                                    ai.skinHead = 1;
+                                }
+                                else
+                                {
+                                    if (Random.Range(0, 100) <= 25)
+                                    {
+                                        ai.skinHead = 2;
+                                    }
+                                }
+                                break;
                         }
                         pigeon.GetComponent<NetworkObject>().Spawn();
                     }
@@ -1073,9 +1103,39 @@ public class GameManager : NetworkBehaviour
                             ai.SetAI(GameDataHolder.botDifficulty);
 
                         }
-                        if (GameDataHolder.map == 6)
+                        switch (GameDataHolder.map)
                         {
-                            ai.skinHead = 12;
+                            case 6:
+                                ai.skinHead = 12;
+                                break;
+                            case 5:
+                                if (Random.Range(0, 100) <= 50)
+                                {
+                                    ai.skinBody = 1;
+                                }
+                                else
+                                {
+                                    if (Random.Range(0, 100) <= 50)
+                                    {
+                                        ai.skinBody = 3;
+                                    }
+                                    else
+                                    {
+                                        ai.skinBody = 10;
+                                    }
+                                }
+                                if (Random.Range(0, 100) <= 25)
+                                {
+                                    ai.skinHead = 1;
+                                }
+                                else
+                                {
+                                    if (Random.Range(0, 100) <= 25)
+                                    {
+                                        ai.skinHead = 2;
+                                    }
+                                }
+                                break;
                         }
                         pigeon.GetComponent<NetworkObject>().Spawn();
                     }
@@ -1098,9 +1158,39 @@ public class GameManager : NetworkBehaviour
                         }
 
 
-                        if (GameDataHolder.map == 6)
+                        switch (GameDataHolder.map)
                         {
-                            ai.skinHead = 12;
+                            case 6:
+                                ai.skinHead = 12;
+                                break;
+                            case 5:
+                                if (Random.Range(0, 100) <= 50)
+                                {
+                                    ai.skinBody = 1;
+                                }
+                                else
+                                {
+                                    if (Random.Range(0, 100) <= 50)
+                                    {
+                                        ai.skinBody = 3;
+                                    }
+                                    else
+                                    {
+                                        ai.skinBody = 10;
+                                    }
+                                }
+                                if (Random.Range(0, 100) <= 25)
+                                {
+                                    ai.skinHead = 1;
+                                }
+                                else
+                                {
+                                    if (Random.Range(0, 100) <= 25)
+                                    {
+                                        ai.skinHead = 2;
+                                    }
+                                }
+                                break;
                         }
                         pigeon.GetComponent<NetworkObject>().Spawn();
                     }
@@ -1122,9 +1212,39 @@ public class GameManager : NetworkBehaviour
 
                         }
                         ai.skinBase = 5;
-                        if (GameDataHolder.map == 6)
+                        switch (GameDataHolder.map)
                         {
-                            ai.skinHead = 12;
+                            case 6:
+                                ai.skinHead = 12;
+                                break;
+                            case 5:
+                                if (Random.Range(0, 100) <= 50)
+                                {
+                                    ai.skinBody = 1;
+                                }
+                                else
+                                {
+                                    if (Random.Range(0, 100) <= 50)
+                                    {
+                                        ai.skinBody = 3;
+                                    }
+                                    else
+                                    {
+                                        ai.skinBody = 10;
+                                    }
+                                }
+                                if (Random.Range(0, 100) <= 25)
+                                {
+                                    ai.skinHead = 1;
+                                }
+                                else
+                                {
+                                    if (Random.Range(0, 100) <= 25)
+                                    {
+                                        ai.skinHead = 2;
+                                    }
+                                }
+                                break;
                         }
                         pigeon.GetComponent<NetworkObject>().Spawn();
                     }
@@ -1145,9 +1265,39 @@ public class GameManager : NetworkBehaviour
                             ai.SetAI(GameDataHolder.botDifficulty);
 
                         }
-                        if (GameDataHolder.map == 6)
+                        switch (GameDataHolder.map)
                         {
-                            ai.skinHead = 12;
+                            case 6:
+                                ai.skinHead = 12;
+                                break;
+                            case 5:
+                                if (Random.Range(0, 100) <= 50)
+                                {
+                                    ai.skinBody = 1;
+                                }
+                                else
+                                {
+                                    if (Random.Range(0, 100) <= 50)
+                                    {
+                                        ai.skinBody = 3;
+                                    }
+                                    else
+                                    {
+                                        ai.skinBody = 10;
+                                    }
+                                }
+                                if (Random.Range(0, 100) <= 25)
+                                {
+                                    ai.skinHead = 1;
+                                }
+                                else
+                                {
+                                    if (Random.Range(0, 100) <= 25)
+                                    {
+                                        ai.skinHead = 2;
+                                    }
+                                }
+                                break;
                         }
                         pigeon.GetComponent<NetworkObject>().Spawn();
                     }
@@ -1170,9 +1320,39 @@ public class GameManager : NetworkBehaviour
                         PigeonAI ai = pigeon.GetComponent<PigeonAI>();
                         ai.SetAI(2);
                         ai.flock = 1;
-                        if (GameDataHolder.map == 6)
+                        switch (GameDataHolder.map)
                         {
-                            ai.skinHead = 12;
+                            case 6:
+                                ai.skinHead = 12;
+                                break;
+                            case 5:
+                                if (Random.Range(0, 100) <= 50)
+                                {
+                                    ai.skinBody = 1;
+                                }
+                                else
+                                {
+                                    if (Random.Range(0, 100) <= 50)
+                                    {
+                                        ai.skinBody = 3;
+                                    }
+                                    else
+                                    {
+                                        ai.skinBody = 10;
+                                    }
+                                }
+                                if (Random.Range(0, 100) <= 25)
+                                {
+                                    ai.skinHead = 1;
+                                }
+                                else
+                                {
+                                    if (Random.Range(0, 100) <= 25)
+                                    {
+                                        ai.skinHead = 2;
+                                    }
+                                }
+                                break;
                         }
                         pigeon.GetComponent<NetworkObject>().Spawn();
                     }
@@ -1395,7 +1575,7 @@ public class GameManager : NetworkBehaviour
                     ai.flock = 1;
                     enemiesRemaining.Value--;
                 }
-                else if (Random.Range(0, 1000) <= 5)
+                else if (Random.Range(0, 1000) <= 5 || (GameDataHolder.map == 5 && Random.Range(0, 1000) <= 20))
                 {
                     ai.pigeonName = "Patrick Bateman";
                     ai.goonPriority = PigeonAI.GoonPriority.player;
@@ -1434,10 +1614,41 @@ public class GameManager : NetworkBehaviour
 
                 }
             }
-            if (GameDataHolder.map == 6)
+            switch (GameDataHolder.map)
             {
-                ai.skinHead = 12;
+                case 6:
+                    ai.skinHead = 12;
+                    break;
+                case 5:
+                    if (Random.Range(0, 100) <= 50)
+                    {
+                        ai.skinBody = 1;
+                    }
+                    else
+                    {
+                        if (Random.Range(0, 100) <= 50)
+                        {
+                            ai.skinBody = 3;
+                        }
+                        else
+                        {
+                            ai.skinBody = 10;
+                        }
+                    }
+                    if (Random.Range(0, 100) <= 25)
+                    {
+                        ai.skinHead = 1;
+                    }
+                    else
+                    {
+                        if (Random.Range(0, 100) <= 25)
+                        {
+                            ai.skinHead = 2;
+                        }
+                    }
+                    break;
             }
+
             pigeon.GetComponent<NetworkObject>().Spawn();
 
 

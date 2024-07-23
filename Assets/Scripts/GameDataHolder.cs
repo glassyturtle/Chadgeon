@@ -15,6 +15,7 @@ public static class GameDataHolder
     public static int botsFlock2 = 0;
     public static int botsFlock3 = 0;
     public static int botsFlock4 = 0;
+    public static int wholeGainsSpawned = 0;
     public static int playerCount;
 
     //Stats Earned In Game
@@ -27,6 +28,7 @@ public static class GameDataHolder
         conesCollected = 0;
         flock = 0;
         map = 0;
+        wholeGainsSpawned = 0;
     }
 
 }
