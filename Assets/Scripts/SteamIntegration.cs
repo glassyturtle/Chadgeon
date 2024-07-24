@@ -1,4 +1,6 @@
 using Steamworks;
+using Steamworks.Data;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class SteamIntegration : MonoBehaviour
@@ -8,11 +10,14 @@ public class SteamIntegration : MonoBehaviour
 
     private void Start()
     {
+        SaveDataManager.LoadGameData();
+
 
         instance = this;
         try
         {
             Steamworks.SteamClient.Init(2850650);
+            IEnumerable<DlcInformation> dlcs = SteamApps.DlcInformation();
 
             // Check if the DLC is owned
             if (SteamApps.IsDlcInstalled(3070680))
@@ -46,7 +51,6 @@ public class SteamIntegration : MonoBehaviour
     }
     public void Close()
     {
-        SaveDataManager.LoadGameData();
 
         dlcMessage.SetActive(false);
         SaveDataManager.hasLiterallyMeDLCMessageRead = true;
@@ -58,7 +62,23 @@ public class SteamIntegration : MonoBehaviour
     {
         Steamworks.SteamClient.Shutdown();
     }
+    private void CheckDLC()
+    {
 
+        // Check if the DLC is owned
+        bool ownsDLC = SteamApps.IsDlcInstalled(3070680);
+
+        if (ownsDLC)
+        {
+            Debug.Log("DLC is owned!");
+            // Enable DLC content or functionality
+        }
+        else
+        {
+            Debug.Log("DLC is not owned.");
+            // Disable or restrict DLC content or functionality
+        }
+    }
     public void UnlockAchivement(string id)
     {
         Debug.Log(id);

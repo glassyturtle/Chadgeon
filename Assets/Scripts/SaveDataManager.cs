@@ -66,7 +66,7 @@ public static class SaveDataManager
             //Loading Game Data
             chadCoins = (int)ES3.Load("chadCoins", path);
             unlockedSkins = (List<Skins>)ES3.Load("unlockedSkins", path);
-            hasLiterallyMeDLCMessageRead = (bool)ES3.Load("dlcMessage", path);
+            hasLiterallyMeDLCMessageRead = ES3.Load("dlcMessage", path, false);
 
 
             //Loading Player Prefs

@@ -14,10 +14,7 @@ public class LoginScript : MonoBehaviour
     [SerializeField] GameObject backButton;
 
 
-    private void Awake()
-    {
-        SaveDataManager.LoadGameData();
-    }
+
 
     public void GoBackToPlayButtons()
     {
