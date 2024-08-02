@@ -54,6 +54,7 @@ public static class SaveDataManager
         ken = 20,
         sigmaRule = 21,
         turtle = 22,
+        pink = 23,
     }
 
 
@@ -66,7 +67,6 @@ public static class SaveDataManager
             //Loading Game Data
             chadCoins = (int)ES3.Load("chadCoins", path);
             unlockedSkins = (List<Skins>)ES3.Load("unlockedSkins", path);
-            hasLiterallyMeDLCMessageRead = ES3.Load("dlcMessage", path, false);
 
 
             //Loading Player Prefs
@@ -89,6 +89,8 @@ public static class SaveDataManager
             totalPigeonXPEarned = ES3.Load("totalPigeonXPEarned", path, 0);
             upgradesAquired = ES3.Load("upgradesAquired", path, 0);
             gamesPlayed = ES3.Load("gamesPlayed", path, 0);
+
+            hasLiterallyMeDLCMessageRead = ES3.Load("dlcMessage", path, false);
         }
         GameDataHolder.multiplayerName = playerName;
 

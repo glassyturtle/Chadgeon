@@ -672,13 +672,12 @@ MonoBehaviour:
     like this one.
 
 
-    Anyways.. FR Tho. I really do appreciate you guys. In addition
-    to the new maps I''ve also added 2049 Chadcoins and a very special developer
-    turtle skin to the game as a bonus.
+    Anyways.. I really do appreciate you guys. In addition to
+    the new maps I''ve also added 2049 Chadcoins and a very special developer turtle
+    skin to the game as a bonus.
 
 
-    Thank you for Enjoying Chadgeon Enjoyers
-    Edition'
+    Thank you for Enjoying Chadgeon Enjoyers Edition'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1346,7 +1345,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: v1.1.2
+  m_text: v1.2.0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

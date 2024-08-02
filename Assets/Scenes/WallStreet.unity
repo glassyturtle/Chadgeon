@@ -33145,6 +33145,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1117616414188471362, guid: 1c9c0127b99195141b203f0d75989c9f, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 1428883509088449762, guid: 05929e289ff5c2a4985abbdb2b7a7bb2, type: 3}
     - target: {fileID: 1182158036447936688, guid: 1c9c0127b99195141b203f0d75989c9f, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -33373,6 +33377,14 @@ PrefabInstance:
       propertyPath: GlobalObjectIdHash
       value: 251012867
       objectReference: {fileID: 0}
+    - target: {fileID: 2612781249681202711, guid: 1c9c0127b99195141b203f0d75989c9f, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2612781249681202711, guid: 1c9c0127b99195141b203f0d75989c9f, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6051609686695820796, guid: 1c9c0127b99195141b203f0d75989c9f, type: 3}
       propertyPath: m_SizeDelta.x
       value: 0
@@ -33424,6 +33436,10 @@ PrefabInstance:
     - target: {fileID: 7335724081567896687, guid: 1c9c0127b99195141b203f0d75989c9f, type: 3}
       propertyPath: m_IsActive
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7335724081760826949, guid: 1c9c0127b99195141b203f0d75989c9f, type: 3}
+      propertyPath: orthographic size
+      value: 42.6
       objectReference: {fileID: 0}
     - target: {fileID: 7335724081760826954, guid: 1c9c0127b99195141b203f0d75989c9f, type: 3}
       propertyPath: m_LocalPosition.x
@@ -33480,6 +33496,10 @@ PrefabInstance:
     - target: {fileID: 7335724081778291787, guid: 1c9c0127b99195141b203f0d75989c9f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7335724082007046541, guid: 1c9c0127b99195141b203f0d75989c9f, type: 3}
+      propertyPath: m_text
+      value: Wall Street
       objectReference: {fileID: 0}
     - target: {fileID: 7335724082007046543, guid: 1c9c0127b99195141b203f0d75989c9f, type: 3}
       propertyPath: m_SizeDelta.x
@@ -33767,6 +33787,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7986370083836414621, guid: 1c9c0127b99195141b203f0d75989c9f, type: 3}
       propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8121864216135161146, guid: 1c9c0127b99195141b203f0d75989c9f, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8121864216135161146, guid: 1c9c0127b99195141b203f0d75989c9f, type: 3}
+      propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []

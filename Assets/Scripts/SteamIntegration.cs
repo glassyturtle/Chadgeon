@@ -13,6 +13,7 @@ public class SteamIntegration : MonoBehaviour
         SaveDataManager.LoadGameData();
 
 
+
         instance = this;
         try
         {
@@ -81,7 +82,6 @@ public class SteamIntegration : MonoBehaviour
     }
     public void UnlockAchivement(string id)
     {
-        Debug.Log(id);
         try
         {
             var ach = new Steamworks.Data.Achievement(id);

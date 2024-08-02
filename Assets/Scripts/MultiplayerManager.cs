@@ -66,6 +66,7 @@ public class MultiplayerManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        HostPigeonVallhalla();
     }
 
     private void Update()
@@ -542,7 +543,10 @@ public class MultiplayerManager : MonoBehaviour
             }
         }
     }
-
+    public async void HostPigeonVallhalla()
+    {
+        await CreateRelay();
+    }
     #endregion
 
     #region Relay

@@ -68,6 +68,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 1c773dbc13d8d9f4391ee76d55daea16, type: 2}
   - {fileID: 11400000, guid: 9ad20efa14001bb44bb4e2eab68df9e1, type: 2}
   - {fileID: 11400000, guid: 8a6803a52bc75c143ab5066f14ccf535, type: 2}
+  - {fileID: 11400000, guid: 3cd1c048e029fa34abcea83f81bb65e0, type: 2}
   headSkinSOs:
   - {fileID: 11400000, guid: 221b2343b9ac1d44780a241a399edb25, type: 2}
   - {fileID: 11400000, guid: 3e47337e8154e9d4182bfa3fff9573ad, type: 2}

@@ -423,15 +423,6 @@ public class Pigeon : NetworkBehaviour
         if (xp >= xpTillLevelUp)
         {
             LevelUP();
-            LevelUP();
-        }
-    }
-    public void GainXPCatchup(int amnt)
-    {
-        xp += amnt;
-        if (xp >= xpTillLevelUp)
-        {
-            LevelUP();
         }
     }
     public void GainXP(int amnt, bool isCone)
@@ -455,6 +446,15 @@ public class Pigeon : NetworkBehaviour
 
         xp += amnt;
 
+        if (xp >= xpTillLevelUp)
+        {
+            LevelUP();
+        }
+    }
+
+    public void GainXPCatchup(int amnt)
+    {
+        xp += amnt;
         if (xp >= xpTillLevelUp)
         {
             LevelUP();

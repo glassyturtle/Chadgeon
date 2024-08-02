@@ -457,8 +457,6 @@ public class LobbyUI : MonoBehaviour
         neutralBotAmtText.text = GameDataHolder.botsToSpawn.ToString();
         neutralBotAmount = GameDataHolder.botsToSpawn;
 
-        Debug.Log(GameDataHolder.gameMode);
-
         selectedFlock = 0;
     }
 
